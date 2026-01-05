@@ -3,16 +3,32 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
-    const origin = request.headers.get('Origin') || '*';
+    const origin = request.headers.get('Origin');
+
+    // Allowed origins for admin routes (credentials require explicit origin)
+    const allowedOrigins = [
+      'https://wedding-gallery.zaidhuda.com',
+      'https://wedding-gallery.zaidhuda.workers.dev',
+      'http://localhost:8787',
+      'http://127.0.0.1:8787',
+    ];
 
     // CORS headers - use specific origin for admin routes (required for credentials)
     const isAdminRoute = path.startsWith('/admin');
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': isAdminRoute ? origin : '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      ...(isAdminRoute && { 'Access-Control-Allow-Credentials': 'true' }),
-    };
+    const isAllowedOrigin = origin && allowedOrigins.some(o => origin.startsWith(o.replace(':8787', '')));
+
+    const corsHeaders = isAdminRoute
+      ? {
+          'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Credentials': 'true',
+        }
+      : {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        };
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
