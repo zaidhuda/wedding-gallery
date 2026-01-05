@@ -1,11 +1,15 @@
 // ===== CONFIGURATION =====
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const WORKER_URL = isLocalhost
-    ? 'http://localhost:8787/api'
-    : 'https://wedding-gallery.zaidhuda.workers.dev/api';
+const BASE_URL = isLocalhost
+    ? 'http://localhost:8787'
+    : 'https://wedding-gallery.zaidhuda.workers.dev';
+const WORKER_URL = `${BASE_URL}/api`;
 
 const GUEST_PASSWORD = 'ZM2026';
 const STORAGE_KEY = 'wedding_gallery_access';
+
+// Admin state - will be set after verification
+let isAdmin = false;
 
 // Check URL param first, then localStorage
 const urlParams = new URLSearchParams(window.location.search);
@@ -50,7 +54,9 @@ let currentEventTag = null;
 
 // ===== UTILITY FUNCTIONS =====
 function applyTheme(theme) {
-    document.body.className = `theme-${theme}`;
+    // Remove existing theme classes but preserve other classes (like is-admin)
+    document.body.classList.remove('theme-ijab', 'theme-sanding', 'theme-tandang');
+    document.body.classList.add(`theme-${theme}`);
 }
 
 function generateUUID() {
@@ -70,6 +76,63 @@ function supportsWebP() {
 
 // Cache the result since it won't change during session
 const webpSupported = supportsWebP();
+
+// ===== ADMIN VERIFICATION =====
+// Check if current user is authenticated via Cloudflare Access
+async function verifyAdminAccess() {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/verify`, {
+            credentials: 'include' // Include Cloudflare Access cookies
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.authenticated) {
+                isAdmin = true;
+                document.body.classList.add('is-admin');
+                console.log(`Admin mode enabled: ${data.email}`);
+                return true;
+            }
+        }
+    } catch (error) {
+        // Silently fail - user is not admin
+        console.log('Admin verification failed (not authenticated)');
+    }
+    return false;
+}
+
+// Unapprove a photo (admin only)
+async function unapprovePhoto(photoId) {
+    if (!isAdmin) return;
+
+    try {
+        const response = await fetch(`${BASE_URL}/admin/unapprove`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ id: photoId })
+        });
+
+        if (response.ok) {
+            // Remove the photo card from DOM immediately
+            const card = document.querySelector(`.photo-card[data-photo-id="${photoId}"]`);
+            if (card) {
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => card.remove(), 300);
+            }
+            console.log(`Photo ${photoId} unapproved`);
+        } else {
+            console.error('Failed to unapprove photo');
+        }
+    } catch (error) {
+        console.error('Unapprove error:', error);
+    }
+}
+
+// Make unapprove function globally accessible for onclick handlers
+window.unapprovePhoto = unapprovePhoto;
 
 // ===== EXIF METADATA EXTRACTION =====
 // Extract original photo timestamp with smart fallbacks
@@ -459,6 +522,7 @@ function createPhotoCard(photo, eventTag = null) {
     const hasCaption = photo.name || photo.message;
     const card = document.createElement('div');
     card.className = `photo-card${hasCaption ? '' : ' no-caption'}`;
+    card.setAttribute('data-photo-id', photo.id);
 
     const optimizedUrl = getOptimizedImageUrl(photo.url);
     const filmTime = formatFilmTimestamp(photo.taken_at);
@@ -475,6 +539,7 @@ function createPhotoCard(photo, eventTag = null) {
     card.innerHTML = `
         <div class="photo-item">
             <img src="${optimizedUrl}" alt="Memory shared by ${photo.name || 'Guest'}" loading="lazy">
+            <button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from gallery">✕</button>
         </div>
         <div class="photo-caption">
             ${filmTime ? `<span class="${filmStampClass}">${filmTime}</span>` : ''}
@@ -755,6 +820,9 @@ function setupUploadButton() {
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
+    // Check admin status (non-blocking)
+    verifyAdminAccess();
+
     // Load all galleries
     Object.keys(EVENT_CONFIG).forEach(eventTag => loadPhotosForEvent(eventTag, false));
 

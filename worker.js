@@ -481,6 +481,64 @@ Answer with SAFE or UNSAFE followed by a brief reason.`,
       }
     }
 
+    // Admin: Verify authentication (ping endpoint for frontend)
+    if (path === '/admin/verify' && method === 'GET') {
+      if (!isAccessAuthenticated(request)) {
+        return new Response(
+          JSON.stringify({ authenticated: false }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const adminEmail = getAccessEmail(request);
+      console.log(`Admin verified: ${adminEmail}`);
+
+      return new Response(
+        JSON.stringify({ authenticated: true, email: adminEmail }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Admin: Unapprove a photo (set is_approved = 0)
+    if (path === '/admin/unapprove' && method === 'POST') {
+      try {
+        if (!isAccessAuthenticated(request)) {
+          return new Response(
+            JSON.stringify({ error: 'Unauthorized - Cloudflare Access required' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const adminEmail = getAccessEmail(request);
+        const body = await request.json();
+        const { id } = body;
+
+        if (!id) {
+          return new Response(
+            JSON.stringify({ error: 'Missing photo id' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        console.log(`Admin ${adminEmail}: unapprove photo ${id}`);
+
+        await env.DB.prepare(
+          'UPDATE photos SET is_approved = 0 WHERE id = ?'
+        ).bind(id).run();
+
+        return new Response(
+          JSON.stringify({ success: true, action: 'unapproved', id }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('Unapprove error:', error);
+        return new Response(
+          JSON.stringify({ error: 'Unapprove failed' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Serve images from R2
     if (path.startsWith('/images/') && method === 'GET') {
       try {
