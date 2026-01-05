@@ -568,6 +568,8 @@ Answer with SAFE or UNSAFE followed by a brief reason.`,
         const headers = new Headers(corsHeaders);
         object.writeHttpMetadata(headers);
         headers.set('etag', object.httpEtag);
+        // Cache images for 1 year (immutable content with UUID filenames)
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
         return new Response(object.body, { headers });
       } catch (error) {
