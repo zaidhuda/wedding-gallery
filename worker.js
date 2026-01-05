@@ -3,12 +3,15 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
+    const origin = request.headers.get('Origin') || '*';
 
-    // CORS headers
+    // CORS headers - use specific origin for admin routes (required for credentials)
+    const isAdminRoute = path.startsWith('/admin');
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': isAdminRoute ? origin : '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
+      ...(isAdminRoute && { 'Access-Control-Allow-Credentials': 'true' }),
     };
 
     // Handle CORS preflight
