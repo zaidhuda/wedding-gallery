@@ -165,23 +165,9 @@
             color: var(--accent);
         }
     </style>
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDWi83GykNpc0krlbq7uczoSs2dnwahcmo",
-            authDomain: "muna-li-zaid.firebaseapp.com",
-            projectId: "muna-li-zaid",
-            storageBucket: "muna-li-zaid.firebasestorage.app",
-            messagingSenderId: "166813218536",
-            appId: "1:166813218536:web:e90068adcc702f2394fb5d"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
+    <script>
+        // Cloudflare Worker API endpoint - Update this to your Worker URL
+        const WORKER_URL = '/api'; // Relative path for Cloudflare Pages, or use full URL like 'https://your-worker.your-subdomain.workers.dev'
 
         const validPasswords = ['L2026', 'T2026'];
         const urlParams = new URLSearchParams(window.location.search);
@@ -298,19 +284,29 @@
                 uploadBtn.disabled = true;
                 uploadBtn.textContent = 'Uploading...';
 
+                // Resize image using Canvas API (preserved from original)
                 const resizedBlob = await resizeImage(file);
                 const filename = `${generateUUID()}.jpg`;
-                const storageRef = ref(storage, `photos/${filename}`);
-                await uploadBytes(storageRef, resizedBlob);
-                const downloadURL = await getDownloadURL(storageRef);
 
-                await addDoc(collection(db, 'photos'), {
-                    url: downloadURL,
-                    name: name || 'Anonymous',
-                    message: message || '',
-                    eventTag: eventTag,
-                    timestamp: new Date()
+                // Upload image to R2 via Worker
+                const formData = new FormData();
+                formData.append('image', resizedBlob, filename);
+                formData.append('name', name || 'Anonymous');
+                formData.append('message', message || '');
+                formData.append('eventTag', eventTag);
+                formData.append('pass', password || '');
+
+                const response = await fetch(`${WORKER_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+                    throw new Error(errorData.error || `Upload failed: ${response.statusText}`);
+                }
+
+                const result = await response.json();
 
                 document.getElementById('photoForm').reset();
                 document.getElementById('preview').innerHTML = '';
@@ -318,16 +314,28 @@
                 uploadBtn.textContent = 'Upload Photo';
                 closeUploadModal();
                 alert('Photo uploaded successfully!');
+
+                // Reload photos after upload
+                const currentTag = document.querySelector('.folder-card[data-tag="' + eventTag + '"]')?.dataset.tag || eventTag;
+                if (currentTag) {
+                    loadPhotos(currentTag);
+                }
             } catch (error) {
                 console.error('Upload error:', error);
-                alert('Error uploading photo: ' + error.message);
+                let errorMessage = 'Error uploading photo: ';
+                if (error.message) {
+                    errorMessage += error.message;
+                } else {
+                    errorMessage += 'Unknown error. Check console for details.';
+                }
+                alert(errorMessage);
                 const uploadBtn = document.getElementById('uploadBtn');
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = 'Upload Photo';
             }
         }
 
-        function loadPhotos(selectedTag) {
+        async function loadPhotos(selectedTag) {
             const gallery = document.getElementById('gallery');
             const folders = document.getElementById('folders');
             const gallerySection = document.getElementById('gallerySection');
@@ -339,26 +347,27 @@
             applyTheme(selectedTag);
             gallery.innerHTML = '<div class="text-center py-16 text-theme-secondary">Loading photos...</div>';
 
-            let q;
-            if (selectedTag === 'all') {
-                q = query(collection(db, 'photos'), orderBy('timestamp', 'desc'));
-            } else {
-                q = query(
-                    collection(db, 'photos'),
-                    where('eventTag', '==', selectedTag),
-                    orderBy('timestamp', 'desc')
-                );
-            }
+            try {
+                // Fetch photos from Worker API
+                const url = selectedTag === 'all'
+                    ? `${WORKER_URL}/photos`
+                    : `${WORKER_URL}/photos?eventTag=${encodeURIComponent(selectedTag)}`;
 
-            onSnapshot(q, (snapshot) => {
-                if (snapshot.empty) {
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load photos: ${response.statusText}`);
+                }
+
+                const photos = await response.json();
+
+                if (!photos || photos.length === 0) {
                     gallery.innerHTML = '<div class="text-center py-16 text-theme-secondary script-font text-2xl">No photos yet. Be the first to share your memories!</div>';
                     return;
                 }
 
                 gallery.innerHTML = '';
-                snapshot.forEach((doc) => {
-                    const photo = doc.data();
+                photos.forEach((photo) => {
                     const photoCard = document.createElement('div');
                     photoCard.className = 'masonry-item';
                     photoCard.innerHTML = `
@@ -372,10 +381,10 @@
                     `;
                     gallery.appendChild(photoCard);
                 });
-            }, (error) => {
+            } catch (error) {
                 console.error('Error loading photos:', error);
-                gallery.innerHTML = '<div class="text-center py-16 text-red-500">Error loading photos. Please refresh the page.</div>';
-            });
+                gallery.innerHTML = `<div class="text-center py-16 text-red-500">Error loading photos: ${error.message || 'Please refresh the page.'}</div>`;
+            }
         }
 
         function showFolders() {
