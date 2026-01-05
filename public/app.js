@@ -51,6 +51,7 @@ const galleryState = {
 };
 
 let currentEventTag = null;
+let selectedFile = null;
 
 // ===== UTILITY FUNCTIONS =====
 function applyTheme(theme) {
@@ -749,6 +750,7 @@ function closeModal() {
     document.getElementById('uploadModal').classList.remove('visible');
     document.body.style.overflow = '';
     document.getElementById('hiddenFileInput').value = '';
+    selectedFile = null;
 }
 
 // ===== SCROLL & NAVIGATION =====
@@ -927,10 +929,11 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsDataURL(file);
 
-        // Set file to form input
+        // Set file to form input and track it
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         document.getElementById('photoFile').files = dataTransfer.files;
+        selectedFile = file;
     });
 
     // Upload zone click
@@ -942,6 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('photoFile').addEventListener('change', e => {
         const file = e.target.files[0];
         if (file) {
+            selectedFile = file;
             const reader = new FileReader();
             reader.onload = evt => {
                 document.getElementById('uploadPreview').innerHTML = `
@@ -952,13 +956,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             };
             reader.readAsDataURL(file);
+        } else {
+            // If no file selected (cancelled), keep the previous file if it exists
+            // Don't clear selectedFile here - let it persist
         }
     });
 
     // Form submission
     document.getElementById('photoForm').addEventListener('submit', async e => {
         e.preventDefault();
-        const file = document.getElementById('photoFile').files[0];
+        const file = selectedFile || document.getElementById('photoFile').files[0];
         const name = document.getElementById('photoName').value.trim();
         const message = document.getElementById('photoMessage').value.trim();
         const eventTag = document.getElementById('hiddenEventTag').value;
