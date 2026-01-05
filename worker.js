@@ -59,8 +59,10 @@ export default {
     // AI Text moderation using Llama-3-8b-instruct (Malay Wedding Context)
     const moderateTextWithAI = async (name, message, env) => {
       try {
-        // Skip if no text to moderate
-        if (!name && !message) {
+        // Skip if no meaningful user text to moderate
+        // name might be 'Anonymous' (default) and message might be empty
+        const hasUserText = (name && name !== 'Anonymous') || (message && message.trim());
+        if (!hasUserText) {
           return { safe: true, reason: 'no_text' };
         }
 
@@ -246,8 +248,8 @@ Answer with SAFE or UNSAFE followed by a brief reason.`,
 
       try {
         const image = formData.get('image');
-        const name = formData.get('name') || 'Anonymous';
-        const message = formData.get('message') || '';
+        const name = (formData.get('name') || '').trim() || 'Anonymous';
+        const message = (formData.get('message') || '').trim();
         const eventTag = formData.get('eventTag');
 
         if (!image || !eventTag) {
