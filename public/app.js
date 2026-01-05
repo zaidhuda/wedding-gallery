@@ -754,30 +754,53 @@ function closeModal() {
 // ===== SCROLL & NAVIGATION =====
 function setupScrollObserver() {
     const sections = document.querySelectorAll('.gallery-section');
+    const sectionTitles = document.querySelectorAll('.section-title');
     const navItems = document.querySelectorAll('.nav-item');
 
-    // Track intersection ratios for all sections
-    const sectionVisibility = new Map();
+    let ticking = false;
 
-    const observer = new IntersectionObserver(entries => {
-        // Update visibility map with latest intersection ratios
-        entries.forEach(entry => {
-            sectionVisibility.set(entry.target, entry.intersectionRatio);
-        });
-
-        // Find the section with the highest visibility
-        let maxRatio = 0;
+    function updateActiveSection() {
+        // Find the section title closest to (but below or at) the top of viewport
+        // This creates a "sticky" feel - section activates when its title reaches top
         let activeSection = null;
+        let bestPosition = -Infinity;
 
-        sectionVisibility.forEach((ratio, section) => {
-            if (ratio > maxRatio) {
-                maxRatio = ratio;
+        sectionTitles.forEach(title => {
+            const section = title.closest('.gallery-section');
+            const rect = title.getBoundingClientRect();
+
+            // Title is "active" if it has scrolled past or is near the top of viewport
+            // We pick the one whose top is closest to (but not too far above) viewport top
+            // Trigger zone: from 200px above viewport top to 60% down the viewport
+            const triggerTop = -200;
+            const triggerBottom = window.innerHeight * 0.6;
+
+            if (rect.top <= triggerBottom && rect.top > bestPosition && rect.top >= triggerTop) {
+                bestPosition = rect.top;
                 activeSection = section;
             }
         });
 
-        // Apply theme for the most visible section (with minimum threshold)
-        if (activeSection && maxRatio > 0.1) {
+        // If no title in trigger zone, find the one most recently scrolled past
+        if (!activeSection) {
+            sectionTitles.forEach(title => {
+                const section = title.closest('.gallery-section');
+                const rect = title.getBoundingClientRect();
+
+                // Pick the title that's above viewport but closest to it
+                if (rect.top < 0 && rect.top > bestPosition) {
+                    bestPosition = rect.top;
+                    activeSection = section;
+                }
+            });
+        }
+
+        // Fallback: if still no active section (at hero/top), use first section
+        if (!activeSection && sections.length > 0) {
+            activeSection = sections[0];
+        }
+
+        if (activeSection) {
             const theme = activeSection.dataset.theme;
             const event = activeSection.dataset.event;
 
@@ -790,9 +813,21 @@ function setupScrollObserver() {
                 });
             }
         }
-    }, { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] });
 
-    sections.forEach(section => observer.observe(section));
+        ticking = false;
+    }
+
+    function onScroll() {
+        if (!ticking) {
+            requestAnimationFrame(updateActiveSection);
+            ticking = true;
+        }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Initial check on load
+    updateActiveSection();
 }
 
 // ===== SETUP UPLOAD BUTTON =====

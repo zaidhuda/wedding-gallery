@@ -232,20 +232,11 @@ body.theme-tandang .section-title {
     letter-spacing: 0.15em;
 }
 
-/* Sanding Section Specific */
-.gallery-section.section-sanding {
-    background-color: var(--sanding-bg);
-    color: var(--sanding-text);
-}
+/* Section backgrounds inherit from body theme - no fixed colors */
+/* Colors are controlled by body.theme-* classes */
 
 .gallery-section.section-sanding .section-title {
-    color: var(--sanding-text);
-}
-
-/* Tandang Section Specific */
-.gallery-section.section-tandang {
-    background-color: var(--tandang-bg);
-    color: var(--tandang-text);
+    color: inherit;
 }
 
 /* ===== MASONRY GRID (Pinterest-style columns) ===== */
@@ -371,51 +362,42 @@ body.theme-tandang .section-title {
     margin-bottom: 0.25rem;
 }
 
-/* Film stamp theme colors - context-aware */
+/* Film stamp theme colors - controlled by body theme */
 .film-stamp-night,
-.section-ijab .film-stamp,
 body.theme-ijab .film-stamp {
     color: #A0A0A0; /* Silver for Night */
 }
 
 .film-stamp-grandeur,
-.section-sanding .film-stamp,
 body.theme-sanding .film-stamp {
     color: #B8996F; /* Muted Gold for Grandeur */
 }
 
 .film-stamp-journey,
-.section-tandang .film-stamp,
 body.theme-tandang .film-stamp {
     color: #2C4A5E; /* Deep Navy for Journey */
 }
 
 /* Theme-specific handwriting colors - Night (Off-white theme) */
-.section-ijab .photo-name,
 body.theme-ijab .photo-name {
     color: var(--ijab-text); /* Deep charcoal #2C2C2C */
 }
-.section-ijab .photo-message,
 body.theme-ijab .photo-message {
     color: var(--ijab-text-soft); /* Soft charcoal #6B6B6B */
 }
 
 /* Theme-specific handwriting colors - Grandeur (Maroon theme) */
-.section-sanding .photo-name,
 body.theme-sanding .photo-name {
     color: var(--sanding-accent); /* Soft gold #C9A227 */
 }
-.section-sanding .photo-message,
 body.theme-sanding .photo-message {
     color: var(--sanding-text-soft); /* Warm cream #D4C4B0 */
 }
 
 /* Theme-specific handwriting colors - Journey (Cool blue theme) */
-.section-tandang .photo-name,
 body.theme-tandang .photo-name {
     color: var(--tandang-text); /* Deep navy #1E3A4F */
 }
-.section-tandang .photo-message,
 body.theme-tandang .photo-message {
     color: var(--tandang-text-soft); /* Soft slate #4A6B7C */
 }
@@ -579,82 +561,68 @@ body.theme-tandang .photo-message {
 }
 
 /* Theme-specific Load More styles - Night */
-.section-ijab .load-more-content,
 body.theme-ijab .load-more-content {
     background: rgba(184, 168, 138, 0.06);
     border-color: rgba(184, 168, 138, 0.2);
 }
 
-.section-ijab .load-more-content:hover,
 body.theme-ijab .load-more-content:hover {
     background: rgba(184, 168, 138, 0.1);
     border-color: rgba(184, 168, 138, 0.35);
 }
 
-.section-ijab .load-more-icon,
 body.theme-ijab .load-more-icon {
     background: rgba(184, 168, 138, 0.12);
 }
 
-.section-ijab .load-more-text,
 body.theme-ijab .load-more-text {
     color: var(--ijab-text);
 }
 
 /* Theme-specific Load More styles - Grandeur (Maroon) */
-.section-sanding .load-more-content,
 body.theme-sanding .load-more-content {
     background: rgba(201, 162, 39, 0.08);
     border-color: rgba(201, 162, 39, 0.25);
 }
 
-.section-sanding .load-more-content:hover,
 body.theme-sanding .load-more-content:hover {
     background: rgba(201, 162, 39, 0.12);
     border-color: rgba(201, 162, 39, 0.4);
 }
 
-.section-sanding .load-more-icon,
 body.theme-sanding .load-more-icon {
     background: rgba(201, 162, 39, 0.15);
 }
 
-.section-sanding .load-more-icon svg,
 body.theme-sanding .load-more-icon svg {
     color: var(--sanding-accent);
     opacity: 0.7;
 }
 
-.section-sanding .load-more-text,
 body.theme-sanding .load-more-text {
     color: var(--sanding-text);
 }
 
 /* Theme-specific Load More styles - Journey (Blue) */
-.section-tandang .load-more-content,
 body.theme-tandang .load-more-content {
     background: rgba(143, 184, 201, 0.1);
     border-color: rgba(143, 184, 201, 0.3);
 }
 
-.section-tandang .load-more-content:hover,
 body.theme-tandang .load-more-content:hover {
     background: rgba(143, 184, 201, 0.15);
     border-color: rgba(143, 184, 201, 0.45);
 }
 
-.section-tandang .load-more-icon,
 body.theme-tandang .load-more-icon {
     background: rgba(143, 184, 201, 0.2);
 }
 
-.section-tandang .load-more-icon svg,
 body.theme-tandang .load-more-icon svg {
     color: var(--tandang-text);
     opacity: 0.6;
 }
 
-.section-tandang .load-more-text,
 body.theme-tandang .load-more-text {
     color: var(--tandang-text);
 }
@@ -1227,9 +1195,7 @@ body.theme-tandang .event-indicator {
 
 /* ===== GALLERY-ONLY MODE (Post March 1, 2026) ===== */
 /* When upload is removed, navigation can be centered without accounting for upload button */
-body.gallery-only .floating-nav {
-    /* Nav is already centered, no changes needed */
-}
+/* No special styles needed - nav is already centered */
 
 /* ===== REJECTION POPUP (Handwritten Style) ===== */
 .rejection-overlay {
