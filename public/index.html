@@ -3,324 +3,1247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wedding Photo Gallery</title>
+    <title>The Celebration of Zaid & Munawwarah</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Custom CSS Variables for Dynamic Theming */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         :root {
-            --transition: all 0.3s ease-in-out;
+            /* Ijab & Qabul - Sacred Night */
+            --ijab-bg: #FAF9F6;
+            --ijab-bg-alt: #F5F3EE;
+            --ijab-text: #2C2C2C;
+            --ijab-text-soft: #6B6B6B;
+            --ijab-accent: #B8A88A;
+
+            /* Sanding - Grandeur */
+            --sanding-bg: #4A1C1C;
+            --sanding-bg-alt: #3D1717;
+            --sanding-text: #F5E6D3;
+            --sanding-text-soft: #D4C4B0;
+            --sanding-accent: #C9A227;
+
+            /* Tandang - Journey */
+            --tandang-bg: #E8F4F8;
+            --tandang-bg-alt: #D6EBF2;
+            --tandang-text: #1E3A4F;
+            --tandang-text-soft: #4A6B7C;
+            --tandang-accent: #8FB8C9;
+
+            /* Handwriting Ink Colors */
+            --ink-navy: #1a365d;
+            --ink-sepia: #5c4033;
+            --ink-gold: #b8860b;
+            --ink-cream: #f5e6d3;
+
+            --transition-slow: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: 0.2s ease;
         }
 
-        /* Theme: Ijab & Qabul - Off-white */
-        .theme-ijab {
-            --bg-primary: #F9F7F2;
-            --text-primary: #3A3A3A;
-            --text-secondary: #5A5A5A;
-            --accent: #D4AF37;
-            --accent-light: #E8D5A3;
-        }
-
-        /* Theme: Sanding - Maroon */
-        .theme-sanding {
-            --bg-primary: #800000;
-            --text-primary: #FFF8E7;
-            --text-secondary: #F5E6D3;
-            --accent: #FFD700;
-            --accent-light: #FFE55C;
-        }
-
-        /* Theme: Tandang - Powder Blue */
-        .theme-tandang {
-            --bg-primary: #B0E0E6;
-            --text-primary: #1E3A5F;
-            --text-secondary: #2C5282;
-            --accent: #C0C0C0;
-            --accent-light: #E8E8E8;
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            transition: var(--transition);
+            font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--ijab-bg);
+            color: var(--ijab-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color var(--transition-slow), color var(--transition-slow);
         }
 
-        h1, h2, h3 {
-            font-family: 'Playfair Display', serif;
+        /* Theme States */
+        body.theme-ijab {
+            background-color: var(--ijab-bg);
+            color: var(--ijab-text);
         }
 
-        .script-font {
-            font-family: 'Dancing Script', cursive;
+        body.theme-sanding {
+            background-color: var(--sanding-bg);
+            color: var(--sanding-text);
         }
 
-        /* Masonry Grid */
-        .masonry-grid {
-            column-count: 1;
-            column-gap: 1.5rem;
+        body.theme-tandang {
+            background-color: var(--tandang-bg);
+            color: var(--tandang-text);
         }
 
-        @media (min-width: 640px) {
-            .masonry-grid {
-                column-count: 2;
-            }
+        /* Typography */
+        .serif {
+            font-family: 'Cormorant Garamond', Georgia, serif;
         }
 
-        @media (min-width: 1024px) {
-            .masonry-grid {
-                column-count: 3;
-            }
+        .text-soft {
+            opacity: 0.65;
         }
 
-        .masonry-item {
-            break-inside: avoid;
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(184, 168, 138, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(184, 168, 138, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            transition: opacity var(--transition-slow);
+        }
+
+        body.theme-sanding .hero::before {
+            background: radial-gradient(ellipse at 30% 20%, rgba(201, 162, 39, 0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(201, 162, 39, 0.05) 0%, transparent 50%);
+        }
+
+        body.theme-tandang .hero::before {
+            background: radial-gradient(ellipse at 30% 20%, rgba(143, 184, 201, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(143, 184, 201, 0.1) 0%, transparent 50%);
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .hero-prelude {
+            font-size: 0.75rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            opacity: 0.5;
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 300;
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-title .highlight {
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .hero-ampersand {
+            display: block;
+            font-size: 0.5em;
+            opacity: 0.4;
+            margin: 0.5rem 0;
+        }
+
+        .hero-date {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.25rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            margin-top: 3rem;
+            opacity: 0.6;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            opacity: 0.4;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .scroll-indicator span {
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .scroll-indicator svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+
+        /* ===== GALLERY SECTIONS ===== */
+        .gallery-section {
+            min-height: 100vh;
+            padding: 8rem 2rem;
+            position: relative;
+            transition: background-color var(--transition-slow);
+        }
+
+        .section-header {
+            max-width: 800px;
+            margin: 0 auto 6rem;
+            text-align: center;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            opacity: 0.4;
             margin-bottom: 1.5rem;
         }
 
-        /* Polaroid Style */
-        .polaroid-card {
-            background: white;
-            padding: 0.75rem 0.75rem 3rem 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transform: rotate(-1deg);
-            transition: var(--transition);
+        .section-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 300;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
         }
 
-        .polaroid-card:nth-child(even) {
-            transform: rotate(1deg);
+        body.theme-ijab .section-title {
+            font-weight: 300;
         }
 
-        .polaroid-card:hover {
-            transform: rotate(0deg) scale(1.02);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        body.theme-sanding .section-title {
+            font-weight: 400;
         }
 
-        /* Folder Card */
-        .folder-card {
-            transition: var(--transition);
+        body.theme-tandang .section-title {
+            font-weight: 300;
+        }
+
+        .section-date {
+            font-size: 0.85rem;
+            opacity: 0.5;
+            letter-spacing: 0.15em;
+        }
+
+        /* Sanding Section Specific */
+        .gallery-section.section-sanding {
+            background-color: var(--sanding-bg);
+            color: var(--sanding-text);
+        }
+
+        .gallery-section.section-sanding .section-title {
+            color: var(--sanding-text);
+        }
+
+        /* Tandang Section Specific */
+        .gallery-section.section-tandang {
+            background-color: var(--tandang-bg);
+            color: var(--tandang-text);
+        }
+
+        /* ===== MASONRY GRID (Pinterest-style columns) ===== */
+        .masonry-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .masonry-grid {
+            column-count: 3;
+            column-gap: 2rem; /* 32px gap for gallery wall feel */
+        }
+
+        @media (max-width: 1024px) {
+            .masonry-grid {
+                column-count: 2;
+                column-gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .masonry-grid {
+                column-count: 1;
+                column-gap: 0;
+            }
+
+            /* Tighter mobile spacing for edge-to-edge photos */
+            .gallery-section {
+                padding-left: 0.75rem; /* 12px - tight horizontal padding */
+                padding-right: 0.75rem;
+            }
+
+            .masonry-container {
+                padding: 0 0.25rem; /* Minimal container padding */
+            }
+
+            /* Caption flush with photo edge on mobile */
+            .photo-caption {
+                padding-left: 0.25rem; /* Flush alignment with photo */
+                padding-right: 0.25rem;
+            }
+        }
+
+        /* Photo Card - contains photo + handwritten caption */
+        .photo-card {
+            break-inside: avoid;
+            margin-bottom: 2.5rem; /* More vertical spacing */
+            position: relative;
+            /* Scroll-in entrance animation - starts hidden */
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        /* Visible state - triggered by Intersection Observer */
+        .photo-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Photo item styles - NO CROPPING, NO HOVER */
+        .photo-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 3px;
+        }
+
+        /* Inner glow effect */
+        .photo-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.08);
+            pointer-events: none;
+            z-index: 1;
+            border-radius: 3px;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Handwritten Caption - Left-aligned editorial style */
+        .photo-caption {
+            position: relative;
+            margin-top: 12px; /* 12px separation from photo */
+            padding-left: 1rem; /* Consistent left padding (pl-4) */
+            padding-right: 1rem;
+            text-align: left; /* Left-aligned for clean editorial look */
+            max-width: 90%; /* Prevent awkward text wrapping on mobile */
+        }
+
+        .photo-name {
+            font-family: 'Caveat', cursive;
+            font-size: 1.6rem; /* Slightly larger for hierarchy */
+            font-weight: 700; /* Bolder for emphasis */
+            line-height: 1.2;
+            color: var(--ijab-text); /* Deep charcoal for off-white theme */
+            margin-bottom: 0.15rem;
+        }
+
+        .photo-message {
+            font-family: 'Caveat', cursive;
+            font-size: 1.35rem; /* 2px smaller than name for hierarchy */
+            font-weight: 400;
+            line-height: 1.35;
+            color: var(--ijab-text-soft); /* Softer charcoal */
+        }
+
+        /* Theme-specific handwriting colors - Night (Off-white theme) */
+        .section-ijab .photo-name,
+        body.theme-ijab .photo-name {
+            color: var(--ijab-text); /* Deep charcoal #2C2C2C */
+        }
+        .section-ijab .photo-message,
+        body.theme-ijab .photo-message {
+            color: var(--ijab-text-soft); /* Soft charcoal #6B6B6B */
+        }
+
+        /* Theme-specific handwriting colors - Grandeur (Maroon theme) */
+        .section-sanding .photo-name,
+        body.theme-sanding .photo-name {
+            color: var(--sanding-accent); /* Soft gold #C9A227 */
+        }
+        .section-sanding .photo-message,
+        body.theme-sanding .photo-message {
+            color: var(--sanding-text-soft); /* Warm cream #D4C4B0 */
+        }
+
+        /* Theme-specific handwriting colors - Journey (Cool blue theme) */
+        .section-tandang .photo-name,
+        body.theme-tandang .photo-name {
+            color: var(--tandang-text); /* Deep navy #1E3A4F */
+        }
+        .section-tandang .photo-message,
+        body.theme-tandang .photo-message {
+            color: var(--tandang-text-soft); /* Soft slate #4A6B7C */
+        }
+
+        /* Photo card without caption (anonymous, no message) */
+        .photo-card.no-caption .photo-caption {
+            display: none;
+        }
+
+        .photo-card.no-caption {
+            margin-bottom: 2rem;
+        }
+
+        /* Empty state */
+        .empty-state {
+            column-span: all;
+            text-align: center;
+            padding: 6rem 2rem;
+        }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            opacity: 0.2;
+        }
+
+        .empty-state-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 0.75rem;
+            opacity: 0.6;
+        }
+
+        .empty-state-text {
+            font-size: 0.875rem;
+            opacity: 0.4;
+        }
+
+        .empty-state-cta {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            opacity: 0.5;
+        }
+
+        /* ===== FLOATING NAVIGATION ===== */
+        .floating-nav {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            transition: all var(--transition-medium);
+        }
+
+        body.theme-sanding .floating-nav {
+            background: rgba(77, 34, 34, 0.6);
+            border-color: rgba(201, 162, 39, 0.2);
+        }
+
+        body.theme-tandang .floating-nav {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(143, 184, 201, 0.3);
+        }
+
+        .nav-item {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            color: inherit;
+            background: transparent;
+            border: none;
+            border-radius: 30px;
             cursor: pointer;
+            transition: background var(--transition-fast), color var(--transition-fast);
+            white-space: nowrap;
+            opacity: 0.7;
         }
 
-        .folder-card:hover {
-            transform: translateY(-8px);
+        .nav-item.active {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.15);
         }
 
-        /* Pulsing Animation */
-        @keyframes pulse-gentle {
-            0%, 100% {
+        body.theme-sanding .nav-item.active {
+            background: rgba(201, 162, 39, 0.25);
+            color: var(--sanding-accent);
+        }
+
+        body.theme-tandang .nav-item.active {
+            background: rgba(30, 58, 79, 0.12);
+            color: var(--tandang-text);
+        }
+
+        @media (max-width: 640px) {
+            .floating-nav {
+                bottom: 1.5rem; /* 24px from bottom edge */
+                padding: 0.5rem 0.625rem; /* Comfortable pill padding */
+            }
+            .nav-item {
+                padding: 0.625rem 1rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* ===== UPLOAD BUTTON (Iconic CTA) ===== */
+        .upload-cta {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 1px solid currentColor;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+            transition: opacity var(--transition-fast);
+        }
+
+        .upload-cta:hover {
+            opacity: 0.8;
+        }
+
+        .upload-cta svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 1;
+        }
+
+        body.theme-sanding .upload-cta {
+            border-color: var(--sanding-accent);
+            color: var(--sanding-accent);
+        }
+
+        body.theme-tandang .upload-cta {
+            border-color: var(--tandang-text);
+            color: var(--tandang-text);
+            border-radius: 28px;
+        }
+
+        .upload-cta.hidden {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .upload-cta {
+                bottom: 5rem;
+                right: 1rem;
+                width: 48px;
+                height: 48px;
+            }
+        }
+
+        /* ===== UPLOAD MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-medium);
+        }
+
+        .modal-overlay.visible {
                 opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.9;
-                transform: scale(1.02);
-            }
+            visibility: visible;
         }
 
-        .pulse-gentle {
-            animation: pulse-gentle 2s ease-in-out infinite;
+        .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
         }
 
-        /* Blur Backdrop */
-        .blur-backdrop {
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+        .modal-content {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px) scale(0.95);
+            transition: transform var(--transition-medium);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        /* Drop Zone */
-        .drop-zone {
-            border: 2px dashed currentColor;
-            border-radius: 0.5rem;
-            transition: var(--transition);
+        .modal-overlay.visible .modal-content {
+            transform: translateY(0) scale(1);
         }
 
-        .drop-zone:hover {
-            border-color: var(--accent);
-            background-color: rgba(255, 255, 255, 0.05);
+        body.theme-sanding .modal-content {
+            background: rgba(77, 34, 34, 0.95);
+            border-color: rgba(201, 162, 39, 0.3);
         }
 
-        /* Apply theme colors */
-        .theme-active {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
+        body.theme-tandang .modal-content {
+            background: rgba(232, 244, 248, 0.98);
+            border-color: rgba(143, 184, 201, 0.5);
+            border-radius: 32px;
         }
 
-        .text-theme-primary {
-            color: var(--text-primary);
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .text-theme-secondary {
-            color: var(--text-secondary);
+        .modal-close:hover {
+            opacity: 1;
         }
 
-        .bg-theme-accent {
-            background-color: var(--accent);
+        .modal-close svg {
+            width: 20px;
+            height: 20px;
         }
 
-        .border-theme-accent {
-            border-color: var(--accent);
+        body.theme-sanding .modal-close {
+            color: var(--sanding-text);
         }
 
-        .text-theme-accent {
-            color: var(--accent);
+        .modal-header {
+            padding: 2.5rem 2.5rem 0;
+            text-align: center;
         }
 
-        /* Debug Panel (localhost only) */
+        .modal-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.75rem;
+            font-weight: 300;
+            color: #2C2C2C;
+            margin-bottom: 0.5rem;
+        }
+
+        body.theme-sanding .modal-title {
+            color: var(--sanding-text);
+        }
+
+        body.theme-tandang .modal-title {
+            color: var(--tandang-text);
+        }
+
+        .modal-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.5;
+            color: #2C2C2C;
+        }
+
+        body.theme-sanding .modal-subtitle {
+            color: var(--sanding-text-soft);
+        }
+
+        body.theme-tandang .modal-subtitle {
+            color: var(--tandang-text-soft);
+        }
+
+        .modal-form {
+            padding: 2rem 2.5rem 2.5rem;
+        }
+
+        .upload-zone {
+            border: 1px dashed rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .upload-zone:hover {
+            border-color: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        body.theme-sanding .upload-zone {
+            border-color: rgba(201, 162, 39, 0.3);
+            background: rgba(201, 162, 39, 0.05);
+        }
+
+        body.theme-sanding .upload-zone:hover {
+            border-color: var(--sanding-accent);
+            background: rgba(201, 162, 39, 0.1);
+        }
+
+        body.theme-tandang .upload-zone {
+            border-color: rgba(143, 184, 201, 0.5);
+            background: rgba(143, 184, 201, 0.1);
+            border-radius: 24px;
+        }
+
+        body.theme-tandang .upload-zone:hover {
+            border-color: var(--tandang-accent);
+        }
+
+        .upload-zone-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            opacity: 0.3;
+        }
+
+        body.theme-sanding .upload-zone-icon {
+            color: var(--sanding-accent);
+            opacity: 0.6;
+        }
+
+        .upload-zone-text {
+            font-size: 0.85rem;
+            color: #2C2C2C;
+            opacity: 0.5;
+        }
+
+        body.theme-sanding .upload-zone-text {
+            color: var(--sanding-text-soft);
+        }
+
+        body.theme-tandang .upload-zone-text {
+            color: var(--tandang-text-soft);
+        }
+
+        .upload-preview {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .upload-preview img {
+            max-width: 100%;
+            max-height: 280px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            margin: 0 auto;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-preview-hint {
+            font-family: 'Caveat', cursive;
+            font-size: 1rem;
+            color: var(--ink-sepia);
+            opacity: 0.6;
+            margin-top: 0.75rem;
+        }
+
+        body.theme-sanding .upload-preview-hint {
+            color: var(--ink-cream);
+        }
+
+        .form-field {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+            color: #2C2C2C;
+        }
+
+        body.theme-sanding .form-label {
+            color: var(--sanding-text-soft);
+        }
+
+        body.theme-tandang .form-label {
+            color: var(--tandang-text-soft);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            background: white;
+            color: #2C2C2C;
+            transition: all var(--transition-fast);
+        }
+
+        /* Handwriting style for name and message inputs */
+        .form-input-handwriting {
+            font-family: 'Caveat', cursive;
+            font-size: 1.25rem;
+            color: var(--ink-navy);
+            padding: 0.75rem 1rem;
+        }
+
+        .form-input-handwriting::placeholder {
+            font-family: 'Caveat', cursive;
+            color: var(--ink-sepia);
+            opacity: 0.4;
+        }
+
+        body.theme-sanding .form-input-handwriting {
+            color: var(--ink-gold);
+        }
+
+        body.theme-sanding .form-input-handwriting::placeholder {
+            color: var(--ink-cream);
+            opacity: 0.4;
+        }
+
+        body.theme-tandang .form-input-handwriting {
+            color: var(--tandang-text);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body.theme-sanding .form-input {
+            background: rgba(61, 23, 23, 0.8);
+            border-color: rgba(201, 162, 39, 0.2);
+            color: var(--sanding-text);
+        }
+
+        body.theme-sanding .form-input:focus {
+            border-color: var(--sanding-accent);
+        }
+
+        body.theme-sanding .form-input::placeholder {
+            color: var(--sanding-text-soft);
+            opacity: 0.5;
+        }
+
+        body.theme-tandang .form-input {
+            background: white;
+            border-color: rgba(143, 184, 201, 0.3);
+            border-radius: 16px;
+        }
+
+        body.theme-tandang .form-input:focus {
+            border-color: var(--tandang-accent);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            border: none;
+            border-radius: 12px;
+            background: #2C2C2C;
+            color: white;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .submit-btn:hover {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        body.theme-sanding .submit-btn {
+            background: transparent;
+            border: 1px solid var(--sanding-accent);
+            color: var(--sanding-accent);
+        }
+
+        body.theme-sanding .submit-btn:hover {
+            background: rgba(201, 162, 39, 0.15);
+        }
+
+        body.theme-tandang .submit-btn {
+            background: var(--tandang-text);
+            border-radius: 20px;
+        }
+
+        body.theme-tandang .submit-btn:hover {
+            background: #152a3a;
+        }
+
+        /* Event indicator in modal */
+        .event-indicator {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.05);
+            color: #2C2C2C;
+            margin-top: 0.75rem;
+        }
+
+        body.theme-sanding .event-indicator {
+            background: rgba(201, 162, 39, 0.2);
+            color: var(--sanding-accent);
+        }
+
+        body.theme-tandang .event-indicator {
+            background: rgba(143, 184, 201, 0.3);
+            color: var(--tandang-text);
+        }
+
+        /* ===== DEBUG PANEL ===== */
         .debug-panel {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
+            top: 1rem;
+            right: 1rem;
+            z-index: 300;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
             color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            z-index: 9999;
-            font-family: 'Inter', sans-serif;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            font-size: 0.75rem;
+        }
+
+        .debug-panel-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .debug-panel button {
-            background: #4CAF50;
-            color: white;
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.375rem;
+            font-size: 0.7rem;
             border: none;
-            padding: 6px 12px;
-            margin: 4px 2px;
-            border-radius: 4px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
             cursor: pointer;
-            font-size: 11px;
             transition: background 0.2s;
         }
 
         .debug-panel button:hover {
-            background: #45a049;
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .debug-panel button.active {
-            background: #2196F3;
+            background: #4CAF50;
         }
 
-        .debug-panel button:disabled {
-            background: #666;
-            cursor: not-allowed;
+        /* ===== LOADING STATE ===== */
+        .loading-state {
+            column-span: all;
+            text-align: center;
+            padding: 4rem 2rem;
         }
 
-        .debug-status {
-            margin-bottom: 8px;
-            font-weight: 600;
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            animation: spin 1s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== UTILITIES ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
     </style>
+</head>
+<body class="theme-ijab">
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <p class="hero-prelude">A Celebration of Love</p>
+            <h1 class="hero-title">
+                <span class="highlight">Zaid</span>
+                <span class="hero-ampersand">&</span>
+                <span class="highlight">Munawwarah</span>
+            </h1>
+            <p class="hero-date">February 2026</p>
+        </div>
+        <div class="scroll-indicator">
+            <span>Explore</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Night Section (Ijab & Qabul) -->
+    <section class="gallery-section section-ijab" id="section-night" data-theme="ijab" data-event="Ijab & Qabul">
+        <div class="section-header">
+            <p class="section-label">The Sacred Night</p>
+            <h2 class="section-title">Ijab & Qabul</h2>
+            <p class="section-date">February 7, 2026</p>
+        </div>
+        <div class="masonry-container">
+            <div class="masonry-grid" id="gallery-ijab">
+                <!-- Photos loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Grandeur Section (Sanding) -->
+    <section class="gallery-section section-sanding" id="section-grandeur" data-theme="sanding" data-event="Sanding">
+        <div class="section-header">
+            <p class="section-label">The Grandeur</p>
+            <h2 class="section-title">Sanding</h2>
+            <p class="section-date">February 8, 2026</p>
+        </div>
+        <div class="masonry-container">
+            <div class="masonry-grid" id="gallery-sanding">
+                <!-- Photos loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Journey Section (Tandang) -->
+    <section class="gallery-section section-tandang" id="section-journey" data-theme="tandang" data-event="Tandang">
+        <div class="section-header">
+            <p class="section-label">The Journey</p>
+            <h2 class="section-title">Tandang</h2>
+            <p class="section-date">February 14, 2026</p>
+        </div>
+        <div class="masonry-container">
+            <div class="masonry-grid" id="gallery-tandang">
+                <!-- Photos loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Navigation -->
+    <nav class="floating-nav" id="floatingNav">
+        <button class="nav-item active" data-section="section-night" data-event="Ijab & Qabul">Night</button>
+        <button class="nav-item" data-section="section-grandeur" data-event="Sanding">Grandeur</button>
+        <button class="nav-item" data-section="section-journey" data-event="Tandang">Journey</button>
+    </nav>
+
+    <!-- Upload CTA -->
+    <button class="upload-cta hidden" id="uploadCta" aria-label="Share a memory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+        </svg>
+    </button>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="hiddenFileInput" accept="image/*" class="sr-only">
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal-backdrop" id="modalBackdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            <div class="modal-header">
+                <h3 class="modal-title">Share a Memory</h3>
+                <p class="modal-subtitle">Add your photo to our collection</p>
+                <span class="event-indicator" id="eventIndicator">Night</span>
+            </div>
+            <form class="modal-form" id="photoForm">
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" id="photoFile" accept="image/*" class="sr-only">
+                    <div id="uploadPreview">
+                        <svg class="upload-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                        <p class="upload-zone-text">Tap to select a photo</p>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="photoName">Your Name</label>
+                    <input type="text" id="photoName" class="form-input form-input-handwriting" placeholder="Write your name here...">
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="photoMessage">Message (Optional)</label>
+                    <textarea id="photoMessage" class="form-input form-textarea form-input-handwriting" placeholder="A few words about this moment..."></textarea>
+                </div>
+                <input type="hidden" id="hiddenEventTag">
+                <button type="submit" class="submit-btn" id="uploadBtn">Share Memory</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Cloudflare Worker API endpoint
-        // Use local dev server when running wrangler dev, otherwise use production
+        // ===== CONFIGURATION =====
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const WORKER_URL = isLocalhost
-            ? 'http://localhost:8787/api'  // Local dev server
-            : 'https://wedding-gallery.zaidhuda.workers.dev/api';  // Production
+            ? 'http://localhost:8787/api'
+            : 'https://wedding-gallery.zaidhuda.workers.dev/api';
 
         const validPasswords = ['N2026', 'S2026', 'T2026'];
         const urlParams = new URLSearchParams(window.location.search);
         const password = urlParams.get('pass');
         const hasValidPassword = validPasswords.includes(password);
-        // Debug mode only works on localhost for security
         const debugMode = isLocalhost && (urlParams.get('debug') === 'true' || urlParams.get('test') === 'true');
 
-        const EVENT_TAGS = {
-            IJAB_QABUL: 'Ijab & Qabul',
-            SANDING: 'Sanding',
-            TANDANG: 'Tandang'
-        };
-
-        const EVENT_DATES = {
-            'Ijab & Qabul': 'February 7, 2026',
-            'Sanding': 'February 8, 2026',
-            'Tandang': 'February 14, 2026'
-        };
-
-        const EVENT_THEMES = {
-            'Ijab & Qabul': 'theme-ijab',
-            'Sanding': 'theme-sanding',
-            'Tandang': 'theme-tandang'
-        };
-
-        function getDefaultEventTag() {
-            if (!hasValidPassword) return null;
-
-            if (password === 'N2026') {
-                return EVENT_TAGS.IJAB_QABUL;
-            } else if (password === 'S2026') {
-                return EVENT_TAGS.SANDING;
-            } else if (password === 'T2026') {
-                return EVENT_TAGS.TANDANG;
+const EVENT_CONFIG = {
+            'Ijab & Qabul': {
+                theme: 'ijab',
+                section: 'section-night',
+                gallery: 'gallery-ijab',
+                label: 'Night',
+                date: 'February 7, 2026',
+                password: 'N2026'
+            },
+            'Sanding': {
+                theme: 'sanding',
+                section: 'section-grandeur',
+                gallery: 'gallery-sanding',
+                label: 'Grandeur',
+                date: 'February 8, 2026',
+                password: 'S2026'
+            },
+            'Tandang': {
+                theme: 'tandang',
+                section: 'section-journey',
+                gallery: 'gallery-tandang',
+                label: 'Journey',
+                date: 'February 14, 2026',
+                password: 'T2026'
             }
-            return null;
+        };
+
+        let currentEventTag = null;
+        let currentTheme = 'ijab';
+
+        // ===== UTILITY FUNCTIONS =====
+        function getDefaultEventTag() {
+            if (!hasValidPassword) return 'Ijab & Qabul';
+            const passwordMap = { 'N2026': 'Ijab & Qabul', 'S2026': 'Sanding', 'T2026': 'Tandang' };
+            return passwordMap[password] || 'Ijab & Qabul';
         }
 
         function isEventDate() {
             if (!hasValidPassword) return false;
-
-            // Debug mode: bypass date check for local testing
-            // Check both local debugMode and global window.debugMode (for dynamic updates)
             if (debugMode || (isLocalhost && window.debugMode)) return true;
 
             const today = new Date();
             const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-            const feb7_2026 = new Date(Date.UTC(2026, 1, 7));
-            const feb8_2026 = new Date(Date.UTC(2026, 1, 8));
-            const feb14_2026 = new Date(Date.UTC(2026, 1, 14));
-
-            if (password === 'N2026') {
-                // N2026 is valid only on Feb 7
-                return todayDate.getTime() === feb7_2026.getTime();
-            } else if (password === 'S2026') {
-                // S2026 is valid only on Feb 8
-                return todayDate.getTime() === feb8_2026.getTime();
-            } else if (password === 'T2026') {
-                // T2026 is valid only on Feb 14
-                return todayDate.getTime() === feb14_2026.getTime();
-            }
-            return false;
+            const eventDates = {
+                'N2026': new Date(Date.UTC(2026, 1, 7)),
+                'S2026': new Date(Date.UTC(2026, 1, 8)),
+                'T2026': new Date(Date.UTC(2026, 1, 14))
+            };
+            return eventDates[password] && todayDate.getTime() === eventDates[password].getTime();
         }
 
-        function applyTheme(eventTag) {
-            const body = document.body;
-            const theme = EVENT_THEMES[eventTag] || 'theme-ijab';
-            body.className = body.className.replace(/theme-\w+/g, '');
-            body.classList.add(theme, 'theme-active');
+        function applyTheme(theme) {
+            document.body.className = `theme-${theme}`;
+            currentTheme = theme;
         }
 
         function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
                 const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
             });
         }
 
-        function resizeImage(file) {
+        async function resizeImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = e => {
                     const img = new Image();
                     img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
+                        let { width, height } = img;
                         const maxDimension = 4000;
-                        const maxPixels = 12 * 1000000;
+                        const maxPixels = 12_000_000;
 
                         if (width > maxDimension || height > maxDimension) {
-                            if (width > height) {
-                                height = (height / width) * maxDimension;
-                                width = maxDimension;
-                            } else {
-                                width = (width / height) * maxDimension;
-                                height = maxDimension;
-                            }
+                            const scale = maxDimension / Math.max(width, height);
+                            width *= scale;
+                            height *= scale;
                         }
 
-                        const currentPixels = width * height;
-                        if (currentPixels > maxPixels) {
-                            const scale = Math.sqrt(maxPixels / currentPixels);
+                        if (width * height > maxPixels) {
+                            const scale = Math.sqrt(maxPixels / (width * height));
                             width = Math.floor(width * scale);
                             height = Math.floor(height * scale);
                         }
@@ -328,16 +1251,8 @@
                         const canvas = document.createElement('canvas');
                         canvas.width = width;
                         canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        canvas.toBlob((blob) => {
-                            if (blob) {
-                                resolve(blob);
-                            } else {
-                                reject(new Error('Failed to convert image to blob'));
-                            }
-                        }, 'image/jpeg', 0.8);
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Failed to convert')), 'image/jpeg', 0.8);
                     };
                     img.onerror = reject;
                     img.src = e.target.result;
@@ -347,364 +1262,331 @@
             });
         }
 
-        async function uploadPhoto(file, name, message, eventTag) {
-            try {
-                const uploadBtn = document.getElementById('uploadBtn');
-                uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Uploading...';
+        // ===== PHOTO LOADING =====
+        async function loadPhotosForEvent(eventTag) {
+            const config = EVENT_CONFIG[eventTag];
+            if (!config) return;
 
-                // Get password from URL (in case it changed)
-                const currentPassword = new URLSearchParams(window.location.search).get('pass');
+            const gallery = document.getElementById(config.gallery);
+            gallery.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p style="opacity: 0.4; font-size: 0.85rem;">Loading memories...</p>
+                </div>
+            `;
+
+            try {
+                const url = `${WORKER_URL}/photos?eventTag=${encodeURIComponent(eventTag)}`;
+                const response = await fetch(url);
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const photos = await response.json();
+                renderPhotos(photos, gallery, eventTag);
+            } catch (error) {
+                console.error(`Error loading ${eventTag}:`, error);
+                gallery.innerHTML = `
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 8v4M12 16h.01"/>
+                        </svg>
+                        <p class="empty-state-title">Unable to load</p>
+                        <p class="empty-state-text">Please refresh to try again</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderPhotos(photos, gallery, eventTag) {
+            if (!photos || photos.length === 0) {
+                gallery.innerHTML = `
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                        <p class="empty-state-title">No memories yet</p>
+                        <p class="empty-state-text">Be the first to share a moment</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gallery.innerHTML = '';
+
+            photos.forEach((photo) => {
+                const hasCaption = photo.name || photo.message;
+                const card = document.createElement('div');
+                card.className = `photo-card${hasCaption ? '' : ' no-caption'}`;
+
+                card.innerHTML = `
+                    <div class="photo-item">
+                        <img src="${photo.url}" alt="Memory shared by ${photo.name || 'Guest'}" loading="lazy">
+                    </div>
+                    <div class="photo-caption">
+                        ${photo.name ? `<p class="photo-name">${photo.name}</p>` : ''}
+                        ${photo.message ? `<p class="photo-message">"${photo.message}"</p>` : ''}
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+
+            // Setup scroll-in entrance animations
+            setupPhotoEntranceObserver(gallery);
+        }
+
+        // ===== PHOTO ENTRANCE ANIMATION =====
+        function setupPhotoEntranceObserver(gallery) {
+            const photoCards = gallery.querySelectorAll('.photo-card');
+
+            const entranceObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Add visible class for fade-in + slide-up
+                        entry.target.classList.add('visible');
+                        // Stop observing once visible
+                        entranceObserver.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px' // Trigger slightly before fully in view
+            });
+
+            photoCards.forEach(card => entranceObserver.observe(card));
+        }
+
+        // ===== UPLOAD FUNCTIONALITY =====
+        async function uploadPhoto(file, name, message, eventTag) {
+                const uploadBtn = document.getElementById('uploadBtn');
+            const originalText = uploadBtn.textContent;
+
+            try {
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Sharing...';
+
+                const currentPassword = urlParams.get('pass');
                 if (!currentPassword || !validPasswords.includes(currentPassword)) {
-                    throw new Error('Valid password required. Please add ?pass=N2026, ?pass=S2026, or ?pass=T2026 to the URL.');
+                    throw new Error('Valid access required');
                 }
 
-                // Resize image using Canvas API (preserved from original)
                 const resizedBlob = await resizeImage(file);
-                const filename = `${generateUUID()}.jpg`;
-
-                // Upload image to R2 via Worker
                 const formData = new FormData();
-                formData.append('image', resizedBlob, filename);
+                formData.append('image', resizedBlob, `${generateUUID()}.jpg`);
                 formData.append('name', name || 'Anonymous');
                 formData.append('message', message || '');
                 formData.append('eventTag', eventTag);
                 formData.append('pass', currentPassword);
 
-                // Debug log (only on localhost)
-                if (isLocalhost) {
-                    console.log('Uploading with password:', currentPassword);
-                    console.log('Event tag:', eventTag);
-                }
-
-                const response = await fetch(`${WORKER_URL}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
-                    throw new Error(errorData.error || `Upload failed: ${response.statusText}`);
+                    const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+                    throw new Error(error.error || 'Upload failed');
                 }
 
-                const result = await response.json();
-
+                closeModal();
                 document.getElementById('photoForm').reset();
-                document.getElementById('preview').innerHTML = '';
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Upload Photo';
+                document.getElementById('uploadPreview').innerHTML = `
+                    <svg class="upload-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    <p class="upload-zone-text">Tap to select a photo</p>
+                `;
 
-                // Close modal (use window function if available, otherwise close manually)
-                if (typeof window.closeUploadModal === 'function') {
-                    window.closeUploadModal();
-                } else {
-                    document.getElementById('uploadModal').classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                    document.getElementById('hiddenFileInput').value = '';
-                }
-
-                // Reload photos after upload
-                const currentTag = document.querySelector('.folder-card[data-tag="' + eventTag + '"]')?.dataset.tag || eventTag;
-                if (currentTag) {
-                    loadPhotos(currentTag);
-                }
+                await loadPhotosForEvent(eventTag);
             } catch (error) {
                 console.error('Upload error:', error);
-                let errorMessage = 'Error uploading photo: ';
-                if (error.message) {
-                    errorMessage += error.message;
-                } else {
-                    errorMessage += 'Unknown error. Check console for details.';
-                }
-                alert(errorMessage);
-                const uploadBtn = document.getElementById('uploadBtn');
+                alert(`Unable to share: ${error.message}`);
+            } finally {
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Upload Photo';
+                uploadBtn.textContent = originalText;
             }
         }
 
-        async function loadPhotos(selectedTag) {
-            const gallery = document.getElementById('gallery');
-            const folders = document.getElementById('folders');
-            const gallerySection = document.getElementById('gallerySection');
+        // ===== MODAL CONTROL =====
+        function openModal(eventTag) {
+            const config = EVENT_CONFIG[eventTag];
+            if (!config) return;
 
-            // Hide folders, show gallery
-            if (folders) folders.classList.add('hidden');
-            if (gallerySection) gallerySection.classList.remove('hidden');
-
-            applyTheme(selectedTag);
-            gallery.innerHTML = '<div class="text-center py-16 text-theme-secondary">Loading photos...</div>';
-
-            try {
-                // Fetch photos from Worker API
-                const url = selectedTag === 'all'
-                    ? `${WORKER_URL}/photos`
-                    : `${WORKER_URL}/photos?eventTag=${encodeURIComponent(selectedTag)}`;
-
-                // Debug log (only on localhost)
-                if (isLocalhost) {
-                    console.log('Fetching photos from:', url);
-                }
-
-                const response = await fetch(url);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error:', response.status, errorText);
-                    throw new Error(`Failed to load photos: ${response.status} ${response.statusText}`);
-                }
-
-                const photos = await response.json();
-
-                // Debug log (only on localhost)
-                if (isLocalhost) {
-                    console.log('Photos received:', photos);
-                }
-
-                if (!photos || photos.length === 0) {
-                    gallery.innerHTML = '<div class="text-center py-16 text-theme-secondary script-font text-2xl">No photos yet. Be the first to share your memories!</div>';
-                    return;
-                }
-
-                gallery.innerHTML = '';
-                photos.forEach((photo) => {
-                    const photoCard = document.createElement('div');
-                    photoCard.className = 'masonry-item';
-                    photoCard.innerHTML = `
-                        <div class="polaroid-card">
-                            <img src="${photo.url}" alt="Photo" class="w-full h-auto object-cover rounded-sm">
-                            <div class="mt-3 px-2">
-                                <p class="script-font text-lg text-gray-800 font-medium">${photo.name}</p>
-                                ${photo.message ? `<p class="script-font text-sm text-gray-600 mt-1">${photo.message}</p>` : ''}
-                            </div>
-                        </div>
-                    `;
-                    gallery.appendChild(photoCard);
-                });
-            } catch (error) {
-                console.error('Error loading photos:', error);
-                console.error('Error details:', {
-                    message: error.message,
-                    stack: error.stack,
-                    WORKER_URL: WORKER_URL,
-                    isLocalhost: isLocalhost
-                });
-                gallery.innerHTML = `<div class="text-center py-16 text-red-500">Error loading photos: ${error.message || 'Please refresh the page.'}<br><small class="text-xs">Check console for details</small></div>`;
-            }
-        }
-
-        function showFolders() {
-            const folders = document.getElementById('folders');
-            const gallerySection = document.getElementById('gallerySection');
-            if (folders) folders.classList.remove('hidden');
-            if (gallerySection) gallerySection.classList.add('hidden');
-            document.body.className = 'theme-ijab theme-active';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            let currentEventTag = getDefaultEventTag();
-
-            function openUploadModal(file) {
-                document.getElementById('uploadModal').classList.remove('hidden');
+            currentEventTag = eventTag;
+            document.getElementById('hiddenEventTag').value = eventTag;
+            document.getElementById('eventIndicator').textContent = config.label;
+            document.getElementById('uploadModal').classList.add('visible');
                 document.body.style.overflow = 'hidden';
-                updateEventDisplay();
+        }
 
-                if (file) {
-                    const fileInput = document.getElementById('photoFile');
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    fileInput.files = dataTransfer.files;
-
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const preview = document.getElementById('preview');
-                        preview.innerHTML = `
-                            <img src="${event.target.result}" alt="Preview" class="max-w-full max-h-64 object-contain rounded-lg mx-auto">
-                        `;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-
-            function closeUploadModal() {
-                document.getElementById('uploadModal').classList.add('hidden');
-                document.body.style.overflow = 'auto';
-                document.getElementById('photoForm').reset();
-                document.getElementById('preview').innerHTML = '';
+        function closeModal() {
+            document.getElementById('uploadModal').classList.remove('visible');
+            document.body.style.overflow = '';
                 document.getElementById('hiddenFileInput').value = '';
             }
 
-            // Make closeUploadModal accessible globally for uploadPhoto
-            window.closeUploadModal = closeUploadModal;
+        // ===== SCROLL & NAVIGATION =====
+        function setupScrollObserver() {
+            const sections = document.querySelectorAll('.gallery-section');
+            const navItems = document.querySelectorAll('.nav-item');
 
-            function updateEventDisplay() {
-                const eventDisplay = document.getElementById('eventDisplay');
-                const hiddenEventTag = document.getElementById('hiddenEventTag');
-                if (!hasValidPassword) return;
-                hiddenEventTag.value = currentEventTag;
-                eventDisplay.textContent = currentEventTag;
-            }
+            // Track intersection ratios for all sections
+            const sectionVisibility = new Map();
 
-            // Folder cards
-            const folderCards = document.querySelectorAll('.folder-card');
-            folderCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const tag = card.dataset.tag;
-                    currentEventTag = tag;
-                    loadPhotos(tag);
+            const observer = new IntersectionObserver(entries => {
+                // Update visibility map with latest intersection ratios
+                entries.forEach(entry => {
+                    sectionVisibility.set(entry.target, entry.intersectionRatio);
                 });
-            });
 
-            // Back button
-            const backBtn = document.getElementById('backBtn');
-            if (backBtn) {
-                backBtn.addEventListener('click', showFolders);
-            }
+                // Find the section with the highest visibility
+                let maxRatio = 0;
+                let activeSection = null;
 
-            // Debug Panel (localhost only)
-            if (isLocalhost) {
-                const debugPanel = document.createElement('div');
-                debugPanel.className = 'debug-panel';
-                debugPanel.innerHTML = `
-                    <div class="debug-status">Debug Mode: <span id="debugStatus">OFF</span></div>
-                    <button id="debugToggle">Enable Debug</button>
-                    <button id="debugPassN">Pass: N2026</button>
-                    <button id="debugPassS">Pass: S2026</button>
-                    <button id="debugPassT">Pass: T2026</button>
-                `;
-                document.body.appendChild(debugPanel);
+                sectionVisibility.forEach((ratio, section) => {
+                    if (ratio > maxRatio) {
+                        maxRatio = ratio;
+                        activeSection = section;
+                    }
+                });
+
+                // Apply theme for the most visible section (with minimum threshold)
+                if (activeSection && maxRatio > 0.1) {
+                    const theme = activeSection.dataset.theme;
+                    const event = activeSection.dataset.event;
+
+                    if (currentEventTag !== event) {
+                        applyTheme(theme);
+                        currentEventTag = event;
+
+                        navItems.forEach(item => {
+                            item.classList.toggle('active', item.dataset.event === event);
+                        });
+                    }
+                }
+            }, { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] });
+
+            sections.forEach(section => observer.observe(section));
+        }
+
+        // ===== DEBUG PANEL =====
+        function setupDebugPanel() {
+            if (!isLocalhost) return;
+
+            const panel = document.createElement('div');
+            panel.className = 'debug-panel';
+            panel.innerHTML = `
+                <div class="debug-panel-title">Debug</div>
+                <button id="debugToggle" class="${debugMode ? 'active' : ''}">
+                    Debug: ${debugMode ? 'ON' : 'OFF'}
+                </button>
+                <button id="debugN" class="${password === 'N2026' ? 'active' : ''}">N2026</button>
+                <button id="debugS" class="${password === 'S2026' ? 'active' : ''}">S2026</button>
+                <button id="debugT" class="${password === 'T2026' ? 'active' : ''}">T2026</button>
+            `;
+            document.body.appendChild(panel);
 
                 let debugEnabled = debugMode;
-                window.debugMode = debugEnabled; // Make it globally accessible
-                const debugStatus = document.getElementById('debugStatus');
-                const debugToggle = document.getElementById('debugToggle');
-                const debugPassN = document.getElementById('debugPassN');
-                const debugPassS = document.getElementById('debugPassS');
-                const debugPassT = document.getElementById('debugPassT');
+            window.debugMode = debugEnabled;
 
-                // Highlight current password button
-                if (password === 'N2026') debugPassN.classList.add('active');
-                if (password === 'S2026') debugPassS.classList.add('active');
-                if (password === 'T2026') debugPassT.classList.add('active');
-
-                function updateDebugStatus() {
-                    debugStatus.textContent = debugEnabled ? 'ON' : 'OFF';
-                    debugStatus.style.color = debugEnabled ? '#4CAF50' : '#ff5252';
-                    debugToggle.textContent = debugEnabled ? 'Disable Debug' : 'Enable Debug';
-                    debugToggle.classList.toggle('active', debugEnabled);
-
-                    // Update global state
+            document.getElementById('debugToggle').addEventListener('click', () => {
+                debugEnabled = !debugEnabled;
                     window.debugMode = debugEnabled;
+                const btn = document.getElementById('debugToggle');
+                btn.textContent = `Debug: ${debugEnabled ? 'ON' : 'OFF'}`;
+                btn.classList.toggle('active', debugEnabled);
 
-                    // Update URL without reload
                     const url = new URL(window.location);
-                    if (debugEnabled) {
-                        url.searchParams.set('debug', 'true');
-                    } else {
-                        url.searchParams.delete('debug');
-                        url.searchParams.delete('test');
-                    }
+                debugEnabled ? url.searchParams.set('debug', 'true') : url.searchParams.delete('debug');
                     window.history.replaceState({}, '', url);
 
-                    // Re-check FAB visibility
-                    setupFAB();
-                }
+                setupUploadButton();
+            });
 
-                debugToggle.addEventListener('click', () => {
-                    debugEnabled = !debugEnabled;
-                    updateDebugStatus();
-                });
-
-                debugPassN.addEventListener('click', () => {
+            ['N', 'S', 'T'].forEach(code => {
+                document.getElementById(`debug${code}`).addEventListener('click', () => {
                     const url = new URL(window.location);
-                    url.searchParams.set('pass', 'N2026');
+                    url.searchParams.set('pass', `${code}2026`);
                     if (debugEnabled) url.searchParams.set('debug', 'true');
                     window.location.href = url.toString();
                 });
+            });
+        }
 
-                debugPassS.addEventListener('click', () => {
-                    const url = new URL(window.location);
-                    url.searchParams.set('pass', 'S2026');
-                    if (debugEnabled) url.searchParams.set('debug', 'true');
-                    window.location.href = url.toString();
+        // ===== SETUP UPLOAD BUTTON =====
+        function setupUploadButton() {
+            const uploadCta = document.getElementById('uploadCta');
+            const shouldShow = hasValidPassword && (debugMode || isEventDate() || window.debugMode);
+            uploadCta.classList.toggle('hidden', !shouldShow);
+        }
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load all galleries
+            Object.keys(EVENT_CONFIG).forEach(loadPhotosForEvent);
+
+            // Setup scroll observer
+            setupScrollObserver();
+
+            // Setup upload button
+            setupUploadButton();
+
+            // Navigation clicks
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const sectionId = item.dataset.section;
+                    document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
                 });
+            });
 
-                debugPassT.addEventListener('click', () => {
-                    const url = new URL(window.location);
-                    url.searchParams.set('pass', 'T2026');
-                    if (debugEnabled) url.searchParams.set('debug', 'true');
-                    window.location.href = url.toString();
-                });
+            // Upload CTA click
+            document.getElementById('uploadCta').addEventListener('click', () => {
+                document.getElementById('hiddenFileInput').click();
+            });
 
-                updateDebugStatus();
-            }
-
-            // FAB setup function
-            function setupFAB() {
-                const fab = document.getElementById('fab');
-                const hiddenFileInput = document.getElementById('hiddenFileInput');
-
-                // Check if FAB should be visible
-                const shouldShow = hasValidPassword && (debugMode || isEventDate());
-
-                if (shouldShow) {
-                    fab.classList.remove('hidden');
-                    // Only add listeners once
-                    if (!fab.dataset.listenersAdded) {
-                        fab.addEventListener('click', () => {
-                            hiddenFileInput.click();
-                        });
-                        hiddenFileInput.addEventListener('change', (e) => {
+            // Hidden file input change
+            document.getElementById('hiddenFileInput').addEventListener('change', e => {
                             const file = e.target.files[0];
                             if (file) {
-                                openUploadModal(file);
-                            }
-                        });
-                        fab.dataset.listenersAdded = 'true';
-                    }
-                } else {
-                    fab.classList.add('hidden');
-                }
-            }
+                    const eventTag = currentEventTag || getDefaultEventTag();
+                    openModal(eventTag);
 
-            // Initial FAB setup
-            setupFAB();
+                    // Show preview (uncropped)
+                    const reader = new FileReader();
+                    reader.onload = evt => {
+                        document.getElementById('uploadPreview').innerHTML = `
+                            <div class="upload-preview">
+                                <img src="${evt.target.result}" alt="Preview">
+                                <p class="upload-preview-hint">Your photo will appear exactly like this</p>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
 
-            // Modal close handlers
-            document.getElementById('uploadModal').addEventListener('click', (e) => {
-                if (e.target.id === 'uploadModal') {
-                    closeUploadModal();
+                    // Set file to form input
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    document.getElementById('photoFile').files = dataTransfer.files;
                 }
             });
-            document.getElementById('closeModal').addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeUploadModal();
-            });
 
-            if (hasValidPassword) {
-                const defaultEventTag = getDefaultEventTag();
-                if (defaultEventTag) {
-                    currentEventTag = defaultEventTag;
-                }
-            }
-
-            // Drop zone click handler
-            const dropZone = document.getElementById('dropZone');
-            if (dropZone) {
-                dropZone.addEventListener('click', () => {
+            // Upload zone click
+            document.getElementById('uploadZone').addEventListener('click', () => {
                     document.getElementById('photoFile').click();
                 });
-            }
 
-            // File preview
-            document.getElementById('photoFile').addEventListener('change', (e) => {
+            // Photo file change in modal
+            document.getElementById('photoFile').addEventListener('change', e => {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const preview = document.getElementById('preview');
-                        preview.innerHTML = `
-                            <img src="${event.target.result}" alt="Preview" class="max-w-full max-h-64 object-contain rounded-lg mx-auto">
+                    reader.onload = evt => {
+                        document.getElementById('uploadPreview').innerHTML = `
+                            <div class="upload-preview">
+                                <img src="${evt.target.result}" alt="Preview">
+                                <p class="upload-preview-hint">Your photo will appear exactly like this</p>
+                            </div>
                         `;
                     };
                     reader.readAsDataURL(file);
@@ -712,7 +1594,7 @@
             });
 
             // Form submission
-            document.getElementById('photoForm').addEventListener('submit', async (e) => {
+            document.getElementById('photoForm').addEventListener('submit', async e => {
                 e.preventDefault();
                 const file = document.getElementById('photoFile').files[0];
                 const name = document.getElementById('photoName').value.trim();
@@ -724,137 +1606,32 @@
                     return;
                 }
                 if (!eventTag) {
-                    alert('Please select an event');
+                    alert('Event not selected');
                     return;
                 }
+
                 await uploadPhoto(file, name, message, eventTag);
             });
 
-            // Auto-load if coming from folder selection or default
-            const urlTag = urlParams.get('event');
-            if (urlTag && Object.values(EVENT_TAGS).includes(urlTag)) {
-                currentEventTag = urlTag;
-                loadPhotos(urlTag);
-            } else if (currentEventTag) {
-                // Auto-load default event if password is present
-                loadPhotos(currentEventTag);
+            // Modal close handlers
+            document.getElementById('modalBackdrop').addEventListener('click', closeModal);
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+
+            // Debug panel
+            setupDebugPanel();
+
+            // Initial theme based on password
+            if (hasValidPassword) {
+                const defaultEvent = getDefaultEventTag();
+                const config = EVENT_CONFIG[defaultEvent];
+                if (config) {
+                    currentEventTag = defaultEvent;
+                    setTimeout(() => {
+                        document.getElementById(config.section).scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
+                }
             }
         });
     </script>
-</head>
-<body class="theme-ijab theme-active min-h-screen transition-all duration-300">
-    <!-- Header -->
-    <header class="text-center py-8 px-4">
-        <h1 class="text-4xl md:text-5xl font-bold text-theme-primary mb-2">Our Wedding Album</h1>
-        <p class="script-font text-xl md:text-2xl text-theme-secondary">Captured Moments & Cherished Memories</p>
-    </header>
-
-    <!-- Folders View -->
-    <div id="folders" class="container mx-auto px-4 py-8 max-w-6xl">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            <!-- Ijab & Qabul Folder -->
-            <div class="folder-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" data-tag="Ijab & Qabul">
-                <div class="bg-gradient-to-br from-amber-50 to-amber-100 p-8 text-center">
-                    <div class="text-6xl mb-4">📜</div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Ijab & Qabul</h2>
-                    <p class="text-gray-600">February 7, 2026</p>
-                </div>
-            </div>
-
-            <!-- Sanding Folder -->
-            <div class="folder-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" data-tag="Sanding">
-                <div class="bg-gradient-to-br from-red-50 to-red-100 p-8 text-center">
-                    <div class="text-6xl mb-4">💍</div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Sanding</h2>
-                    <p class="text-gray-600">February 8, 2026</p>
-                </div>
-            </div>
-
-            <!-- Tandang Folder -->
-            <div class="folder-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" data-tag="Tandang">
-                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-8 text-center">
-                    <div class="text-6xl mb-4">🎉</div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Tandang</h2>
-                    <p class="text-gray-600">February 14, 2026</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gallery View -->
-    <div id="gallerySection" class="hidden container mx-auto px-4 py-8 max-w-7xl">
-        <div class="flex items-center justify-between mb-8">
-            <button id="backBtn" class="text-theme-primary hover:text-theme-accent transition-colors flex items-center gap-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                <span class="script-font text-xl">Back to Albums</span>
-            </button>
-        </div>
-        <div id="gallery" class="masonry-grid">
-            <!-- Photos will be loaded here -->
-        </div>
-    </div>
-
-    <!-- Hidden File Input -->
-    <input type="file" id="hiddenFileInput" accept="image/*" class="hidden">
-
-    <!-- Floating Action Button -->
-    <button id="fab" class="hidden fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-2xl transition-all hover:scale-110 flex items-center justify-center z-40 bg-theme-accent text-white">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-        </svg>
-    </button>
-
-    <!-- Upload Modal -->
-    <div id="uploadModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 blur-backdrop" style="background-color: rgba(0, 0, 0, 0.5);">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center rounded-t-2xl">
-                <h2 class="text-2xl font-bold text-gray-800">Share Your Memory</h2>
-                <button id="closeModal" class="text-gray-500 hover:text-gray-700 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <form id="photoForm" class="p-6">
-                <!-- Event Display -->
-                <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Uploading to:</label>
-                    <span id="eventDisplay" class="text-xl font-bold text-blue-700"></span>
-                    <input type="hidden" id="hiddenEventTag" required>
-                </div>
-
-                <!-- Drop Zone -->
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">Select Photo</label>
-                    <div id="dropZone" class="drop-zone p-8 text-center cursor-pointer border-theme-accent border-2 border-dashed">
-                        <input type="file" id="photoFile" accept="image/*" class="hidden" required>
-                        <div id="preview" class="flex flex-col items-center justify-center">
-                            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <p class="text-gray-500">Click to select or drag and drop</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-2">Your Name</label>
-                    <input type="text" id="photoName" placeholder="Enter your name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">Message (Optional)</label>
-                    <textarea id="photoMessage" placeholder="Add a message..." rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"></textarea>
-                </div>
-
-                <button type="submit" id="uploadBtn" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all pulse-gentle shadow-lg">
-                    Upload Photo
-                </button>
-            </form>
-        </div>
-    </div>
 </body>
 </html>
