@@ -13,6 +13,10 @@ database_id = "899716a4-be80-4654-9ecf-a01e5ec192f5"
 binding = "PHOTOS_BUCKET"
 bucket_name = "muna-li-zaid-photos"
 
+# Workers AI binding for content moderation
+[ai]
+binding = "AI"
+
 # Routes (for Cloudflare Pages integration)
 # If deploying as a Worker, you can also use routes here
 # routes = [

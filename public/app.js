@@ -128,6 +128,89 @@ function validatePhotoDate(takenAtISO) {
     return { valid: false, eventTag: null };
 }
 
+// ===== MODERATION REJECTION NOTIFICATION =====
+function showModerationRejection(message) {
+    const overlay = document.createElement('div');
+    overlay.className = 'rejection-overlay';
+    overlay.innerHTML = `
+        <div class="rejection-popup">
+            <div class="rejection-icon" style="color: #dc2626;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M15 9l-6 6M9 9l6 6"/>
+                </svg>
+            </div>
+            <p class="rejection-message" style="color: #dc2626;">
+                Oops!
+            </p>
+            <p class="rejection-cta">
+                ${message || "Your message contains content that doesn't match the wedding vibe. Please try a different caption!"}
+            </p>
+            <button class="rejection-close">Try Again</button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    const closePopup = () => {
+        overlay.classList.remove('visible');
+        setTimeout(() => overlay.remove(), 300);
+    };
+
+    overlay.querySelector('.rejection-close').addEventListener('click', closePopup);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePopup();
+    });
+}
+
+// ===== UPLOAD SUCCESS NOTIFICATION =====
+function showUploadSuccess(autoApproved = false) {
+    const overlay = document.createElement('div');
+    overlay.className = 'rejection-overlay';
+
+    // Different messages based on auto-approval status
+    const title = autoApproved ? 'Success!' : 'Thank you!';
+    const message = autoApproved
+        ? 'Your photo is now in the gallery. Scroll down to see it!'
+        : 'Your photo has been sent to the couple for a quick look before it goes live.';
+    const iconColor = autoApproved ? '#16a34a' : 'var(--ink-navy)';
+
+    overlay.innerHTML = `
+        <div class="rejection-popup">
+            <div class="rejection-icon" style="color: ${iconColor};">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 12l2 2 4-4"/>
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+            </div>
+            <p class="rejection-message" style="color: ${iconColor};">
+                ${title}
+            </p>
+            <p class="rejection-cta">
+                ${message}
+            </p>
+            <button class="rejection-close">${autoApproved ? 'Awesome!' : 'Got it'}</button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    const closePopup = () => {
+        overlay.classList.remove('visible');
+        setTimeout(() => overlay.remove(), 300);
+    };
+
+    overlay.querySelector('.rejection-close').addEventListener('click', closePopup);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePopup();
+    });
+
+    // Auto-close after 5 seconds (longer for auto-approved to give time to read)
+    setTimeout(closePopup, autoApproved ? 4000 : 5000);
+}
+
 // ===== REJECTION POPUP =====
 function showRejectionPopup() {
     // Create overlay
@@ -546,11 +629,17 @@ async function uploadPhoto(file, name, message, eventTag) {
         formData.append('takenAt', takenAt); // Send original photo timestamp
 
         const response = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
+        const result = await response.json().catch(() => ({ error: 'Upload failed' }));
 
         if (!response.ok) {
-            const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-            throw new Error(error.error || 'Upload failed');
+            // Check if it's a text moderation rejection (400 with specific code)
+            if (response.status === 400 && result.code === 'TEXT_MODERATION_FAILED') {
+                showModerationRejection(result.error);
+                return;
+            }
+            throw new Error(result.error || 'Upload failed');
         }
+        const autoApproved = result.autoApproved || false;
 
         closeModal();
         document.getElementById('photoForm').reset();
@@ -563,8 +652,13 @@ async function uploadPhoto(file, name, message, eventTag) {
             <p class="upload-zone-text">Tap to select a photo</p>
         `;
 
-        // Reset and reload the gallery for this event
-        await loadPhotosForEvent(eventTag, false);
+        // Show success notification with approval status
+        showUploadSuccess(autoApproved);
+
+        // If auto-approved, refresh the gallery to show the new photo
+        if (autoApproved) {
+            await loadPhotosForEvent(eventTag, false);
+        }
     } catch (error) {
         console.error('Upload error:', error);
         alert(`Unable to share: ${error.message}`);
