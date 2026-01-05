@@ -1,6 +1,9 @@
 # Logs
 *.log
 
+# Wrangler local state (development files)
+.wrangler/
+
 # Node modules
 node_modules/
 

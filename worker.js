@@ -18,7 +18,7 @@ export default {
 
     // Validate password parameter
     const password = url.searchParams.get('pass');
-    const validPasswords = ['L2026', 'T2026'];
+    const validPasswords = ['N2026', 'S2026', 'T2026'];
 
     // Upload endpoint
     if (path === '/api/upload' && method === 'POST') {
@@ -27,6 +27,7 @@ export default {
       const uploadPassword = formData.get('pass');
 
       if (!uploadPassword || !validPasswords.includes(uploadPassword)) {
+        console.error('Password validation failed');
         return new Response(
           JSON.stringify({ error: 'Invalid or missing password' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -66,18 +67,9 @@ export default {
           },
         });
 
-        // Get public URL for the image
-        // Option 1: Serve through Worker (current - works with Pages Functions)
+        // Get public URL for the image - serve through Worker
+        // Use the request origin (works for both local dev and production)
         const imageUrl = `${url.origin}/images/${objectKey}`;
-
-        // Option 2: If using R2.dev public URL, uncomment and replace <account-id>:
-        // const imageUrl = `https://pub-<account-id>.r2.dev/${objectKey}`;
-
-        // Option 3: If using custom domain for R2, uncomment and update:
-        // const imageUrl = `https://your-cdn-domain.com/${objectKey}`;
-
-        // Option 4: If using R2 public bucket with custom domain via Worker route:
-        // const imageUrl = `https://your-worker-domain.com/images/${objectKey}`;
 
         // Save metadata to D1
         const timestamp = new Date().toISOString();
@@ -94,7 +86,7 @@ export default {
       } catch (error) {
         console.error('Upload error:', error);
         return new Response(
-          JSON.stringify({ error: 'Upload failed', details: error.message }),
+          JSON.stringify({ error: 'Upload failed' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -118,14 +110,26 @@ export default {
 
         const result = await env.DB.prepare(query).bind(...params).all();
 
+        // Transform image URLs for localhost if running locally
+        const photos = (result.results || []).map(photo => {
+          if (photo.url && (url.hostname === 'localhost' || url.hostname === '127.0.0.1')) {
+            // Replace production URL with localhost URL
+            photo.url = photo.url.replace(
+              'https://wedding-gallery-api.zaidhuda.workers.dev',
+              url.origin
+            );
+          }
+          return photo;
+        });
+
         return new Response(
-          JSON.stringify(result.results || []),
+          JSON.stringify(photos),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       } catch (error) {
         console.error('Fetch photos error:', error);
         return new Response(
-          JSON.stringify({ error: 'Failed to fetch photos', details: error.message }),
+          JSON.stringify({ error: 'Failed to fetch photos' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }

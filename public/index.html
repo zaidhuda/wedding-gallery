@@ -164,15 +164,66 @@
         .text-theme-accent {
             color: var(--accent);
         }
+
+        /* Debug Panel (localhost only) */
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .debug-panel button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            margin: 4px 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background 0.2s;
+        }
+
+        .debug-panel button:hover {
+            background: #45a049;
+        }
+
+        .debug-panel button.active {
+            background: #2196F3;
+        }
+
+        .debug-panel button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .debug-status {
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
     </style>
     <script>
-        // Cloudflare Worker API endpoint - Update this to your Worker URL
-        const WORKER_URL = '/api'; // Relative path for Cloudflare Pages, or use full URL like 'https://your-worker.your-subdomain.workers.dev'
+        // Cloudflare Worker API endpoint
+        // Use local dev server when running wrangler dev, otherwise use production
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const WORKER_URL = isLocalhost
+            ? 'http://localhost:8787/api'  // Local dev server
+            : 'https://wedding-gallery-api.zaidhuda.workers.dev/api';  // Production
 
-        const validPasswords = ['L2026', 'T2026'];
+        const validPasswords = ['N2026', 'S2026', 'T2026'];
         const urlParams = new URLSearchParams(window.location.search);
         const password = urlParams.get('pass');
         const hasValidPassword = validPasswords.includes(password);
+        // Debug mode only works on localhost for security
+        const debugMode = isLocalhost && (urlParams.get('debug') === 'true' || urlParams.get('test') === 'true');
 
         const EVENT_TAGS = {
             IJAB_QABUL: 'Ijab & Qabul',
@@ -183,7 +234,7 @@
         const EVENT_DATES = {
             'Ijab & Qabul': 'February 7, 2026',
             'Sanding': 'February 8, 2026',
-            'Tandang': 'February 9, 2026'
+            'Tandang': 'February 14, 2026'
         };
 
         const EVENT_THEMES = {
@@ -195,22 +246,40 @@
         function getDefaultEventTag() {
             if (!hasValidPassword) return null;
 
-            const today = new Date();
-            const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-            const feb7_2026 = new Date(Date.UTC(2026, 1, 7));
-            const feb8_2026 = new Date(Date.UTC(2026, 1, 8));
-
-            if (password === 'L2026') {
-                if (todayDate >= feb7_2026 && todayDate < feb8_2026) {
-                    return EVENT_TAGS.IJAB_QABUL;
-                } else if (todayDate >= feb8_2026) {
-                    return EVENT_TAGS.SANDING;
-                }
+            if (password === 'N2026') {
                 return EVENT_TAGS.IJAB_QABUL;
+            } else if (password === 'S2026') {
+                return EVENT_TAGS.SANDING;
             } else if (password === 'T2026') {
                 return EVENT_TAGS.TANDANG;
             }
             return null;
+        }
+
+        function isEventDate() {
+            if (!hasValidPassword) return false;
+
+            // Debug mode: bypass date check for local testing
+            // Check both local debugMode and global window.debugMode (for dynamic updates)
+            if (debugMode || (isLocalhost && window.debugMode)) return true;
+
+            const today = new Date();
+            const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+            const feb7_2026 = new Date(Date.UTC(2026, 1, 7));
+            const feb8_2026 = new Date(Date.UTC(2026, 1, 8));
+            const feb14_2026 = new Date(Date.UTC(2026, 1, 14));
+
+            if (password === 'N2026') {
+                // N2026 is valid only on Feb 7
+                return todayDate.getTime() === feb7_2026.getTime();
+            } else if (password === 'S2026') {
+                // S2026 is valid only on Feb 8
+                return todayDate.getTime() === feb8_2026.getTime();
+            } else if (password === 'T2026') {
+                // T2026 is valid only on Feb 14
+                return todayDate.getTime() === feb14_2026.getTime();
+            }
+            return false;
         }
 
         function applyTheme(eventTag) {
@@ -284,6 +353,12 @@
                 uploadBtn.disabled = true;
                 uploadBtn.textContent = 'Uploading...';
 
+                // Get password from URL (in case it changed)
+                const currentPassword = new URLSearchParams(window.location.search).get('pass');
+                if (!currentPassword || !validPasswords.includes(currentPassword)) {
+                    throw new Error('Valid password required. Please add ?pass=N2026, ?pass=S2026, or ?pass=T2026 to the URL.');
+                }
+
                 // Resize image using Canvas API (preserved from original)
                 const resizedBlob = await resizeImage(file);
                 const filename = `${generateUUID()}.jpg`;
@@ -294,7 +369,13 @@
                 formData.append('name', name || 'Anonymous');
                 formData.append('message', message || '');
                 formData.append('eventTag', eventTag);
-                formData.append('pass', password || '');
+                formData.append('pass', currentPassword);
+
+                // Debug log (only on localhost)
+                if (isLocalhost) {
+                    console.log('Uploading with password:', currentPassword);
+                    console.log('Event tag:', eventTag);
+                }
 
                 const response = await fetch(`${WORKER_URL}/upload`, {
                     method: 'POST',
@@ -312,8 +393,15 @@
                 document.getElementById('preview').innerHTML = '';
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = 'Upload Photo';
-                closeUploadModal();
-                alert('Photo uploaded successfully!');
+
+                // Close modal (use window function if available, otherwise close manually)
+                if (typeof window.closeUploadModal === 'function') {
+                    window.closeUploadModal();
+                } else {
+                    document.getElementById('uploadModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                    document.getElementById('hiddenFileInput').value = '';
+                }
 
                 // Reload photos after upload
                 const currentTag = document.querySelector('.folder-card[data-tag="' + eventTag + '"]')?.dataset.tag || eventTag;
@@ -353,13 +441,25 @@
                     ? `${WORKER_URL}/photos`
                     : `${WORKER_URL}/photos?eventTag=${encodeURIComponent(selectedTag)}`;
 
+                // Debug log (only on localhost)
+                if (isLocalhost) {
+                    console.log('Fetching photos from:', url);
+                }
+
                 const response = await fetch(url);
 
                 if (!response.ok) {
-                    throw new Error(`Failed to load photos: ${response.statusText}`);
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error(`Failed to load photos: ${response.status} ${response.statusText}`);
                 }
 
                 const photos = await response.json();
+
+                // Debug log (only on localhost)
+                if (isLocalhost) {
+                    console.log('Photos received:', photos);
+                }
 
                 if (!photos || photos.length === 0) {
                     gallery.innerHTML = '<div class="text-center py-16 text-theme-secondary script-font text-2xl">No photos yet. Be the first to share your memories!</div>';
@@ -383,7 +483,13 @@
                 });
             } catch (error) {
                 console.error('Error loading photos:', error);
-                gallery.innerHTML = `<div class="text-center py-16 text-red-500">Error loading photos: ${error.message || 'Please refresh the page.'}</div>`;
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    WORKER_URL: WORKER_URL,
+                    isLocalhost: isLocalhost
+                });
+                gallery.innerHTML = `<div class="text-center py-16 text-red-500">Error loading photos: ${error.message || 'Please refresh the page.'}<br><small class="text-xs">Check console for details</small></div>`;
             }
         }
 
@@ -428,6 +534,9 @@
                 document.getElementById('hiddenFileInput').value = '';
             }
 
+            // Make closeUploadModal accessible globally for uploadPhoto
+            window.closeUploadModal = closeUploadModal;
+
             function updateEventDisplay() {
                 const eventDisplay = document.getElementById('eventDisplay');
                 const hiddenEventTag = document.getElementById('hiddenEventTag');
@@ -452,21 +561,114 @@
                 backBtn.addEventListener('click', showFolders);
             }
 
-            // FAB
-            if (hasValidPassword) {
+            // Debug Panel (localhost only)
+            if (isLocalhost) {
+                const debugPanel = document.createElement('div');
+                debugPanel.className = 'debug-panel';
+                debugPanel.innerHTML = `
+                    <div class="debug-status">Debug Mode: <span id="debugStatus">OFF</span></div>
+                    <button id="debugToggle">Enable Debug</button>
+                    <button id="debugPassN">Pass: N2026</button>
+                    <button id="debugPassS">Pass: S2026</button>
+                    <button id="debugPassT">Pass: T2026</button>
+                `;
+                document.body.appendChild(debugPanel);
+
+                let debugEnabled = debugMode;
+                window.debugMode = debugEnabled; // Make it globally accessible
+                const debugStatus = document.getElementById('debugStatus');
+                const debugToggle = document.getElementById('debugToggle');
+                const debugPassN = document.getElementById('debugPassN');
+                const debugPassS = document.getElementById('debugPassS');
+                const debugPassT = document.getElementById('debugPassT');
+
+                // Highlight current password button
+                if (password === 'N2026') debugPassN.classList.add('active');
+                if (password === 'S2026') debugPassS.classList.add('active');
+                if (password === 'T2026') debugPassT.classList.add('active');
+
+                function updateDebugStatus() {
+                    debugStatus.textContent = debugEnabled ? 'ON' : 'OFF';
+                    debugStatus.style.color = debugEnabled ? '#4CAF50' : '#ff5252';
+                    debugToggle.textContent = debugEnabled ? 'Disable Debug' : 'Enable Debug';
+                    debugToggle.classList.toggle('active', debugEnabled);
+
+                    // Update global state
+                    window.debugMode = debugEnabled;
+
+                    // Update URL without reload
+                    const url = new URL(window.location);
+                    if (debugEnabled) {
+                        url.searchParams.set('debug', 'true');
+                    } else {
+                        url.searchParams.delete('debug');
+                        url.searchParams.delete('test');
+                    }
+                    window.history.replaceState({}, '', url);
+
+                    // Re-check FAB visibility
+                    setupFAB();
+                }
+
+                debugToggle.addEventListener('click', () => {
+                    debugEnabled = !debugEnabled;
+                    updateDebugStatus();
+                });
+
+                debugPassN.addEventListener('click', () => {
+                    const url = new URL(window.location);
+                    url.searchParams.set('pass', 'N2026');
+                    if (debugEnabled) url.searchParams.set('debug', 'true');
+                    window.location.href = url.toString();
+                });
+
+                debugPassS.addEventListener('click', () => {
+                    const url = new URL(window.location);
+                    url.searchParams.set('pass', 'S2026');
+                    if (debugEnabled) url.searchParams.set('debug', 'true');
+                    window.location.href = url.toString();
+                });
+
+                debugPassT.addEventListener('click', () => {
+                    const url = new URL(window.location);
+                    url.searchParams.set('pass', 'T2026');
+                    if (debugEnabled) url.searchParams.set('debug', 'true');
+                    window.location.href = url.toString();
+                });
+
+                updateDebugStatus();
+            }
+
+            // FAB setup function
+            function setupFAB() {
                 const fab = document.getElementById('fab');
                 const hiddenFileInput = document.getElementById('hiddenFileInput');
-                fab.classList.remove('hidden');
-                fab.addEventListener('click', () => {
-                    hiddenFileInput.click();
-                });
-                hiddenFileInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        openUploadModal(file);
+
+                // Check if FAB should be visible
+                const shouldShow = hasValidPassword && (debugMode || isEventDate());
+
+                if (shouldShow) {
+                    fab.classList.remove('hidden');
+                    // Only add listeners once
+                    if (!fab.dataset.listenersAdded) {
+                        fab.addEventListener('click', () => {
+                            hiddenFileInput.click();
+                        });
+                        hiddenFileInput.addEventListener('change', (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                openUploadModal(file);
+                            }
+                        });
+                        fab.dataset.listenersAdded = 'true';
                     }
-                });
+                } else {
+                    fab.classList.add('hidden');
+                }
             }
+
+            // Initial FAB setup
+            setupFAB();
 
             // Modal close handlers
             document.getElementById('uploadModal').addEventListener('click', (e) => {
@@ -573,7 +775,7 @@
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-8 text-center">
                     <div class="text-6xl mb-4">🎉</div>
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Tandang</h2>
-                    <p class="text-gray-600">February 9, 2026</p>
+                    <p class="text-gray-600">February 14, 2026</p>
                 </div>
             </div>
         </div>
