@@ -82,7 +82,18 @@ function generateUUID() {
     });
 }
 
-async function resizeImage(file) {
+// Check if browser supports WebP encoding
+function supportsWebP() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+}
+
+// Cache the result since it won't change during session
+const webpSupported = supportsWebP();
+
+async function resizeImage(file, statusCallback = null) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = e => {
@@ -108,7 +119,25 @@ async function resizeImage(file) {
                 canvas.width = width;
                 canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Failed to convert')), 'image/jpeg', 0.8);
+
+                // Determine format based on browser support
+                const format = webpSupported ? 'image/webp' : 'image/jpeg';
+                const extension = webpSupported ? '.webp' : '.jpg';
+
+                // Show status for WebP conversion (can take a moment for large images)
+                if (statusCallback) {
+                    statusCallback(webpSupported
+                        ? 'Creating high-quality WebP memory...'
+                        : 'Optimizing your photo...');
+                }
+
+                canvas.toBlob(
+                    blob => blob
+                        ? resolve({ blob, format, extension })
+                        : reject(new Error('Failed to convert')),
+                    format,
+                    0.8
+                );
             };
             img.onerror = reject;
             img.src = e.target.result;
@@ -183,14 +212,28 @@ async function loadPhotosForEvent(eventTag, append = false) {
     }
 }
 
+// Add Cloudflare Image Resizing params for optimal format delivery
+function getOptimizedImageUrl(url) {
+    if (!url) return url;
+    // For Cloudflare Image Resizing: format=auto serves WebP/AVIF based on browser support
+    // Only apply to production URLs (not localhost)
+    if (url.includes('workers.dev') || url.includes('zaidhuda.com')) {
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}format=auto`;
+    }
+    return url;
+}
+
 function createPhotoCard(photo) {
     const hasCaption = photo.name || photo.message;
     const card = document.createElement('div');
     card.className = `photo-card${hasCaption ? '' : ' no-caption'}`;
 
+    const optimizedUrl = getOptimizedImageUrl(photo.url);
+
     card.innerHTML = `
         <div class="photo-item">
-            <img src="${photo.url}" alt="Memory shared by ${photo.name || 'Guest'}" loading="lazy">
+            <img src="${optimizedUrl}" alt="Memory shared by ${photo.name || 'Guest'}" loading="lazy">
         </div>
         <div class="photo-caption">
             ${photo.name ? `<p class="photo-name">${photo.name}</p>` : ''}
@@ -316,20 +359,26 @@ async function uploadPhoto(file, name, message, eventTag) {
 
     try {
         uploadBtn.disabled = true;
-        uploadBtn.textContent = 'Sharing...';
 
         const currentPassword = urlParams.get('pass');
         if (!currentPassword || !validPasswords.includes(currentPassword)) {
             throw new Error('Valid access required');
         }
 
-        const resizedBlob = await resizeImage(file);
+        // Resize and compress with status updates
+        const { blob, format, extension } = await resizeImage(file, (status) => {
+            uploadBtn.textContent = status;
+        });
+
+        uploadBtn.textContent = 'Sharing...';
+
         const formData = new FormData();
-        formData.append('image', resizedBlob, `${generateUUID()}.jpg`);
+        formData.append('image', blob, `${generateUUID()}${extension}`);
         formData.append('name', name || 'Anonymous');
         formData.append('message', message || '');
         formData.append('eventTag', eventTag);
         formData.append('pass', currentPassword);
+        formData.append('format', format); // Send format to worker
 
         const response = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
 

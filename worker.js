@@ -56,14 +56,18 @@ export default {
           );
         }
 
-        // Generate unique filename
-        const filename = `${crypto.randomUUID()}.jpg`;
+        // Get format from client (defaults to jpeg for backwards compatibility)
+        const format = formData.get('format') || 'image/jpeg';
+        const extension = format === 'image/webp' ? '.webp' : '.jpg';
+
+        // Generate unique filename with correct extension
+        const filename = `${crypto.randomUUID()}${extension}`;
         const objectKey = `photos/${filename}`;
 
-        // Upload to R2
+        // Upload to R2 with correct content type
         await env.PHOTOS_BUCKET.put(objectKey, image, {
           httpMetadata: {
-            contentType: 'image/jpeg',
+            contentType: format,
           },
         });
 
