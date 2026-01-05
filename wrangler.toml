@@ -1,4 +1,4 @@
-name = "wedding-gallery-api"
+name = "wedding-gallery"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 

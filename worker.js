@@ -92,30 +92,47 @@ export default {
       }
     }
 
-    // Get photos endpoint
+    // Get photos endpoint with pagination
     if (path === '/api/photos' && method === 'GET') {
       try {
         const eventTag = url.searchParams.get('eventTag');
+        const limit = parseInt(url.searchParams.get('limit')) || 12;
+        const offset = parseInt(url.searchParams.get('offset')) || 0;
 
         let query;
+        let countQuery;
         let params;
 
         if (eventTag) {
-          query = 'SELECT * FROM photos WHERE eventTag = ? ORDER BY timestamp DESC';
-          params = [eventTag];
+          // Fetch one extra to check if there are more
+          query = 'SELECT * FROM photos WHERE eventTag = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?';
+          countQuery = 'SELECT COUNT(*) as total FROM photos WHERE eventTag = ?';
+          params = [eventTag, limit + 1, offset];
         } else {
-          query = 'SELECT * FROM photos ORDER BY timestamp DESC';
-          params = [];
+          query = 'SELECT * FROM photos ORDER BY timestamp DESC LIMIT ? OFFSET ?';
+          countQuery = 'SELECT COUNT(*) as total FROM photos';
+          params = [limit + 1, offset];
         }
 
         const result = await env.DB.prepare(query).bind(...params).all();
+        const countResult = eventTag
+          ? await env.DB.prepare(countQuery).bind(eventTag).first()
+          : await env.DB.prepare(countQuery).first();
+
+        const photos = result.results || [];
+        const hasMore = photos.length > limit;
+
+        // Remove the extra item we fetched for checking
+        if (hasMore) {
+          photos.pop();
+        }
 
         // Transform image URLs for localhost if running locally
-        const photos = (result.results || []).map(photo => {
+        const transformedPhotos = photos.map(photo => {
           if (photo.url && (url.hostname === 'localhost' || url.hostname === '127.0.0.1')) {
             // Replace production URL with localhost URL
             photo.url = photo.url.replace(
-              'https://wedding-gallery-api.zaidhuda.workers.dev',
+              'https://wedding-gallery.zaidhuda.workers.dev',
               url.origin
             );
           }
@@ -123,7 +140,13 @@ export default {
         });
 
         return new Response(
-          JSON.stringify(photos),
+          JSON.stringify({
+            photos: transformedPhotos,
+            hasMore,
+            total: countResult?.total || 0,
+            limit,
+            offset
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       } catch (error) {
