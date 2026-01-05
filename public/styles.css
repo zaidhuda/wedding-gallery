@@ -20,11 +20,11 @@
     --sanding-accent: #C9A227;
 
     /* Tandang - Journey */
-    --tandang-bg: #E8F4F8;
-    --tandang-bg-alt: #D6EBF2;
-    --tandang-text: #1E3A4F;
-    --tandang-text-soft: #4A6B7C;
-    --tandang-accent: #8FB8C9;
+    --tandang-bg: #E0F2FE;
+    --tandang-bg-alt: #B3E5FC;
+    --tandang-text: #0277BD;
+    --tandang-text-soft: #0288D1;
+    --tandang-accent: #4FC3F7;
 
     /* Handwriting Ink Colors */
     --ink-navy: #1a365d;
@@ -107,8 +107,8 @@ body.theme-sanding .hero::before {
 }
 
 body.theme-tandang .hero::before {
-    background: radial-gradient(ellipse at 30% 20%, rgba(143, 184, 201, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(143, 184, 201, 0.1) 0%, transparent 50%);
+    background: radial-gradient(ellipse at 30% 20%, rgba(79, 195, 247, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
 }
 
 .hero-content {
@@ -375,7 +375,7 @@ body.theme-sanding .film-stamp {
 
 .film-stamp-journey,
 body.theme-tandang .film-stamp {
-    color: #2C4A5E; /* Deep Navy for Journey */
+    color: #0288D1; /* Baby blue for Journey */
 }
 
 /* Theme-specific handwriting colors - Night (Off-white theme) */
@@ -394,12 +394,12 @@ body.theme-sanding .photo-message {
     color: var(--sanding-text-soft); /* Warm cream #D4C4B0 */
 }
 
-/* Theme-specific handwriting colors - Journey (Cool blue theme) */
+/* Theme-specific handwriting colors - Journey (Baby blue theme) */
 body.theme-tandang .photo-name {
-    color: var(--tandang-text); /* Deep navy #1E3A4F */
+    color: var(--tandang-text); /* Medium blue #0277BD */
 }
 body.theme-tandang .photo-message {
-    color: var(--tandang-text-soft); /* Soft slate #4A6B7C */
+    color: var(--tandang-text-soft); /* Light blue #0288D1 */
 }
 
 /* Photo card without caption (anonymous, no message) */
@@ -605,17 +605,17 @@ body.theme-sanding .load-more-text {
 
 /* Theme-specific Load More styles - Journey (Blue) */
 body.theme-tandang .load-more-content {
-    background: rgba(143, 184, 201, 0.1);
-    border-color: rgba(143, 184, 201, 0.3);
+    background: rgba(79, 195, 247, 0.1);
+    border-color: rgba(79, 195, 247, 0.3);
 }
 
 body.theme-tandang .load-more-content:hover {
-    background: rgba(143, 184, 201, 0.15);
-    border-color: rgba(143, 184, 201, 0.45);
+    background: rgba(79, 195, 247, 0.15);
+    border-color: rgba(79, 195, 247, 0.45);
 }
 
 body.theme-tandang .load-more-icon {
-    background: rgba(143, 184, 201, 0.2);
+    background: rgba(79, 195, 247, 0.2);
 }
 
 body.theme-tandang .load-more-icon svg {
@@ -675,7 +675,7 @@ body.theme-sanding .floating-nav {
 
 body.theme-tandang .floating-nav {
     background: rgba(255, 255, 255, 0.5);
-    border-color: rgba(143, 184, 201, 0.3);
+    border-color: rgba(79, 195, 247, 0.3);
 }
 
 .nav-item {
@@ -827,7 +827,7 @@ body.theme-sanding .modal-content {
 
 body.theme-tandang .modal-content {
     background: rgba(232, 244, 248, 0.98);
-    border-color: rgba(143, 184, 201, 0.5);
+    border-color: rgba(79, 195, 247, 0.5);
     border-radius: 32px;
 }
 
@@ -926,8 +926,8 @@ body.theme-sanding .upload-zone:hover {
 }
 
 body.theme-tandang .upload-zone {
-    border-color: rgba(143, 184, 201, 0.5);
-    background: rgba(143, 184, 201, 0.1);
+    border-color: rgba(79, 195, 247, 0.5);
+    background: rgba(79, 195, 247, 0.1);
     border-radius: 24px;
 }
 
@@ -1073,7 +1073,7 @@ body.theme-sanding .form-input::placeholder {
 
 body.theme-tandang .form-input {
     background: white;
-    border-color: rgba(143, 184, 201, 0.3);
+    border-color: rgba(79, 195, 247, 0.3);
     border-radius: 16px;
 }
 
@@ -1150,7 +1150,7 @@ body.theme-sanding .event-indicator {
 }
 
 body.theme-tandang .event-indicator {
-    background: rgba(143, 184, 201, 0.3);
+    background: rgba(79, 195, 247, 0.3);
     color: var(--tandang-text);
 }
 
