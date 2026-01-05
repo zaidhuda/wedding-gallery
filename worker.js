@@ -16,9 +16,8 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Validate password parameter
-    const password = url.searchParams.get('pass');
-    const validPasswords = ['N2026', 'S2026', 'T2026'];
+    // Single guest password for access control
+    const GUEST_PASSWORD = 'ZM2026';
 
     // Upload endpoint
     if (path === '/api/upload' && method === 'POST') {
@@ -26,7 +25,7 @@ export default {
       const formData = await request.formData();
       const uploadPassword = formData.get('pass');
 
-      if (!uploadPassword || !validPasswords.includes(uploadPassword)) {
+      if (uploadPassword !== GUEST_PASSWORD) {
         console.error('Password validation failed');
         return new Response(
           JSON.stringify({ error: 'Invalid or missing password' }),

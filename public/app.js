@@ -4,39 +4,39 @@ const WORKER_URL = isLocalhost
     ? 'http://localhost:8787/api'
     : 'https://wedding-gallery.zaidhuda.workers.dev/api';
 
-const validPasswords = ['N2026', 'S2026', 'T2026'];
+const GUEST_PASSWORD = 'ZM2026';
+const STORAGE_KEY = 'wedding_gallery_access';
+
+// Check URL param first, then localStorage
 const urlParams = new URLSearchParams(window.location.search);
-const password = urlParams.get('pass');
-const hasValidPassword = validPasswords.includes(password);
-const debugMode = isLocalhost && (urlParams.get('debug') === 'true' || urlParams.get('test') === 'true');
+const urlPassword = urlParams.get('pass');
+const storedPassword = localStorage.getItem(STORAGE_KEY);
+const hasValidPassword = urlPassword === GUEST_PASSWORD || storedPassword === GUEST_PASSWORD;
+
+// Save to localStorage if valid password in URL
+if (urlPassword === GUEST_PASSWORD) {
+    localStorage.setItem(STORAGE_KEY, GUEST_PASSWORD);
+}
+
+// ===== EXPIRATION & TEST MODE =====
+// After March 1, 2026: Gallery becomes static (no uploads)
+const isExpired = new Date() > new Date('2026-03-01');
+// Test mode bypasses date validation for production testing
+const isTestMode = urlParams.get('mode') === 'test';
+
+// Wedding event dates for smart-sort (February 2026)
+const WEDDING_DATES = {
+    7: 'Ijab & Qabul',   // Night
+    8: 'Sanding',        // Grandeur
+    14: 'Tandang'        // Journey
+};
 
 const PHOTOS_PER_PAGE = 12;
 
 const EVENT_CONFIG = {
-    'Ijab & Qabul': {
-        theme: 'ijab',
-        section: 'section-night',
-        gallery: 'gallery-ijab',
-        label: 'Night',
-        date: 'February 7, 2026',
-        password: 'N2026'
-    },
-    'Sanding': {
-        theme: 'sanding',
-        section: 'section-grandeur',
-        gallery: 'gallery-sanding',
-        label: 'Grandeur',
-        date: 'February 8, 2026',
-        password: 'S2026'
-    },
-    'Tandang': {
-        theme: 'tandang',
-        section: 'section-journey',
-        gallery: 'gallery-tandang',
-        label: 'Journey',
-        date: 'February 14, 2026',
-        password: 'T2026'
-    }
+    'Ijab & Qabul': { theme: 'ijab', section: 'section-night', gallery: 'gallery-ijab', label: 'Night' },
+    'Sanding': { theme: 'sanding', section: 'section-grandeur', gallery: 'gallery-sanding', label: 'Grandeur' },
+    'Tandang': { theme: 'tandang', section: 'section-journey', gallery: 'gallery-tandang', label: 'Journey' }
 };
 
 // Pagination state for each gallery
@@ -47,32 +47,10 @@ const galleryState = {
 };
 
 let currentEventTag = null;
-let currentTheme = 'ijab';
 
 // ===== UTILITY FUNCTIONS =====
-function getDefaultEventTag() {
-    if (!hasValidPassword) return 'Ijab & Qabul';
-    const passwordMap = { 'N2026': 'Ijab & Qabul', 'S2026': 'Sanding', 'T2026': 'Tandang' };
-    return passwordMap[password] || 'Ijab & Qabul';
-}
-
-function isEventDate() {
-    if (!hasValidPassword) return false;
-    if (debugMode || (isLocalhost && window.debugMode)) return true;
-
-    const today = new Date();
-    const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-    const eventDates = {
-        'N2026': new Date(Date.UTC(2026, 1, 7)),
-        'S2026': new Date(Date.UTC(2026, 1, 8)),
-        'T2026': new Date(Date.UTC(2026, 1, 14))
-    };
-    return eventDates[password] && todayDate.getTime() === eventDates[password].getTime();
-}
-
 function applyTheme(theme) {
     document.body.className = `theme-${theme}`;
-    currentTheme = theme;
 }
 
 function generateUUID() {
@@ -132,6 +110,118 @@ async function extractPhotoTimestamp(file) {
     // Priority 3: Current timestamp (absolute fallback)
     console.log('Using current timestamp as fallback');
     return new Date().toISOString();
+}
+
+// ===== SMART-SORT DATE VALIDATION =====
+// Validates photo date and assigns to correct event bucket
+function validatePhotoDate(takenAtISO) {
+    const photoDate = new Date(takenAtISO);
+    const year = photoDate.getFullYear();
+    const month = photoDate.getMonth(); // 0-indexed (1 = February)
+    const day = photoDate.getDate();
+
+    // Check if photo is from February 2026 and on a valid wedding date
+    if (year === 2026 && month === 1 && WEDDING_DATES[day]) {
+        return { valid: true, eventTag: WEDDING_DATES[day] };
+    }
+
+    return { valid: false, eventTag: null };
+}
+
+// ===== REJECTION POPUP =====
+function showRejectionPopup() {
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'rejection-overlay';
+    overlay.innerHTML = `
+        <div class="rejection-popup">
+            <div class="rejection-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    <path d="M12 11v4M12 17h.01"/>
+                </svg>
+            </div>
+            <p class="rejection-message">
+                This photo doesn't seem to be from our wedding dates
+                <span class="rejection-dates">(Feb 7, 8, or 14)</span>
+            </p>
+            <p class="rejection-cta">Please pick a memory from the celebrations!</p>
+            <button class="rejection-close">Got it</button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Animate in
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    // Close handlers
+    const closePopup = () => {
+        overlay.classList.remove('visible');
+        setTimeout(() => overlay.remove(), 300);
+    };
+
+    overlay.querySelector('.rejection-close').addEventListener('click', closePopup);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePopup();
+    });
+}
+
+// ===== TEST MODE EVENT SELECTOR =====
+function showTestModeSelector() {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'test-selector-overlay';
+        overlay.innerHTML = `
+            <div class="test-selector-popup">
+                <div class="test-selector-header">
+                    <span class="test-badge">TEST MODE</span>
+                    <p class="test-title">Select Event Bucket</p>
+                </div>
+                <div class="test-selector-options">
+                    <button class="test-option" data-event="Ijab & Qabul" data-label="Night">
+                        <span class="test-option-emoji">🌙</span>
+                        <span class="test-option-label">Night</span>
+                        <span class="test-option-date">Feb 7</span>
+                    </button>
+                    <button class="test-option" data-event="Sanding" data-label="Grandeur">
+                        <span class="test-option-emoji">👑</span>
+                        <span class="test-option-label">Grandeur</span>
+                        <span class="test-option-date">Feb 8</span>
+                    </button>
+                    <button class="test-option" data-event="Tandang" data-label="Journey">
+                        <span class="test-option-emoji">🚗</span>
+                        <span class="test-option-label">Journey</span>
+                        <span class="test-option-date">Feb 14</span>
+                    </button>
+                </div>
+                <button class="test-cancel">Cancel</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('visible'));
+
+        const closePopup = (result) => {
+            overlay.classList.remove('visible');
+            setTimeout(() => overlay.remove(), 300);
+            resolve(result);
+        };
+
+        overlay.querySelectorAll('.test-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                closePopup({
+                    eventTag: btn.dataset.event,
+                    label: btn.dataset.label
+                });
+            });
+        });
+
+        overlay.querySelector('.test-cancel').addEventListener('click', () => closePopup(null));
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closePopup(null);
+        });
+    });
 }
 
 async function resizeImage(file, statusCallback = null) {
@@ -430,8 +520,9 @@ async function uploadPhoto(file, name, message, eventTag) {
         uploadBtn.disabled = true;
         uploadBtn.textContent = 'Reading photo data...';
 
-        const currentPassword = urlParams.get('pass');
-        if (!currentPassword || !validPasswords.includes(currentPassword)) {
+        // Get password from URL or localStorage
+        const currentPassword = urlParams.get('pass') || localStorage.getItem(STORAGE_KEY);
+        if (currentPassword !== GUEST_PASSWORD) {
             throw new Error('Valid access required');
         }
 
@@ -545,54 +636,26 @@ function setupScrollObserver() {
     sections.forEach(section => observer.observe(section));
 }
 
-// ===== DEBUG PANEL =====
-function setupDebugPanel() {
-    if (!isLocalhost) return;
-
-    const panel = document.createElement('div');
-    panel.className = 'debug-panel';
-    panel.innerHTML = `
-        <div class="debug-panel-title">Debug</div>
-        <button id="debugToggle" class="${debugMode ? 'active' : ''}">
-            Debug: ${debugMode ? 'ON' : 'OFF'}
-        </button>
-        <button id="debugN" class="${password === 'N2026' ? 'active' : ''}">N2026</button>
-        <button id="debugS" class="${password === 'S2026' ? 'active' : ''}">S2026</button>
-        <button id="debugT" class="${password === 'T2026' ? 'active' : ''}">T2026</button>
-    `;
-    document.body.appendChild(panel);
-
-    let debugEnabled = debugMode;
-    window.debugMode = debugEnabled;
-
-    document.getElementById('debugToggle').addEventListener('click', () => {
-        debugEnabled = !debugEnabled;
-        window.debugMode = debugEnabled;
-        const btn = document.getElementById('debugToggle');
-        btn.textContent = `Debug: ${debugEnabled ? 'ON' : 'OFF'}`;
-        btn.classList.toggle('active', debugEnabled);
-
-        const url = new URL(window.location);
-        debugEnabled ? url.searchParams.set('debug', 'true') : url.searchParams.delete('debug');
-        window.history.replaceState({}, '', url);
-
-        setupUploadButton();
-    });
-
-    ['N', 'S', 'T'].forEach(code => {
-        document.getElementById(`debug${code}`).addEventListener('click', () => {
-            const url = new URL(window.location);
-            url.searchParams.set('pass', `${code}2026`);
-            if (debugEnabled) url.searchParams.set('debug', 'true');
-            window.location.href = url.toString();
-        });
-    });
-}
-
 // ===== SETUP UPLOAD BUTTON =====
 function setupUploadButton() {
     const uploadCta = document.getElementById('uploadCta');
-    const shouldShow = hasValidPassword && (debugMode || isEventDate() || window.debugMode);
+    const hiddenFileInput = document.getElementById('hiddenFileInput');
+    const uploadModal = document.getElementById('uploadModal');
+
+    // If expired (after March 1, 2026), completely remove upload UI from DOM
+    if (isExpired) {
+        if (uploadCta) uploadCta.remove();
+        if (hiddenFileInput) hiddenFileInput.remove();
+        if (uploadModal) uploadModal.remove();
+
+        // Add class to body for CSS adjustments
+        document.body.classList.add('gallery-only');
+        return;
+    }
+
+    // Test mode or valid password shows upload button
+    // Smart-sort validation happens when file is selected
+    const shouldShow = isTestMode || hasValidPassword;
     uploadCta.classList.toggle('hidden', !shouldShow);
 }
 
@@ -620,30 +683,57 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('hiddenFileInput').click();
     });
 
-    // Hidden file input change
-    document.getElementById('hiddenFileInput').addEventListener('change', e => {
+    // Hidden file input change - Smart-Sort Logic
+    document.getElementById('hiddenFileInput').addEventListener('change', async e => {
         const file = e.target.files[0];
-        if (file) {
-            const eventTag = currentEventTag || getDefaultEventTag();
-            openModal(eventTag);
+        if (!file) return;
 
-            // Show preview (uncropped)
-            const reader = new FileReader();
-            reader.onload = evt => {
-                document.getElementById('uploadPreview').innerHTML = `
-                    <div class="upload-preview">
-                        <img src="${evt.target.result}" alt="Preview">
-                        <p class="upload-preview-hint">Your photo will appear exactly like this</p>
-                    </div>
-                `;
-            };
-            reader.readAsDataURL(file);
+        // Extract photo timestamp for validation
+        const takenAt = await extractPhotoTimestamp(file);
+        let eventTag;
 
-            // Set file to form input
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            document.getElementById('photoFile').files = dataTransfer.files;
+        // TEST MODE: Bypass date validation, show manual selector
+        if (isTestMode) {
+            const selection = await showTestModeSelector();
+            if (!selection) {
+                // User cancelled
+                e.target.value = '';
+                return;
+            }
+            eventTag = selection.eventTag;
+        } else {
+            // PRODUCTION MODE: Smart-sort based on photo date
+            const validation = validatePhotoDate(takenAt);
+
+            if (!validation.valid) {
+                // Photo is not from wedding dates - show rejection popup
+                showRejectionPopup();
+                e.target.value = '';
+                return;
+            }
+
+            eventTag = validation.eventTag;
         }
+
+        // Open modal with the determined event
+        openModal(eventTag);
+
+        // Show preview (uncropped)
+        const reader = new FileReader();
+        reader.onload = evt => {
+            document.getElementById('uploadPreview').innerHTML = `
+                <div class="upload-preview">
+                    <img src="${evt.target.result}" alt="Preview">
+                    <p class="upload-preview-hint">Your photo will appear exactly like this</p>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+
+        // Set file to form input
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        document.getElementById('photoFile').files = dataTransfer.files;
     });
 
     // Upload zone click
@@ -691,19 +781,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modal close handlers
     document.getElementById('modalBackdrop').addEventListener('click', closeModal);
     document.getElementById('modalClose').addEventListener('click', closeModal);
-
-    // Debug panel
-    setupDebugPanel();
-
-    // Initial theme based on password
-    if (hasValidPassword) {
-        const defaultEvent = getDefaultEventTag();
-        const config = EVENT_CONFIG[defaultEvent];
-        if (config) {
-            currentEventTag = defaultEvent;
-            setTimeout(() => {
-                document.getElementById(config.section).scrollIntoView({ behavior: 'smooth' });
-            }, 500);
-        }
-    }
 });
