@@ -75,12 +75,15 @@ export default {
         // Use the request origin (works for both local dev and production)
         const imageUrl = `${url.origin}/images/${objectKey}`;
 
+        // Get taken_at from client (EXIF DateTimeOriginal or fallback)
+        const takenAt = formData.get('takenAt') || new Date().toISOString();
+
         // Save metadata to D1
         const timestamp = new Date().toISOString();
         await env.DB.prepare(
-          'INSERT INTO photos (url, name, message, eventTag, timestamp) VALUES (?, ?, ?, ?, ?)'
+          'INSERT INTO photos (url, name, message, eventTag, timestamp, taken_at) VALUES (?, ?, ?, ?, ?, ?)'
         )
-          .bind(imageUrl, name, message, eventTag, timestamp)
+          .bind(imageUrl, name, message, eventTag, timestamp, takenAt)
           .run();
 
         return new Response(
@@ -109,11 +112,12 @@ export default {
 
         if (eventTag) {
           // Fetch one extra to check if there are more
-          query = 'SELECT * FROM photos WHERE eventTag = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?';
+          // Order by taken_at (photo capture time) for authentic chronological display
+          query = 'SELECT * FROM photos WHERE eventTag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
           countQuery = 'SELECT COUNT(*) as total FROM photos WHERE eventTag = ?';
           params = [eventTag, limit + 1, offset];
         } else {
-          query = 'SELECT * FROM photos ORDER BY timestamp DESC LIMIT ? OFFSET ?';
+          query = 'SELECT * FROM photos ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
           countQuery = 'SELECT COUNT(*) as total FROM photos';
           params = [limit + 1, offset];
         }

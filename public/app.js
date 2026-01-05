@@ -93,6 +93,47 @@ function supportsWebP() {
 // Cache the result since it won't change during session
 const webpSupported = supportsWebP();
 
+// ===== EXIF METADATA EXTRACTION =====
+// Extract original photo timestamp with smart fallbacks
+async function extractPhotoTimestamp(file) {
+    try {
+        // Priority 1: Try to get EXIF DateTimeOriginal
+        if (typeof ExifReader !== 'undefined') {
+            const arrayBuffer = await file.arrayBuffer();
+            const tags = ExifReader.load(arrayBuffer);
+
+            if (tags.DateTimeOriginal && tags.DateTimeOriginal.description) {
+                // EXIF format: "2026:02:07 14:42:30" → parse to ISO
+                const exifDate = tags.DateTimeOriginal.description;
+                const [datePart, timePart] = exifDate.split(' ');
+                const [year, month, day] = datePart.split(':');
+                const isoString = `${year}-${month}-${day}T${timePart}`;
+                const parsed = new Date(isoString);
+
+                if (!isNaN(parsed.getTime())) {
+                    console.log('Using EXIF DateTimeOriginal:', isoString);
+                    return parsed.toISOString();
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('EXIF extraction failed:', e);
+    }
+
+    // Priority 2: File's lastModified date
+    if (file.lastModified) {
+        const lastModified = new Date(file.lastModified);
+        if (!isNaN(lastModified.getTime())) {
+            console.log('Using file lastModified:', lastModified.toISOString());
+            return lastModified.toISOString();
+        }
+    }
+
+    // Priority 3: Current timestamp (absolute fallback)
+    console.log('Using current timestamp as fallback');
+    return new Date().toISOString();
+}
+
 async function resizeImage(file, statusCallback = null) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -224,18 +265,46 @@ function getOptimizedImageUrl(url) {
     return url;
 }
 
-function createPhotoCard(photo) {
+// Format timestamp for film stamp display (e.g., "8:42 PM")
+function formatFilmTimestamp(isoString) {
+    if (!isoString) return null;
+    try {
+        const date = new Date(isoString);
+        if (isNaN(date.getTime())) return null;
+
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    } catch {
+        return null;
+    }
+}
+
+function createPhotoCard(photo, eventTag = null) {
     const hasCaption = photo.name || photo.message;
     const card = document.createElement('div');
     card.className = `photo-card${hasCaption ? '' : ' no-caption'}`;
 
     const optimizedUrl = getOptimizedImageUrl(photo.url);
+    const filmTime = formatFilmTimestamp(photo.taken_at);
+
+    // Determine theme class for film stamp color based on eventTag
+    let filmStampClass = 'film-stamp';
+    if (eventTag || photo.eventTag) {
+        const tag = eventTag || photo.eventTag;
+        if (tag === 'Ijab & Qabul') filmStampClass += ' film-stamp-night';
+        else if (tag === 'Sanding') filmStampClass += ' film-stamp-grandeur';
+        else if (tag === 'Tandang') filmStampClass += ' film-stamp-journey';
+    }
 
     card.innerHTML = `
         <div class="photo-item">
             <img src="${optimizedUrl}" alt="Memory shared by ${photo.name || 'Guest'}" loading="lazy">
         </div>
         <div class="photo-caption">
+            ${filmTime ? `<span class="${filmStampClass}">${filmTime}</span>` : ''}
             ${photo.name ? `<p class="photo-name">${photo.name}</p>` : ''}
             ${photo.message ? `<p class="photo-message">"${photo.message}"</p>` : ''}
         </div>
@@ -290,7 +359,7 @@ function renderPhotos(photos, gallery, eventTag, hasMore) {
     gallery.innerHTML = '';
 
     photos.forEach((photo) => {
-        gallery.appendChild(createPhotoCard(photo));
+        gallery.appendChild(createPhotoCard(photo, eventTag));
     });
 
     // Add "Load More" card if there are more photos
@@ -314,7 +383,7 @@ function appendPhotos(photos, gallery, eventTag, hasMore) {
     const newCards = [];
 
     photos.forEach((photo) => {
-        const card = createPhotoCard(photo);
+        const card = createPhotoCard(photo, eventTag);
         newCards.push(card);
         fragment.appendChild(card);
     });
@@ -359,11 +428,15 @@ async function uploadPhoto(file, name, message, eventTag) {
 
     try {
         uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Reading photo data...';
 
         const currentPassword = urlParams.get('pass');
         if (!currentPassword || !validPasswords.includes(currentPassword)) {
             throw new Error('Valid access required');
         }
+
+        // Extract photo timestamp from EXIF (non-blocking, runs before canvas processing)
+        const takenAt = await extractPhotoTimestamp(file);
 
         // Resize and compress with status updates
         const { blob, format, extension } = await resizeImage(file, (status) => {
@@ -379,6 +452,7 @@ async function uploadPhoto(file, name, message, eventTag) {
         formData.append('eventTag', eventTag);
         formData.append('pass', currentPassword);
         formData.append('format', format); // Send format to worker
+        formData.append('takenAt', takenAt); // Send original photo timestamp
 
         const response = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
 

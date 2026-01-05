@@ -358,6 +358,37 @@ body.theme-tandang .section-title {
     color: var(--ijab-text-soft); /* Softer charcoal */
 }
 
+/* Film Stamp - Photo timestamp with vintage film aesthetic */
+.film-stamp {
+    display: block;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 0.25rem;
+}
+
+/* Film stamp theme colors - context-aware */
+.film-stamp-night,
+.section-ijab .film-stamp,
+body.theme-ijab .film-stamp {
+    color: #A0A0A0; /* Silver for Night */
+}
+
+.film-stamp-grandeur,
+.section-sanding .film-stamp,
+body.theme-sanding .film-stamp {
+    color: #B8996F; /* Muted Gold for Grandeur */
+}
+
+.film-stamp-journey,
+.section-tandang .film-stamp,
+body.theme-tandang .film-stamp {
+    color: #2C4A5E; /* Deep Navy for Journey */
+}
+
 /* Theme-specific handwriting colors - Night (Off-white theme) */
 .section-ijab .photo-name,
 body.theme-ijab .photo-name {
