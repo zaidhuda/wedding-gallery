@@ -16,11 +16,20 @@ let isAdmin = false;
 const urlParams = new URLSearchParams(window.location.search);
 const urlPassword = urlParams.get('pass');
 const storedPassword = localStorage.getItem(STORAGE_KEY);
-const hasValidPassword = urlPassword === GUEST_PASSWORD || storedPassword === GUEST_PASSWORD;
+const hasValidPassword = urlPassword?.toLowerCase() === GUEST_PASSWORD.toLowerCase() || storedPassword?.toLowerCase() === GUEST_PASSWORD.toLowerCase();
 
 // Save to localStorage if valid password in URL
-if (urlPassword === GUEST_PASSWORD) {
-    localStorage.setItem(STORAGE_KEY, GUEST_PASSWORD);
+if (urlPassword?.toLowerCase() === GUEST_PASSWORD.toLowerCase()) {
+    localStorage.setItem(STORAGE_KEY, urlPassword);
+}
+
+// Remove pass query param from URL without reloading
+if (urlPassword) {
+    urlParams.delete('pass');
+    const newUrl = urlParams.toString()
+        ? `${window.location.pathname}?${urlParams.toString()}`
+        : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
 }
 
 // ===== EXPIRATION & TEST MODE =====
@@ -684,6 +693,116 @@ function setupPhotoEntranceObserver(gallery, specificCards = null) {
     photoCards.forEach(card => entranceObserver.observe(card));
 }
 
+// ===== LOCATION VERIFICATION =====
+const VENUE_LOCATIONS = [
+    { lat: 2.454981839192229, lng: 102.06060997931948, name: 'Venue 1' },
+    { lat: 1.4819313372117824, lng: 103.93764464383543, name: 'Venue 2' }
+];
+const VENUE_RADIUS_KM = 2;
+const LOCATION_VERIFIED_KEY = 'wedding_gallery_location_verified';
+
+// Calculate distance between two coordinates using Haversine formula
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in kilometers
+}
+
+// Check if user is within 10km of either venue
+function isNearVenue(userLat, userLng) {
+    for (const venue of VENUE_LOCATIONS) {
+        const distance = calculateDistance(userLat, userLng, venue.lat, venue.lng);
+        if (distance <= VENUE_RADIUS_KM) {
+            console.log(`User is ${distance.toFixed(2)}km from ${venue.name}`);
+            return true;
+        }
+    }
+    return false;
+}
+
+// Verify location access
+async function verifyLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            console.log('Geolocation not supported');
+            resolve(false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const nearVenue = isNearVenue(latitude, longitude);
+
+                if (nearVenue) {
+                    // Store verification in localStorage
+                    localStorage.setItem(LOCATION_VERIFIED_KEY, 'true');
+                    console.log('Location verified: within venue range');
+                    resolve(true);
+                } else {
+                    console.log('Location verified: outside venue range');
+                    resolve(false);
+                }
+            },
+            (error) => {
+                console.log('Location permission denied or error:', error.message);
+                resolve(false);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000 // 5 minutes cache
+            }
+        );
+    });
+}
+
+// ===== PASSWORD VALIDATION =====
+async function validateAccess() {
+    // Check if we already have a valid password in localStorage
+    const savedPassword = localStorage.getItem(STORAGE_KEY);
+    if (savedPassword?.toLowerCase() === GUEST_PASSWORD.toLowerCase()) {
+        return true;
+    }
+
+    // Check if location was previously verified
+    const locationVerified = localStorage.getItem(LOCATION_VERIFIED_KEY);
+    if (locationVerified === 'true') {
+        return true;
+    }
+
+    // Try location verification first
+    const isAtVenue = await verifyLocation();
+    if (isAtVenue) {
+        return true;
+    }
+
+    // Fall back to password prompt
+    const enteredPassword = prompt('Please enter the password (check the QR code at your table):');
+
+    if (!enteredPassword) {
+        // User cancelled
+        return false;
+    }
+
+    if (enteredPassword.toLowerCase() === GUEST_PASSWORD.toLowerCase()) {
+        // Valid password - store it
+        localStorage.setItem(STORAGE_KEY, enteredPassword);
+        return true;
+    } else {
+        // Invalid password - clear from localStorage and show error
+        localStorage.removeItem(STORAGE_KEY);
+        alert('Invalid password. Please check the QR code at your table for the correct password.');
+        return false;
+    }
+}
+
 // ===== UPLOAD FUNCTIONALITY =====
 async function uploadPhoto(file, name, message, eventTag) {
     const uploadBtn = document.getElementById('uploadBtn');
@@ -698,11 +817,8 @@ async function uploadPhoto(file, name, message, eventTag) {
             localStorage.setItem(NAME_STORAGE_KEY, name);
         }
 
-        // Get password from URL or localStorage
-        const currentPassword = urlParams.get('pass') || localStorage.getItem(STORAGE_KEY);
-        if (currentPassword !== GUEST_PASSWORD) {
-            throw new Error('Valid access required');
-        }
+        // Get password from localStorage (already validated before reaching here)
+        const currentPassword = localStorage.getItem(STORAGE_KEY);
 
         // Extract photo timestamp from EXIF (non-blocking, runs before canvas processing)
         const takenAt = await extractPhotoTimestamp(file);
@@ -888,10 +1004,9 @@ function setupUploadButton() {
         return;
     }
 
-    // Test mode or valid password shows upload button
-    // Smart-sort validation happens when file is selected
-    const shouldShow = isTestMode || hasValidPassword;
-    uploadCta.classList.toggle('hidden', !shouldShow);
+    // Always show upload button (not expired)
+    // Date validation happens when file is selected (unless mode=test to bypass)
+    uploadCta.classList.remove('hidden');
 }
 
 // ===== INITIALIZATION =====
@@ -916,9 +1031,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Upload CTA click
-    document.getElementById('uploadCta').addEventListener('click', () => {
-        document.getElementById('hiddenFileInput').click();
+    // Upload CTA click - validate access (location or password) first
+    document.getElementById('uploadCta').addEventListener('click', async () => {
+        if (await validateAccess()) {
+            document.getElementById('hiddenFileInput').click();
+        }
     });
 
     // Hidden file input change - Smart-Sort Logic
