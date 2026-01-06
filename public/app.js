@@ -726,12 +726,21 @@ function isNearVenue(userLat, userLng) {
     return false;
 }
 
-// Verify location access
+// Show location permission explanation using native confirm
+function showLocationPrompt() {
+    return confirm(
+        'Are you at the celebration?\n\n' +
+        'Share your location to skip the password.\n' +
+        '(Or click Cancel to enter password instead)'
+    );
+}
+
+// Verify location access - returns { success: boolean, reason: string }
 async function verifyLocation() {
     return new Promise((resolve) => {
         if (!navigator.geolocation) {
             console.log('Geolocation not supported');
-            resolve(false);
+            resolve({ success: false, reason: 'unsupported' });
             return;
         }
 
@@ -744,15 +753,15 @@ async function verifyLocation() {
                     // Store verification in localStorage
                     localStorage.setItem(LOCATION_VERIFIED_KEY, 'true');
                     console.log('Location verified: within venue range');
-                    resolve(true);
+                    resolve({ success: true, reason: 'at_venue' });
                 } else {
                     console.log('Location verified: outside venue range');
-                    resolve(false);
+                    resolve({ success: false, reason: 'too_far' });
                 }
             },
             (error) => {
                 console.log('Location permission denied or error:', error.message);
-                resolve(false);
+                resolve({ success: false, reason: 'denied' });
             },
             {
                 enableHighAccuracy: true,
@@ -763,7 +772,12 @@ async function verifyLocation() {
     });
 }
 
-// ===== PASSWORD VALIDATION =====
+// Show password prompt using native browser prompt
+function showPasswordPrompt(message = 'Enter the password (check the QR code at your table):') {
+    return prompt(message);
+}
+
+// ===== ACCESS VALIDATION =====
 async function validateAccess() {
     // Check if we already have a valid password in localStorage
     const savedPassword = localStorage.getItem(STORAGE_KEY);
@@ -777,14 +791,25 @@ async function validateAccess() {
         return true;
     }
 
-    // Try location verification first
-    const isAtVenue = await verifyLocation();
-    if (isAtVenue) {
-        return true;
+    // Show location permission prompt
+    const userWantsLocation = await showLocationPrompt();
+
+    let passwordMessage = 'Enter the password (check the QR code at your table):';
+
+    if (userWantsLocation) {
+        // Try location verification
+        const result = await verifyLocation();
+        if (result.success) {
+            return true;
+        }
+        // If user is too far from venue, customize the prompt message
+        if (result.reason === 'too_far') {
+            passwordMessage = "Not at the venue?\n\nEnter the password (check the QR code at your table):";
+        }
     }
 
-    // Fall back to password prompt
-    const enteredPassword = prompt('Please enter the password (check the QR code at your table):');
+    // Show password prompt
+    const enteredPassword = showPasswordPrompt(passwordMessage);
 
     if (!enteredPassword) {
         // User cancelled
