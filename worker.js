@@ -236,8 +236,12 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
       const formData = await request.formData();
       const uploadPassword = formData.get('pass');
 
-      if (uploadPassword !== GUEST_PASSWORD) {
-        console.error('Password validation failed');
+      if (!uploadPassword || uploadPassword.toLowerCase() !== GUEST_PASSWORD.toLowerCase()) {
+        console.error('Password validation failed:', {
+          received: uploadPassword,
+          expected: GUEST_PASSWORD,
+          type: typeof uploadPassword
+        });
         return new Response(
           JSON.stringify({ error: 'Invalid or missing password' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -301,17 +305,29 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         const timestamp = new Date().toISOString();
         const isApproved = moderation.autoApproved ? 1 : 0;
 
-        // Save to D1 with moderation result
+        // Generate edit token for 1-hour edit window
+        const editToken = crypto.randomUUID();
+
+        // Save to D1 with moderation result and edit token
         await env.DB.prepare(
-          'INSERT INTO photos (url, name, message, eventTag, timestamp, taken_at, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO photos (url, name, message, eventTag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )
-          .bind(imageUrl, name, message, eventTag, timestamp, takenAt, isApproved)
+          .bind(imageUrl, name, message, eventTag, timestamp, takenAt, isApproved, editToken)
           .run();
+
+        // Get the inserted photo ID by token
+        const insertedPhoto = await env.DB.prepare(
+          'SELECT id FROM photos WHERE token = ?'
+        )
+          .bind(editToken)
+          .first();
 
         return new Response(
           JSON.stringify({
             success: true,
             url: imageUrl,
+            id: insertedPhoto?.id,
+            token: editToken,
             autoApproved: moderation.autoApproved,
             moderationReason: moderation.autoApproved ? 'auto_approved' : moderation.imageReason,
           }),
@@ -322,6 +338,131 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         console.error('Upload error:', error);
         return new Response(
           JSON.stringify({ error: 'Upload failed' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Edit photo endpoint (name/message only, within 1 hour)
+    if (path === '/api/edit' && method === 'POST') {
+      try {
+        const body = await request.json();
+        const { id, token, name, message } = body;
+
+        if (!id || !token || !name) {
+          return new Response(
+            JSON.stringify({ error: 'Missing required fields: id, token, name' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Verify token and check 1-hour limit
+        const photo = await env.DB.prepare(
+          'SELECT id, timestamp, token FROM photos WHERE id = ? AND token = ?'
+        )
+          .bind(id, token)
+          .first();
+
+        if (!photo) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid token or photo not found' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Check if within 1 hour (3600000 milliseconds)
+        const uploadTime = new Date(photo.timestamp).getTime();
+        const now = Date.now();
+        const oneHourInMs = 60 * 60 * 1000;
+
+        if (now - uploadTime > oneHourInMs) {
+          return new Response(
+            JSON.stringify({ error: 'Edit window expired. Photos can only be edited within 1 hour of upload.' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Update name and message
+        await env.DB.prepare(
+          'UPDATE photos SET name = ?, message = ? WHERE id = ?'
+        )
+          .bind(name.trim() || 'Anonymous', (message || '').trim(), id)
+          .run();
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('Edit error:', error);
+        return new Response(
+          JSON.stringify({ error: 'Edit failed' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Delete photo endpoint (within 1 hour, deletes DB row + R2 file)
+    if (path === '/api/delete' && method === 'POST') {
+      try {
+        const body = await request.json();
+        const { id, token } = body;
+
+        if (!id || !token) {
+          return new Response(
+            JSON.stringify({ error: 'Missing required fields: id, token' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Verify token and check 1-hour limit
+        const photo = await env.DB.prepare(
+          'SELECT id, url, timestamp, token FROM photos WHERE id = ? AND token = ?'
+        )
+          .bind(id, token)
+          .first();
+
+        if (!photo) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid token or photo not found' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Check if within 1 hour (3600000 milliseconds)
+        const uploadTime = new Date(photo.timestamp).getTime();
+        const now = Date.now();
+        const oneHourInMs = 60 * 60 * 1000;
+
+        if (now - uploadTime > oneHourInMs) {
+          return new Response(
+            JSON.stringify({ error: 'Delete window expired. Photos can only be deleted within 1 hour of upload.' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Delete from R2
+        if (photo.url) {
+          const urlObj = new URL(photo.url);
+          const objectKey = urlObj.pathname.replace('/images/', '');
+          try {
+            await env.PHOTOS_BUCKET.delete(objectKey);
+          } catch (e) {
+            console.error('R2 delete error:', e);
+          }
+        }
+
+        // Delete from DB
+        await env.DB.prepare('DELETE FROM photos WHERE id = ?').bind(id).run();
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('Delete error:', error);
+        return new Response(
+          JSON.stringify({ error: 'Delete failed' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }

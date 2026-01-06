@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS photos (
   eventTag TEXT NOT NULL,
   timestamp TEXT NOT NULL,
   taken_at TEXT,
-  is_approved INTEGER DEFAULT 0
+  is_approved INTEGER DEFAULT 0,
+  token TEXT
 );
 
 -- Create index for faster queries by eventTag
@@ -22,8 +23,13 @@ CREATE INDEX IF NOT EXISTS idx_taken_at ON photos(taken_at);
 -- Create index for approval status filtering
 CREATE INDEX IF NOT EXISTS idx_is_approved ON photos(is_approved);
 
+-- Create index for token lookups (for edit window feature)
+CREATE INDEX IF NOT EXISTS idx_token ON photos(token);
+
 -- Migration: Add taken_at column to existing table (run manually if needed)
 -- ALTER TABLE photos ADD COLUMN taken_at TEXT;
 -- Migration: Add is_approved column to existing table (run manually if needed)
 -- ALTER TABLE photos ADD COLUMN is_approved INTEGER DEFAULT 0;
 -- UPDATE photos SET is_approved = 1 WHERE is_approved IS NULL;
+-- Migration: Add token column to existing table (run manually if needed)
+-- ALTER TABLE photos ADD COLUMN token TEXT;

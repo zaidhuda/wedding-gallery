@@ -8,6 +8,7 @@ const WORKER_URL = `${BASE_URL}/api`;
 const GUEST_PASSWORD = 'ZM2026';
 const STORAGE_KEY = 'wedding_gallery_access';
 const NAME_STORAGE_KEY = 'wedding_gallery_name';
+const EDIT_TOKENS_KEY = 'wedding_gallery_edit_tokens';
 
 // Admin state - will be set after verification
 let isAdmin = false;
@@ -550,26 +551,38 @@ function createPhotoCard(photo, eventTag = null) {
     const optimizedUrl = getOptimizedImageUrl(photo.url);
     const filmTime = formatFilmTimestamp(photo.taken_at);
 
-    // Determine theme class for film stamp color based on eventTag
-    let filmStampClass = 'film-stamp';
-    if (eventTag || photo.eventTag) {
-        const tag = eventTag || photo.eventTag;
-        if (tag === 'Ijab & Qabul') filmStampClass += ' film-stamp-night';
-        else if (tag === 'Sanding') filmStampClass += ' film-stamp-grandeur';
-        else if (tag === 'Tandang') filmStampClass += ' film-stamp-journey';
-    }
+    // Check if user has edit token for this photo
+    const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+    const hasEditToken = editTokens[photo.id] !== undefined;
 
     card.innerHTML = `
         <div class="photo-item" role="listitem">
             <img src="${optimizedUrl}" alt="Memory shared by ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}" loading="lazy">
-            <button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from gallery" aria-label="Remove photo by ${photo.name || 'Guest'} from gallery">✕</button>
+            ${isAdmin ? `<button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from gallery" aria-label="Remove photo by ${photo.name || 'Guest'} from gallery">✕</button>` : ''}
+            ${hasEditToken ? `<button class="edit-btn" data-photo-id="${photo.id}" data-photo-url="${optimizedUrl}" data-photo-name="${(photo.name || '').replace(/"/g, '&quot;')}" data-photo-message="${(photo.message || '').replace(/"/g, '&quot;')}" data-event-tag="${eventTag || photo.eventTag || ''}" title="Edit your submission" aria-label="Edit your photo submission">Edit</button>` : ''}
         </div>
         <div class="photo-caption">
-            ${filmTime ? `<span class="${filmStampClass}" aria-label="Photo taken at ${filmTime}">${filmTime}</span>` : ''}
+            ${filmTime ? `<span class="film-stamp" aria-label="Photo taken at ${filmTime}">${filmTime}</span>` : ''}
             ${photo.name ? `<p class="photo-name">${photo.name}</p>` : ''}
             ${photo.message ? `<p class="photo-message">"${photo.message}"</p>` : ''}
         </div>
     `;
+
+    // Add click handler for edit button if it exists
+    if (hasEditToken) {
+        const editBtn = card.querySelector('.edit-btn');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => {
+                const photoId = parseInt(editBtn.dataset.photoId);
+                const photoUrl = editBtn.dataset.photoUrl || '';
+                const photoName = editBtn.dataset.photoName || '';
+                const photoMessage = editBtn.dataset.photoMessage || '';
+                const eventTag = editBtn.dataset.eventTag || '';
+                openEditModal(photoId, photoUrl, photoName, photoMessage, eventTag);
+            });
+        }
+    }
+
     return card;
 }
 
@@ -788,6 +801,10 @@ async function validateAccess() {
     // Check if location was previously verified
     const locationVerified = localStorage.getItem(LOCATION_VERIFIED_KEY);
     if (locationVerified === 'true') {
+        // Ensure password is stored for upload functionality
+        if (!localStorage.getItem(STORAGE_KEY)) {
+            localStorage.setItem(STORAGE_KEY, GUEST_PASSWORD);
+        }
         return true;
     }
 
@@ -800,6 +817,8 @@ async function validateAccess() {
         // Try location verification
         const result = await verifyLocation();
         if (result.success) {
+            // Store password in localStorage so uploadPhoto() can use it
+            localStorage.setItem(STORAGE_KEY, GUEST_PASSWORD);
             return true;
         }
         // If user is too far from venue, customize the prompt message
@@ -817,8 +836,8 @@ async function validateAccess() {
     }
 
     if (enteredPassword.toLowerCase() === GUEST_PASSWORD.toLowerCase()) {
-        // Valid password - store it
-        localStorage.setItem(STORAGE_KEY, enteredPassword);
+        // Valid password - store the exact constant (not user input) for server compatibility
+        localStorage.setItem(STORAGE_KEY, GUEST_PASSWORD);
         return true;
     } else {
         // Invalid password - clear from localStorage and show error
@@ -843,7 +862,13 @@ async function uploadPhoto(file, name, message, eventTag) {
         }
 
         // Get password from localStorage (already validated before reaching here)
-        const currentPassword = localStorage.getItem(STORAGE_KEY);
+        let currentPassword = localStorage.getItem(STORAGE_KEY);
+
+        // Fallback: if password is missing, use the constant (shouldn't happen, but safety check)
+        if (!currentPassword) {
+            currentPassword = GUEST_PASSWORD;
+            localStorage.setItem(STORAGE_KEY, GUEST_PASSWORD);
+        }
 
         // Extract photo timestamp from EXIF (non-blocking, runs before canvas processing)
         const takenAt = await extractPhotoTimestamp(file);
@@ -877,6 +902,13 @@ async function uploadPhoto(file, name, message, eventTag) {
         }
         const autoApproved = result.autoApproved || false;
 
+        // Save edit token to localStorage if we got one
+        if (result.id && result.token) {
+            const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+            editTokens[result.id] = result.token;
+            localStorage.setItem(EDIT_TOKENS_KEY, JSON.stringify(editTokens));
+        }
+
         closeModal();
         // Reset form but keep the name field
         const savedName = document.getElementById('photoName').value;
@@ -907,12 +939,208 @@ async function uploadPhoto(file, name, message, eventTag) {
     }
 }
 
+// ===== EDIT WINDOW FUNCTIONS =====
+let currentEditPhotoId = null;
+let currentEditEventTag = null;
+
+async function editPhoto(photoId, name, message) {
+    const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+    const token = editTokens[photoId];
+
+    if (!token) {
+        alert('Edit token not found. This photo can no longer be edited.');
+        return;
+    }
+
+    const editBtn = document.getElementById('editSubmitBtn');
+    const originalText = editBtn.textContent;
+
+    try {
+        editBtn.disabled = true;
+        editBtn.textContent = 'Saving...';
+
+        const response = await fetch(`${WORKER_URL}/edit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: photoId,
+                token: token,
+                name: name.trim() || 'Anonymous',
+                message: (message || '').trim()
+            })
+        });
+
+        const result = await response.json().catch(() => ({ error: 'Edit failed' }));
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Edit failed');
+        }
+
+        closeEditModal();
+
+        // Refresh the gallery to show updated photo
+        if (currentEditEventTag) {
+            await loadPhotosForEvent(currentEditEventTag, false);
+        }
+
+        // Show success notification
+        showUploadSuccess(true);
+    } catch (error) {
+        console.error('Edit error:', error);
+        alert(`Unable to edit: ${error.message}`);
+    } finally {
+        editBtn.disabled = false;
+        editBtn.textContent = originalText;
+    }
+}
+
+async function deletePhoto(photoId) {
+    if (!confirm('Are you sure you want to delete this photo? This cannot be undone.')) {
+        return;
+    }
+
+    const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+    const token = editTokens[photoId];
+
+    if (!token) {
+        alert('Edit token not found. This photo can no longer be deleted.');
+        return;
+    }
+
+    const deleteBtn = document.getElementById('editDeleteBtn');
+    const originalText = deleteBtn.textContent;
+
+    try {
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = 'Deleting...';
+
+        const response = await fetch(`${WORKER_URL}/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: photoId,
+                token: token
+            })
+        });
+
+        const result = await response.json().catch(() => ({ error: 'Delete failed' }));
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Delete failed');
+        }
+
+        // Remove token from localStorage
+        delete editTokens[photoId];
+        localStorage.setItem(EDIT_TOKENS_KEY, JSON.stringify(editTokens));
+
+        closeEditModal();
+
+        // Remove photo card from DOM
+        const card = document.querySelector(`.photo-card[data-photo-id="${photoId}"]`);
+        if (card) {
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            setTimeout(() => card.remove(), 300);
+        }
+
+        // Show success notification
+        const overlay = document.createElement('div');
+        overlay.className = 'rejection-overlay';
+        overlay.setAttribute('role', 'alertdialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.innerHTML = `
+            <div class="rejection-popup">
+                <div class="rejection-icon" style="color: #16a34a;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+                <p class="rejection-message" style="color: #16a34a;">Deleted</p>
+                <p class="rejection-cta">Your photo has been removed.</p>
+                <button class="rejection-close" aria-label="Close notification">OK</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('visible'));
+
+        const closePopup = () => {
+            overlay.classList.remove('visible');
+            setTimeout(() => overlay.remove(), 300);
+        };
+        overlay.querySelector('.rejection-close').addEventListener('click', closePopup);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closePopup();
+        });
+        setTimeout(closePopup, 3000);
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert(`Unable to delete: ${error.message}`);
+    } finally {
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = originalText;
+    }
+}
+
+function openEditModal(photoId, photoUrl, name, message, eventTag) {
+    currentEditPhotoId = photoId;
+    currentEditEventTag = eventTag;
+
+    const modal = document.getElementById('editModal');
+
+    // Apply theme class based on photo's event
+    modal.classList.remove('modal-theme-ijab', 'modal-theme-sanding', 'modal-theme-tandang');
+    const config = EVENT_CONFIG[eventTag];
+    if (config) {
+        modal.classList.add(`modal-theme-${config.theme}`);
+    }
+
+    // Show photo preview
+    const previewContainer = document.getElementById('editPreview');
+    if (previewContainer && photoUrl) {
+        previewContainer.innerHTML = `
+            <div class="upload-preview">
+                <img src="${photoUrl}" alt="Your photo">
+            </div>
+        `;
+    }
+
+    // Pre-fill form fields
+    document.getElementById('editPhotoName').value = name || '';
+    document.getElementById('editPhotoMessage').value = message || '';
+    document.getElementById('editEventIndicator').textContent = config?.label || eventTag || '';
+
+    modal.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editModal');
+    modal.classList.remove('visible');
+    modal.classList.remove('modal-theme-ijab', 'modal-theme-sanding', 'modal-theme-tandang');
+    document.body.style.overflow = '';
+    currentEditPhotoId = null;
+    currentEditEventTag = null;
+}
+
+// Make functions globally accessible for onclick handlers
+window.openEditModal = openEditModal;
+window.editPhoto = editPhoto;
+window.deletePhoto = deletePhoto;
+
 // ===== MODAL CONTROL =====
 function openModal(eventTag) {
     const config = EVENT_CONFIG[eventTag];
     if (!config) return;
 
     currentEventTag = eventTag;
+    const modal = document.getElementById('uploadModal');
+
+    // Apply theme class based on photo's event
+    modal.classList.remove('modal-theme-ijab', 'modal-theme-sanding', 'modal-theme-tandang');
+    modal.classList.add(`modal-theme-${config.theme}`);
+
     document.getElementById('hiddenEventTag').value = eventTag;
     document.getElementById('eventIndicator').textContent = config.label;
 
@@ -922,12 +1150,14 @@ function openModal(eventTag) {
         document.getElementById('photoName').value = savedName;
     }
 
-    document.getElementById('uploadModal').classList.add('visible');
+    modal.classList.add('visible');
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
-    document.getElementById('uploadModal').classList.remove('visible');
+    const modal = document.getElementById('uploadModal');
+    modal.classList.remove('visible');
+    modal.classList.remove('modal-theme-ijab', 'modal-theme-sanding', 'modal-theme-tandang');
     document.body.style.overflow = '';
     document.getElementById('hiddenFileInput').value = '';
     selectedFile = null;
@@ -1166,4 +1396,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modal close handlers
     document.getElementById('modalBackdrop').addEventListener('click', closeModal);
     document.getElementById('modalClose').addEventListener('click', closeModal);
+
+    // Edit modal handlers
+    document.getElementById('editModalBackdrop').addEventListener('click', closeEditModal);
+    document.getElementById('editModalClose').addEventListener('click', closeEditModal);
+
+    // Edit form submission
+    document.getElementById('editForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const name = document.getElementById('editPhotoName').value.trim();
+        const message = document.getElementById('editPhotoMessage').value.trim();
+
+        if (!name) {
+            alert('Please enter your name');
+            return;
+        }
+
+        if (currentEditPhotoId) {
+            await editPhoto(currentEditPhotoId, name, message);
+        }
+    });
+
+    // Edit form delete button
+    document.getElementById('editDeleteBtn').addEventListener('click', async () => {
+        if (currentEditPhotoId) {
+            await deletePhoto(currentEditPhotoId);
+        }
+    });
 });

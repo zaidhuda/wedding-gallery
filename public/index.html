@@ -171,6 +171,40 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle" aria-describedby="editModalSubtitle">
+        <div class="modal-backdrop" id="editModalBackdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="editModalClose" aria-label="Close edit form">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            <div class="modal-header">
+                <h3 class="modal-title" id="editModalTitle">Edit Your Memory</h3>
+                <p class="modal-subtitle" id="editModalSubtitle">Update your name or message</p>
+                <span class="event-indicator" id="editEventIndicator" aria-live="polite">Night</span>
+            </div>
+            <form class="modal-form" id="editForm" aria-label="Edit photo form">
+                <div class="edit-preview-zone" id="editPreview">
+                    <!-- Photo preview will be inserted here -->
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="editPhotoName">Your Name</label>
+                    <input type="text" id="editPhotoName" class="form-input form-input-handwriting" placeholder="Write your name here..." aria-required="true">
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="editPhotoMessage">Message (Optional)</label>
+                    <textarea id="editPhotoMessage" class="form-input form-textarea form-input-handwriting" placeholder="A few words about this moment..." aria-required="false"></textarea>
+                </div>
+                <div class="edit-form-actions">
+                    <button type="button" class="edit-form-delete" id="editDeleteBtn" aria-label="Delete this photo">Delete</button>
+                    <button type="submit" class="submit-btn edit-form-submit" id="editSubmitBtn" aria-label="Save changes">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
