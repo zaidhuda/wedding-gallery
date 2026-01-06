@@ -7,6 +7,7 @@ const WORKER_URL = `${BASE_URL}/api`;
 
 const GUEST_PASSWORD = 'ZM2026';
 const STORAGE_KEY = 'wedding_gallery_access';
+const NAME_STORAGE_KEY = 'wedding_gallery_name';
 
 // Admin state - will be set after verification
 let isAdmin = false;
@@ -669,6 +670,11 @@ async function uploadPhoto(file, name, message, eventTag) {
         uploadBtn.disabled = true;
         uploadBtn.textContent = 'Reading photo data...';
 
+        // Save the name to localStorage for future uploads
+        if (name) {
+            localStorage.setItem(NAME_STORAGE_KEY, name);
+        }
+
         // Get password from URL or localStorage
         const currentPassword = urlParams.get('pass') || localStorage.getItem(STORAGE_KEY);
         if (currentPassword !== GUEST_PASSWORD) {
@@ -708,7 +714,10 @@ async function uploadPhoto(file, name, message, eventTag) {
         const autoApproved = result.autoApproved || false;
 
         closeModal();
+        // Reset form but keep the name field
+        const savedName = document.getElementById('photoName').value;
         document.getElementById('photoForm').reset();
+        document.getElementById('photoName').value = savedName;
         document.getElementById('uploadPreview').innerHTML = `
             <svg class="upload-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -742,6 +751,13 @@ function openModal(eventTag) {
     currentEventTag = eventTag;
     document.getElementById('hiddenEventTag').value = eventTag;
     document.getElementById('eventIndicator').textContent = config.label;
+
+    // Pre-fill the name field with saved value from localStorage
+    const savedName = localStorage.getItem(NAME_STORAGE_KEY);
+    if (savedName) {
+        document.getElementById('photoName').value = savedName;
+    }
+
     document.getElementById('uploadModal').classList.add('visible');
     document.body.style.overflow = 'hidden';
 }
