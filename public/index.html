@@ -48,8 +48,11 @@
 </head>
 <body class="theme-ijab">
 
+    <!-- Skip Navigation Link for Keyboard Users -->
+    <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
+
     <!-- Hero Section -->
-    <section class="hero" id="hero">
+    <section class="hero" id="hero" role="banner" aria-label="Wedding announcement">
         <div class="hero-content">
             <p class="hero-prelude">A Celebration of Love</p>
             <h1 class="hero-title">
@@ -59,92 +62,94 @@
             </h1>
             <p class="hero-date">February 2026</p>
         </div>
-        <div class="scroll-indicator">
+        <div class="scroll-indicator" role="complementary" aria-label="Scroll to explore galleries">
             <span>Explore</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                 <path d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
             </svg>
         </div>
     </section>
 
     <!-- Night Section (Ijab & Qabul) -->
-    <section class="gallery-section section-ijab" id="section-night" data-theme="ijab" data-event="Ijab & Qabul">
+    <main id="main-content">
+    <section class="gallery-section section-ijab" id="section-night" data-theme="ijab" data-event="Ijab & Qabul" role="region" aria-labelledby="section-night-title">
         <div class="section-header">
             <p class="section-label">The Sacred Night</p>
-            <h2 class="section-title">Ijab & Qabul</h2>
-            <p class="section-date">February 7, 2026</p>
+            <h2 class="section-title" id="section-night-title">Ijab & Qabul</h2>
+            <p class="section-date" aria-label="Event date: February 7, 2026">February 7, 2026</p>
         </div>
         <div class="masonry-container">
-            <div class="masonry-grid" id="gallery-ijab">
+            <div class="masonry-grid" id="gallery-ijab" role="list" aria-label="Ijab & Qabul ceremony photos">
                 <!-- Photos loaded dynamically -->
             </div>
         </div>
     </section>
 
     <!-- Grandeur Section (Sanding) -->
-    <section class="gallery-section section-sanding" id="section-grandeur" data-theme="sanding" data-event="Sanding">
+    <section class="gallery-section section-sanding" id="section-grandeur" data-theme="sanding" data-event="Sanding" role="region" aria-labelledby="section-grandeur-title">
         <div class="section-header">
             <p class="section-label">The Grandeur</p>
-            <h2 class="section-title">Sanding</h2>
-            <p class="section-date">February 8, 2026</p>
+            <h2 class="section-title" id="section-grandeur-title">Sanding</h2>
+            <p class="section-date" aria-label="Event date: February 8, 2026">February 8, 2026</p>
         </div>
         <div class="masonry-container">
-            <div class="masonry-grid" id="gallery-sanding">
+            <div class="masonry-grid" id="gallery-sanding" role="list" aria-label="Sanding ceremony photos">
                 <!-- Photos loaded dynamically -->
             </div>
         </div>
     </section>
 
     <!-- Journey Section (Tandang) -->
-    <section class="gallery-section section-tandang" id="section-journey" data-theme="tandang" data-event="Tandang">
+    <section class="gallery-section section-tandang" id="section-journey" data-theme="tandang" data-event="Tandang" role="region" aria-labelledby="section-journey-title">
         <div class="section-header">
             <p class="section-label">The Journey</p>
-            <h2 class="section-title">Tandang</h2>
-            <p class="section-date">February 14, 2026</p>
+            <h2 class="section-title" id="section-journey-title">Tandang</h2>
+            <p class="section-date" aria-label="Event date: February 14, 2026">February 14, 2026</p>
         </div>
         <div class="masonry-container">
-            <div class="masonry-grid" id="gallery-tandang">
+            <div class="masonry-grid" id="gallery-tandang" role="list" aria-label="Tandang ceremony photos">
                 <!-- Photos loaded dynamically -->
             </div>
         </div>
     </section>
+    </main>
 
     <!-- Floating Navigation -->
-    <nav class="floating-nav" id="floatingNav">
-        <button class="nav-item active" data-section="section-night" data-event="Ijab & Qabul">Night</button>
-        <button class="nav-item" data-section="section-grandeur" data-event="Sanding">Grandeur</button>
-        <button class="nav-item" data-section="section-journey" data-event="Tandang">Journey</button>
+    <nav class="floating-nav" id="floatingNav" role="navigation" aria-label="Gallery sections navigation">
+        <button class="nav-item active" data-section="section-night" data-event="Ijab & Qabul" aria-label="Navigate to Ijab & Qabul night ceremony" aria-current="page">Night</button>
+        <button class="nav-item" data-section="section-grandeur" data-event="Sanding" aria-label="Navigate to Sanding grandeur ceremony">Grandeur</button>
+        <button class="nav-item" data-section="section-journey" data-event="Tandang" aria-label="Navigate to Tandang journey ceremony">Journey</button>
     </nav>
 
     <!-- Upload CTA -->
-    <button class="upload-cta hidden" id="uploadCta" aria-label="Share a memory">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+    <button class="upload-cta hidden" id="uploadCta" aria-label="Share a memory - Open photo upload form">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
             <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
         </svg>
     </button>
 
     <!-- Hidden File Input -->
-    <input type="file" id="hiddenFileInput" accept="image/*" class="sr-only">
+    <input type="file" id="hiddenFileInput" accept="image/*" class="sr-only" aria-label="Select photo file">
 
     <!-- Upload Modal -->
-    <div class="modal-overlay" id="uploadModal">
+    <div class="modal-overlay" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalSubtitle">
         <div class="modal-backdrop" id="modalBackdrop"></div>
         <div class="modal-content">
-            <button class="modal-close" id="modalClose">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <button class="modal-close" id="modalClose" aria-label="Close photo upload form">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                     <path d="M18 6L6 18M6 6l12 12"/>
                 </svg>
             </button>
             <div class="modal-header">
-                <h3 class="modal-title">Share a Memory</h3>
-                <p class="modal-subtitle">Add your photo to our collection</p>
-                <span class="event-indicator" id="eventIndicator">Night</span>
+                <h3 class="modal-title" id="modalTitle">Share a Memory</h3>
+                <p class="modal-subtitle" id="modalSubtitle">Add your photo to our collection</p>
+                <span class="event-indicator" id="eventIndicator" aria-live="polite">Night</span>
             </div>
-            <form class="modal-form" id="photoForm">
-                <div class="upload-zone" id="uploadZone">
-                    <input type="file" id="photoFile" accept="image/*" class="sr-only">
+            <form class="modal-form" id="photoForm" aria-label="Photo upload form">
+                <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Select photo to upload">
+                    <input type="file" id="photoFile" accept="image/*" class="sr-only" aria-label="Photo file input">
                     <div id="uploadPreview">
-                        <svg class="upload-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <svg class="upload-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
                             <rect x="3" y="3" width="18" height="18" rx="2"/>
                             <circle cx="8.5" cy="8.5" r="1.5"/>
                             <path d="M21 15l-5-5L5 21"/>
@@ -154,14 +159,14 @@
                 </div>
                 <div class="form-field">
                     <label class="form-label" for="photoName">Your Name</label>
-                    <input type="text" id="photoName" class="form-input form-input-handwriting" placeholder="Write your name here...">
+                    <input type="text" id="photoName" class="form-input form-input-handwriting" placeholder="Write your name here..." aria-required="true">
                 </div>
                 <div class="form-field">
                     <label class="form-label" for="photoMessage">Message (Optional)</label>
-                    <textarea id="photoMessage" class="form-input form-textarea form-input-handwriting" placeholder="A few words about this moment..."></textarea>
+                    <textarea id="photoMessage" class="form-input form-textarea form-input-handwriting" placeholder="A few words about this moment..." aria-required="false"></textarea>
                 </div>
-                <input type="hidden" id="hiddenEventTag">
-                <button type="submit" class="submit-btn" id="uploadBtn">Share Memory</button>
+                <input type="hidden" id="hiddenEventTag" aria-hidden="true">
+                <button type="submit" class="submit-btn" id="uploadBtn" aria-label="Submit photo and share memory">Share Memory</button>
             </form>
         </div>
     </div>

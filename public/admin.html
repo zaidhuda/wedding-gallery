@@ -31,22 +31,23 @@
     <!-- Admin Panel -->
     <div id="adminPanel">
         <!-- Header -->
-        <header class="sticky top-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-zinc-800">
+        <header class="sticky top-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-zinc-800" role="banner">
             <div class="max-w-7xl mx-auto px-4 py-4">
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div class="flex items-center gap-4">
                         <h1 class="text-lg font-semibold">Photo Approval</h1>
-                        <span id="pendingCount" class="px-2.5 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm font-medium">
+                        <span id="pendingCount" class="px-2.5 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm font-medium" role="status" aria-live="polite">
                             0 pending
                         </span>
-                        <span id="adminEmail" class="text-zinc-500 text-sm hidden sm:inline"></span>
+                        <span id="adminEmail" class="text-zinc-500 text-sm hidden sm:inline" aria-label="Logged in as"></span>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3" role="group" aria-label="Bulk actions">
                         <button
                             id="refreshBtn"
                             class="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                            aria-label="Refresh pending photos"
                         >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
                             Refresh
@@ -55,8 +56,9 @@
                             id="approveAllBtn"
                             class="btn-approve px-4 py-2 bg-green-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled
+                            aria-label="Approve all pending photos"
                         >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                             Approve All
@@ -65,8 +67,9 @@
                             id="deleteAllBtn"
                             class="btn-delete px-4 py-2 bg-red-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled
+                            aria-label="Delete all pending photos"
                         >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                             Delete All
@@ -77,11 +80,11 @@
         </header>
 
         <!-- Content -->
-        <main class="max-w-7xl mx-auto px-4 py-6">
+        <main class="max-w-7xl mx-auto px-4 py-6" role="main">
             <!-- Loading State -->
-            <div id="loadingState" class="text-center py-20">
+            <div id="loadingState" class="text-center py-20" role="status" aria-live="polite">
                 <div class="inline-flex items-center gap-3 text-zinc-400">
-                    <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -90,9 +93,9 @@
             </div>
 
             <!-- Auth Error State -->
-            <div id="authError" class="hidden text-center py-20">
+            <div id="authError" class="hidden text-center py-20" role="alert">
                 <div class="inline-flex flex-col items-center gap-4">
-                    <svg class="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V4m0 0L9 7m3-3l3 3"/>
                         <circle cx="12" cy="12" r="10" stroke-width="1"/>
                     </svg>
@@ -104,6 +107,7 @@
                     <button
                         onclick="location.reload()"
                         class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
+                        aria-label="Retry authentication"
                     >
                         Retry
                     </button>
@@ -111,9 +115,9 @@
             </div>
 
             <!-- Empty State -->
-            <div id="emptyState" class="hidden text-center py-20">
+            <div id="emptyState" class="hidden text-center py-20" role="status">
                 <div class="inline-flex flex-col items-center gap-4">
-                    <svg class="w-16 h-16 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-16 h-16 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <p class="text-zinc-400 text-lg">All caught up!</p>
@@ -122,7 +126,7 @@
             </div>
 
             <!-- Photo Grid -->
-            <div id="photoGrid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div id="photoGrid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4" role="list" aria-label="Pending photos for approval">
                 <!-- Cards rendered dynamically -->
             </div>
         </main>
@@ -182,7 +186,7 @@
             } catch (err) {
                 console.error('Load error:', err);
                 loadingState.innerHTML = `
-                    <div class="text-red-400">Failed to load photos. <button onclick="loadPendingPhotos()" class="underline">Retry</button></div>
+                    <div class="text-red-400" role="alert">Failed to load photos. <button onclick="loadPendingPhotos()" class="underline" aria-label="Retry loading photos">Retry</button></div>
                 `;
             }
         }
@@ -204,15 +208,15 @@
             photoGrid.classList.remove('hidden');
 
             photoGrid.innerHTML = pendingPhotos.map(photo => `
-                <div class="photo-card bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700" data-id="${photo.id}">
+                <div class="photo-card bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700" data-id="${photo.id}" role="listitem">
                     <div class="aspect-square bg-zinc-900 relative">
                         <img
                             src="${photo.url}"
-                            alt="Pending photo"
+                            alt="Photo submitted by ${escapeHtml(photo.name || 'Anonymous')}${photo.message ? ': ' + escapeHtml(photo.message) : ''}"
                             class="w-full h-full object-cover"
                             loading="lazy"
                         >
-                        <span class="absolute top-2 left-2 px-2 py-0.5 bg-zinc-900/80 text-zinc-300 text-xs rounded">
+                        <span class="absolute top-2 left-2 px-2 py-0.5 bg-zinc-900/80 text-zinc-300 text-xs rounded" aria-label="Event category">
                             ${getEventLabel(photo.eventTag)}
                         </span>
                     </div>
@@ -221,17 +225,19 @@
                             <p class="font-medium text-zinc-100 truncate">${escapeHtml(photo.name || 'Anonymous')}</p>
                             ${photo.message ? `<p class="text-zinc-400 text-xs mt-1 line-clamp-2">"${escapeHtml(photo.message)}"</p>` : ''}
                         </div>
-                        <p class="text-zinc-500 text-xs">${formatTimestamp(photo.timestamp)}</p>
-                        <div class="flex gap-2 pt-1">
+                        <p class="text-zinc-500 text-xs" aria-label="Submitted on">${formatTimestamp(photo.timestamp)}</p>
+                        <div class="flex gap-2 pt-1" role="group" aria-label="Photo actions">
                             <button
                                 onclick="approvePhoto(${photo.id})"
                                 class="flex-1 py-1.5 bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white rounded text-xs font-medium transition-colors"
+                                aria-label="Approve photo by ${escapeHtml(photo.name || 'Anonymous')}"
                             >
                                 Approve
                             </button>
                             <button
                                 onclick="deletePhoto(${photo.id})"
                                 class="flex-1 py-1.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded text-xs font-medium transition-colors"
+                                aria-label="Delete photo by ${escapeHtml(photo.name || 'Anonymous')}"
                             >
                                 Delete
                             </button>
@@ -312,10 +318,12 @@
             if (!confirm(`Approve all ${pendingPhotos.length} photos?`)) return;
             const ids = pendingPhotos.map(p => p.id);
             approveAllBtn.disabled = true;
+            approveAllBtn.setAttribute('aria-busy', 'true');
             approveAllBtn.innerHTML = '<span class="animate-pulse">Approving...</span>';
             await performAction('approve', ids);
+            approveAllBtn.setAttribute('aria-busy', 'false');
             approveAllBtn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 Approve All
@@ -326,10 +334,12 @@
             if (!confirm(`DELETE all ${pendingPhotos.length} photos? This cannot be undone!`)) return;
             const ids = pendingPhotos.map(p => p.id);
             deleteAllBtn.disabled = true;
+            deleteAllBtn.setAttribute('aria-busy', 'true');
             deleteAllBtn.innerHTML = '<span class="animate-pulse">Deleting...</span>';
             await performAction('delete', ids);
+            deleteAllBtn.setAttribute('aria-busy', 'false');
             deleteAllBtn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
                 Delete All

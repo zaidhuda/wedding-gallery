@@ -197,21 +197,24 @@ function validatePhotoDate(takenAtISO) {
 function showModerationRejection(message) {
     const overlay = document.createElement('div');
     overlay.className = 'rejection-overlay';
+    overlay.setAttribute('role', 'alertdialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'rejection-title');
     overlay.innerHTML = `
         <div class="rejection-popup">
             <div class="rejection-icon" style="color: #dc2626;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M15 9l-6 6M9 9l6 6"/>
                 </svg>
             </div>
-            <p class="rejection-message" style="color: #dc2626;">
+            <p class="rejection-message" id="rejection-title" style="color: #dc2626;">
                 Oops!
             </p>
             <p class="rejection-cta">
                 ${message || "Your message contains content that doesn't match the wedding vibe. Please try a different caption!"}
             </p>
-            <button class="rejection-close">Try Again</button>
+            <button class="rejection-close" aria-label="Close dialog and try again">Try Again</button>
         </div>
     `;
 
@@ -233,6 +236,9 @@ function showModerationRejection(message) {
 function showUploadSuccess(autoApproved = false) {
     const overlay = document.createElement('div');
     overlay.className = 'rejection-overlay';
+    overlay.setAttribute('role', 'alertdialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'success-title');
 
     // Different messages based on auto-approval status
     const title = autoApproved ? 'Success!' : 'Thank you!';
@@ -244,18 +250,18 @@ function showUploadSuccess(autoApproved = false) {
     overlay.innerHTML = `
         <div class="rejection-popup">
             <div class="rejection-icon" style="color: ${iconColor};">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                     <path d="M9 12l2 2 4-4"/>
                     <circle cx="12" cy="12" r="10"/>
                 </svg>
             </div>
-            <p class="rejection-message" style="color: ${iconColor};">
+            <p class="rejection-message" id="success-title" style="color: ${iconColor};">
                 ${title}
             </p>
             <p class="rejection-cta">
                 ${message}
             </p>
-            <button class="rejection-close">${autoApproved ? 'Awesome!' : 'Got it'}</button>
+            <button class="rejection-close" aria-label="Close success notification">${autoApproved ? 'Awesome!' : 'Got it'}</button>
         </div>
     `;
 
@@ -281,20 +287,23 @@ function showRejectionPopup() {
     // Create overlay
     const overlay = document.createElement('div');
     overlay.className = 'rejection-overlay';
+    overlay.setAttribute('role', 'alertdialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'date-rejection-title');
     overlay.innerHTML = `
         <div class="rejection-popup">
             <div class="rejection-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                     <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     <path d="M12 11v4M12 17h.01"/>
                 </svg>
             </div>
-            <p class="rejection-message">
+            <p class="rejection-message" id="date-rejection-title">
                 This photo doesn't seem to be from our wedding dates
                 <span class="rejection-dates">(Feb 7, 8, or 14)</span>
             </p>
             <p class="rejection-cta">Please pick a memory from the celebrations!</p>
-            <button class="rejection-close">Got it</button>
+            <button class="rejection-close" aria-label="Close dialog and try again">Got it</button>
         </div>
     `;
 
@@ -320,30 +329,33 @@ function showTestModeSelector() {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
         overlay.className = 'test-selector-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'test-selector-title');
         overlay.innerHTML = `
             <div class="test-selector-popup">
                 <div class="test-selector-header">
-                    <span class="test-badge">TEST MODE</span>
-                    <p class="test-title">Select Event Bucket</p>
+                    <span class="test-badge" aria-label="Test mode">TEST MODE</span>
+                    <p class="test-title" id="test-selector-title">Select Event Bucket</p>
                 </div>
-                <div class="test-selector-options">
-                    <button class="test-option" data-event="Ijab & Qabul" data-label="Night">
-                        <span class="test-option-emoji">🌙</span>
+                <div class="test-selector-options" role="group" aria-label="Event selection">
+                    <button class="test-option" data-event="Ijab & Qabul" data-label="Night" aria-label="Select Ijab & Qabul night ceremony, February 7">
+                        <span class="test-option-emoji" aria-hidden="true">🌙</span>
                         <span class="test-option-label">Night</span>
                         <span class="test-option-date">Feb 7</span>
                     </button>
-                    <button class="test-option" data-event="Sanding" data-label="Grandeur">
-                        <span class="test-option-emoji">👑</span>
+                    <button class="test-option" data-event="Sanding" data-label="Grandeur" aria-label="Select Sanding grandeur ceremony, February 8">
+                        <span class="test-option-emoji" aria-hidden="true">👑</span>
                         <span class="test-option-label">Grandeur</span>
                         <span class="test-option-date">Feb 8</span>
                     </button>
-                    <button class="test-option" data-event="Tandang" data-label="Journey">
-                        <span class="test-option-emoji">🚗</span>
+                    <button class="test-option" data-event="Tandang" data-label="Journey" aria-label="Select Tandang journey ceremony, February 14">
+                        <span class="test-option-emoji" aria-hidden="true">🚗</span>
                         <span class="test-option-label">Journey</span>
                         <span class="test-option-date">Feb 14</span>
                     </button>
                 </div>
-                <button class="test-cancel">Cancel</button>
+                <button class="test-cancel" aria-label="Cancel event selection">Cancel</button>
             </div>
         `;
 
@@ -476,8 +488,8 @@ async function loadPhotosForEvent(eventTag, append = false) {
         console.error(`Error loading ${eventTag}:`, error);
         if (!append) {
             gallery.innerHTML = `
-                <div class="empty-state">
-                    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <div class="empty-state" role="alert" aria-live="assertive">
+                    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01"/>
                     </svg>
@@ -539,12 +551,12 @@ function createPhotoCard(photo, eventTag = null) {
     }
 
     card.innerHTML = `
-        <div class="photo-item">
-            <img src="${optimizedUrl}" alt="Memory shared by ${photo.name || 'Guest'}" loading="lazy">
-            <button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from gallery">✕</button>
+        <div class="photo-item" role="listitem">
+            <img src="${optimizedUrl}" alt="Memory shared by ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}" loading="lazy">
+            <button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from gallery" aria-label="Remove photo by ${photo.name || 'Guest'} from gallery">✕</button>
         </div>
         <div class="photo-caption">
-            ${filmTime ? `<span class="${filmStampClass}">${filmTime}</span>` : ''}
+            ${filmTime ? `<span class="${filmStampClass}" aria-label="Photo taken at ${filmTime}">${filmTime}</span>` : ''}
             ${photo.name ? `<p class="photo-name">${photo.name}</p>` : ''}
             ${photo.message ? `<p class="photo-message">"${photo.message}"</p>` : ''}
         </div>
@@ -556,24 +568,35 @@ function createLoadMoreCard(eventTag) {
     const card = document.createElement('div');
     card.className = 'photo-card load-more-card visible';
     card.dataset.eventTag = eventTag;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', 'Load more memories');
 
     card.innerHTML = `
         <div class="load-more-content">
             <div class="load-more-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                     <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
                 </svg>
             </div>
             <p class="load-more-text">See more memories</p>
-            <div class="load-more-spinner">
+            <div class="load-more-spinner" role="status" aria-live="polite" aria-label="Loading more photos">
                 <div class="loading-spinner"></div>
             </div>
         </div>
     `;
 
-    card.addEventListener('click', () => {
+    const handleActivation = () => {
         if (!card.classList.contains('loading')) {
             loadPhotosForEvent(eventTag, true);
+        }
+    };
+
+    card.addEventListener('click', handleActivation);
+    card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleActivation();
         }
     });
 
@@ -583,8 +606,8 @@ function createLoadMoreCard(eventTag) {
 function renderPhotos(photos, gallery, eventTag, hasMore) {
     if (!photos || photos.length === 0) {
         gallery.innerHTML = `
-            <div class="empty-state">
-                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <div class="empty-state" role="status" aria-label="No memories yet">
+                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <path d="M21 15l-5-5L5 21"/>

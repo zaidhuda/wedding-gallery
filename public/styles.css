@@ -1193,6 +1193,22 @@ body.theme-tandang .event-indicator {
     border: 0;
 }
 
+.sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background-color: #1a1a1a;
+    color: #FAF9F6;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 9999;
+}
+
 /* ===== GALLERY-ONLY MODE (Post March 1, 2026) ===== */
 /* When upload is removed, navigation can be centered without accounting for upload button */
 /* No special styles needed - nav is already centered */
