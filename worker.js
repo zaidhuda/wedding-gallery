@@ -11,7 +11,6 @@ export default {
     const selfOrigin = url.origin;
     const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
     const secFetchSite = request.headers.get('Sec-Fetch-Site');
-    const isImageGet = method === 'GET' && path.startsWith('/images/');
 
     const normalizeOrigin = (value) => {
       if (!value) return null;
@@ -22,8 +21,7 @@ export default {
     const isSameOriginByOrigin = requestOrigin && requestOrigin === selfOrigin;
     const isSameOriginByFetchMeta = secFetchSite === 'same-origin';
 
-    // Gate everything except public images
-    if (!isImageGet && !isSameOriginByOrigin && !isSameOriginByFetchMeta && !isLocalDev) {
+    if (!isSameOriginByOrigin && !isSameOriginByFetchMeta && !isLocalDev) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
         headers: {
@@ -34,18 +32,12 @@ export default {
     }
 
     // ===== CORS HEADERS =====
-    const corsHeaders = isImageGet
-      ? {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        }
-      : {
-          'Access-Control-Allow-Origin': requestOrigin || selfOrigin,
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Credentials': path.startsWith('/admin') ? 'true' : 'true',
-        };
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': requestOrigin || selfOrigin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Credentials': path.startsWith('/admin') ? 'true' : 'true',
+    };
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
@@ -458,7 +450,7 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         // Delete from R2
         if (photo.url) {
           const urlObj = new URL(photo.url);
-          const objectKey = urlObj.pathname.replace('/images/', '');
+          const objectKey = urlObj.pathname;
           try {
             await env.PHOTOS_BUCKET.delete(objectKey);
           } catch (e) {
@@ -601,7 +593,7 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           for (const photo of photos.results || []) {
             if (photo.url) {
               const urlObj = new URL(photo.url);
-              const objectKey = urlObj.pathname.replace('/images/', '');
+              const objectKey = urlObj.pathname;
               try {
                 await env.PHOTOS_BUCKET.delete(objectKey);
               } catch (e) {
@@ -688,29 +680,6 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           JSON.stringify({ error: 'Unapprove failed' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
-      }
-    }
-
-    // Serve images from R2
-    if (path.startsWith('/images/') && method === 'GET') {
-      try {
-        const objectKey = path.replace('/images/', '');
-        const object = await env.PHOTOS_BUCKET.get(objectKey);
-
-        if (!object) {
-          return new Response('Not Found', { status: 404, headers: corsHeaders });
-        }
-
-        const headers = new Headers(corsHeaders);
-        object.writeHttpMetadata(headers);
-        headers.set('etag', object.httpEtag);
-        // Cache images for 1 year (immutable content with UUID filenames)
-        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-
-        return new Response(object.body, { headers });
-      } catch (error) {
-        console.error('Image serve error:', error);
-        return new Response('Error serving image', { status: 500, headers: corsHeaders });
       }
     }
 
