@@ -2,6 +2,21 @@ name = "wedding-gallery"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
+workers_dev = true
+preview_urls = true
+
+# Routes (for Cloudflare Pages integration)
+# If deploying as a Worker, you can also use routes here
+routes = [
+  { pattern = "wedding-gallery.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
+  { pattern = "wedding-gallery.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
+]
+
+# Environment variables (optional)
+[vars]
+# ENVIRONMENT = "production"
+PHOTO_BASE_URL = "https://photos.wedding-gallery.zaidhuda.com"
+
 # D1 Database binding
 [[d1_databases]]
 binding = "DB"
@@ -16,15 +31,3 @@ bucket_name = "muna-li-zaid-photos"
 # Workers AI binding for content moderation
 [ai]
 binding = "AI"
-
-# Routes (for Cloudflare Pages integration)
-# If deploying as a Worker, you can also use routes here
-routes = [
-  { pattern = "wedding-gallery.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
-  { pattern = "wedding-gallery.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
-]
-
-# Environment variables (optional)
-# [vars]
-# ENVIRONMENT = "production"
-PHOTO_BASE_URL = "https://photos.wedding-gallery.zaidhuda.com"
