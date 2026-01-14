@@ -1,9 +1,6 @@
 // ===== CONFIGURATION =====
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const BASE_URL = isLocalhost
-    ? 'http://localhost:8787'
-    : 'https://wedding-gallery.zaidhuda.workers.dev';
-const WORKER_URL = `${BASE_URL}/api`;
+const WORKER_URL = isLocalhost ? 'http://localhost:8787/api' : '/api';
 
 const GUEST_PASSWORD = 'ZM2026';
 const STORAGE_KEY = 'wedding_gallery_access';

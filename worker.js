@@ -4,30 +4,42 @@ export default {
     const path = url.pathname;
     const method = request.method;
     const origin = request.headers.get('Origin');
+    const selfOrigin = url.origin;
+    const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
 
-    // Allowed origins for admin routes (credentials require explicit origin)
-    const allowedOrigins = [
-      'https://wedding-gallery.zaidhuda.com',
-      'https://wedding-gallery.zaidhuda.workers.dev',
-      'http://localhost:8787',
-      'http://127.0.0.1:8787',
-    ];
+    const isImageGet = method === 'GET' && path.startsWith('/images/');
 
-    // CORS headers - use specific origin for admin routes (required for credentials)
-    const isAdminRoute = path.startsWith('/admin');
-    const isAllowedOrigin = origin && allowedOrigins.some(o => origin.startsWith(o.replace(':8787', '')));
+    // Validate Origin only for non-image routes
+    let requestOrigin = null;
+    if (origin) {
+      try { requestOrigin = new URL(origin).origin; } catch { requestOrigin = null; }
+    }
 
-    const corsHeaders = isAdminRoute
+    if (!isImageGet && !isLocalDev) {
+      // Require Origin and require same-origin
+      if (!requestOrigin || requestOrigin !== selfOrigin) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'null',
+          },
+        });
+      }
+    }
+
+    // ===== CORS HEADERS =====
+    const corsHeaders = isImageGet
       ? {
-          'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      : {
+          'Access-Control-Allow-Origin': selfOrigin,
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
           'Access-Control-Allow-Credentials': 'true',
-        }
-      : {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
         };
 
     // Handle CORS preflight
@@ -37,9 +49,6 @@ export default {
 
     // Single guest password for access control
     const GUEST_PASSWORD = 'ZM2026';
-
-    // Helper: Check if running locally
-    const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
 
     // Helper: Check if request is authenticated via Cloudflare Access
     const isAccessAuthenticated = (request) => {
