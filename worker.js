@@ -6,26 +6,27 @@ export default {
     const origin = request.headers.get('Origin');
     const selfOrigin = url.origin;
     const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-
+    const secFetchSite = request.headers.get('Sec-Fetch-Site');
     const isImageGet = method === 'GET' && path.startsWith('/images/');
 
-    // Validate Origin only for non-image routes
-    let requestOrigin = null;
-    if (origin) {
-      try { requestOrigin = new URL(origin).origin; } catch { requestOrigin = null; }
-    }
+    const normalizeOrigin = (value) => {
+      if (!value) return null;
+      try { return new URL(value).origin; } catch { return null; }
+    };
 
-    if (!isImageGet && !isLocalDev) {
-      // Require Origin and require same-origin
-      if (!requestOrigin || requestOrigin !== selfOrigin) {
-        return new Response(JSON.stringify({ error: 'Forbidden' }), {
-          status: 403,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': 'null',
-          },
-        });
-      }
+    const requestOrigin = normalizeOrigin(origin);
+    const isSameOriginByOrigin = requestOrigin && requestOrigin === selfOrigin;
+    const isSameOriginByFetchMeta = secFetchSite === 'same-origin';
+
+    // Gate everything except public images
+    if (!isImageGet && !isSameOriginByOrigin && !isSameOriginByFetchMeta) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': 'null',
+        },
+      });
     }
 
     // ===== CORS HEADERS =====
@@ -36,10 +37,10 @@ export default {
           'Access-Control-Allow-Headers': 'Content-Type',
         }
       : {
-          'Access-Control-Allow-Origin': selfOrigin,
+          'Access-Control-Allow-Origin': requestOrigin || selfOrigin,
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Credentials': 'true',
+          'Access-Control-Allow-Credentials': path.startsWith('/admin') ? 'true' : 'true',
         };
 
     // Handle CORS preflight
