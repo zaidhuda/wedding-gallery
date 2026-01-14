@@ -515,11 +515,8 @@ function getOptimizedImageUrl(url) {
     if (!url) return url;
     // For Cloudflare Image Resizing: format=auto serves WebP/AVIF based on browser support
     // Only apply to production URLs (not localhost)
-    if (url.includes('workers.dev') || url.includes('zaidhuda.com')) {
-        const separator = url.includes('?') ? '&' : '?';
-        return `${url}${separator}format=auto`;
-    }
-    return url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}format=auto`;
 }
 
 // Format timestamp for film stamp display (e.g., "8:42 PM")

@@ -1,3 +1,7 @@
+import { env } from "cloudflare:workers";
+
+const PHOTO_BASE_URL = env.PHOTO_BASE_URL;
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -310,7 +314,7 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           httpMetadata: { contentType: format },
         });
 
-        const imageUrl = `${url.origin}/images/${objectKey}`;
+        const imageUrl = `${PHOTO_BASE_URL}/${objectKey}`;
         const takenAt = formData.get('takenAt') || new Date().toISOString();
         const timestamp = new Date().toISOString();
         const isApproved = moderation.autoApproved ? 1 : 0;
@@ -509,18 +513,8 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
 
         if (hasMore) photos.pop();
 
-        const transformedPhotos = photos.map(photo => {
-          if (photo.url && isLocalDev) {
-            photo.url = photo.url.replace(
-              'https://wedding-gallery.zaidhuda.workers.dev',
-              url.origin
-            );
-          }
-          return photo;
-        });
-
         return new Response(
-          JSON.stringify({ photos: transformedPhotos, hasMore, total: countResult?.total || 0, limit, offset }),
+          JSON.stringify({ photos, hasMore, total: countResult?.total || 0, limit, offset }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       } catch (error) {
@@ -550,18 +544,9 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         ).all();
 
         const photos = result.results || [];
-        const transformedPhotos = photos.map(photo => {
-          if (photo.url && isLocalDev) {
-            photo.url = photo.url.replace(
-              'https://wedding-gallery.zaidhuda.workers.dev',
-              url.origin
-            );
-          }
-          return photo;
-        });
 
         return new Response(
-          JSON.stringify({ photos: transformedPhotos, admin: adminEmail }),
+          JSON.stringify({ photos, admin: adminEmail }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       } catch (error) {

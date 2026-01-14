@@ -19,10 +19,12 @@ binding = "AI"
 
 # Routes (for Cloudflare Pages integration)
 # If deploying as a Worker, you can also use routes here
-# routes = [
-#   { pattern = "your-domain.com/api/*", zone_name = "your-domain.com" }
-# ]
+routes = [
+  { pattern = "wedding-gallery.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
+  { pattern = "wedding-gallery.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
+]
 
 # Environment variables (optional)
 # [vars]
 # ENVIRONMENT = "production"
+PHOTO_BASE_URL = "https://photos.wedding-gallery.zaidhuda.com"
