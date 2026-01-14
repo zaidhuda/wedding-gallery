@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 
+const ENVIRONMENT = env.ENVIRONMENT
 const PHOTO_BASE_URL = env.PHOTO_BASE_URL;
 
 export default {
@@ -7,10 +8,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
-    const origin = request.headers.get('Origin');
     const selfOrigin = url.origin;
-    const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    const origin = request.headers.get('Origin');
     const secFetchSite = request.headers.get('Sec-Fetch-Site');
+    const isDevelopment = ENVIRONMENT === "development"
 
     const normalizeOrigin = (value) => {
       if (!value) return null;
@@ -21,7 +22,7 @@ export default {
     const isSameOriginByOrigin = requestOrigin && requestOrigin === selfOrigin;
     const isSameOriginByFetchMeta = secFetchSite === 'same-origin';
 
-    if (!isSameOriginByOrigin && !isSameOriginByFetchMeta && !isLocalDev) {
+    if (!isSameOriginByOrigin && !isSameOriginByFetchMeta && !isDevelopment) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
         headers: {
@@ -49,14 +50,14 @@ export default {
 
     // Helper: Check if request is authenticated via Cloudflare Access
     const isAccessAuthenticated = (request) => {
-      if (isLocalDev) return true;
+      if (isDevelopment) return true;
       const jwt = request.headers.get('Cf-Access-Jwt-Assertion');
       const email = request.headers.get('Cf-Access-Authenticated-User-Email');
       return !!(jwt && email);
     };
 
     const getAccessEmail = (request) => {
-      if (isLocalDev) return 'dev@localhost';
+      if (isDevelopment) return 'dev@localhost';
       return request.headers.get('Cf-Access-Authenticated-User-Email') || 'unknown';
     };
 
@@ -680,6 +681,29 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           JSON.stringify({ error: 'Unapprove failed' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+    }
+
+    // Serve images from R2
+    if (isDevelopment && path.startsWith('/images/') && method === 'GET') {
+      try {
+        const objectKey = path.replace('/images/', '');
+        const object = await env.PHOTOS_BUCKET.get(objectKey);
+
+        if (!object) {
+          return new Response('Not Found', { status: 404, headers: corsHeaders });
+        }
+
+        const headers = new Headers(corsHeaders);
+        object.writeHttpMetadata(headers);
+        headers.set('etag', object.httpEtag);
+        // Cache images for 1 year (immutable content with UUID filenames)
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+
+        return new Response(object.body, { headers });
+      } catch (error) {
+        console.error('Image serve error:', error);
+        return new Response('Error serving image', { status: 500, headers: corsHeaders });
       }
     }
 
