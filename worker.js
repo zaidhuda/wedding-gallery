@@ -19,7 +19,7 @@ export default {
     const isSameOriginByFetchMeta = secFetchSite === 'same-origin';
 
     // Gate everything except public images
-    if (!isImageGet && !isSameOriginByOrigin && !isSameOriginByFetchMeta) {
+    if (!isImageGet && !isSameOriginByOrigin && !isSameOriginByFetchMeta && !isLocalDev) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
         headers: {
