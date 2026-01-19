@@ -4,15 +4,15 @@ CREATE TABLE IF NOT EXISTS photos (
   object_key TEXT NOT NULL,
   name TEXT NOT NULL,
   message TEXT DEFAULT '',
-  eventTag TEXT NOT NULL,
+  event_tag TEXT NOT NULL,
   timestamp TEXT NOT NULL,
   taken_at TEXT,
   is_approved INTEGER DEFAULT 0,
   token TEXT
 );
 
--- Create index for faster queries by eventTag
-CREATE INDEX IF NOT EXISTS idx_eventTag ON photos(eventTag);
+-- Create index for faster queries by event_tag
+CREATE INDEX IF NOT EXISTS idx_event_tag ON photos(event_tag);
 
 -- Create index for faster queries by timestamp (upload time)
 CREATE INDEX IF NOT EXISTS idx_timestamp ON photos(timestamp);

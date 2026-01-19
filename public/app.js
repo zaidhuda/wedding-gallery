@@ -543,7 +543,7 @@ function createPhotoCard(photo, eventTag = null) {
     card.setAttribute('data-photo-id', photo.id);
 
     const optimizedUrl = getOptimizedImageUrl(photo.url);
-    const filmTime = formatFilmTimestamp(photo.taken_at);
+    const filmTime = formatFilmTimestamp(photo.takenAt);
 
     // Check if user has edit token for this photo
     const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');

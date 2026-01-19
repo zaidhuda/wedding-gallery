@@ -330,7 +330,7 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
 
         // Save to D1 with moderation result and edit token
         await env.DB.prepare(
-          'INSERT INTO photos (object_key, name, message, eventTag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )
           .bind(objectKey, name, message, eventTag, timestamp, takenAt, isApproved, editToken)
           .run();
@@ -390,18 +390,26 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         }
 
         // Verify token and check 1-hour limit
-        const photo = await env.DB.prepare(
-          'SELECT id, timestamp, token FROM photos WHERE id = ? AND token = ?'
+        const photoRow = await env.DB.prepare(
+          'SELECT id, object_key, timestamp, token FROM photos WHERE id = ? AND token = ?'
         )
           .bind(id, token)
           .first();
 
-        if (!photo) {
+        if (!photoRow) {
           return new Response(
             JSON.stringify({ error: 'Invalid token or photo not found' }),
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        // Map to camelCase for logic
+        const photo = {
+          id: photoRow.id,
+          objectKey: photoRow.object_key,
+          timestamp: photoRow.timestamp,
+          token: photoRow.token
+        };
 
         // Check if within 1 hour (3600000 milliseconds)
         const uploadTime = new Date(photo.timestamp).getTime();
@@ -449,18 +457,26 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         }
 
         // Verify token and check 1-hour limit
-        const photo = await env.DB.prepare(
+        const photoRow = await env.DB.prepare(
           'SELECT id, object_key, timestamp, token FROM photos WHERE id = ? AND token = ?'
         )
           .bind(id, token)
           .first();
 
-        if (!photo) {
+        if (!photoRow) {
           return new Response(
             JSON.stringify({ error: 'Invalid token or photo not found' }),
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        // Map to camelCase
+        const photo = {
+          id: photoRow.id,
+          objectKey: photoRow.object_key,
+          timestamp: photoRow.timestamp,
+          token: photoRow.token
+        };
 
         // Check if within 1 hour (3600000 milliseconds)
         const uploadTime = new Date(photo.timestamp).getTime();
@@ -475,9 +491,9 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         }
 
         // Delete from R2
-        if (photo.object_key) {
+        if (photo.objectKey) {
           try {
-            await env.PHOTOS_BUCKET.delete(photo.object_key);
+            await env.PHOTOS_BUCKET.delete(photo.objectKey);
           } catch (e) {
             console.error('R2 delete error:', e);
           }
@@ -511,8 +527,8 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         let params;
 
         if (eventTag) {
-          query = 'SELECT * FROM photos WHERE is_approved = 1 AND eventTag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
-          countQuery = 'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1 AND eventTag = ?';
+          query = 'SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
+          countQuery = 'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1 AND event_tag = ?';
           params = [eventTag, limit + 1, offset];
         } else {
           query = 'SELECT * FROM photos WHERE is_approved = 1 ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
@@ -526,7 +542,15 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           : await env.DB.prepare(countQuery).first();
 
         const photos = (result.results || []).map(p => ({
-          ...p,
+          id: p.id,
+          objectKey: p.object_key,
+          name: p.name,
+          message: p.message,
+          eventTag: p.event_tag,
+          timestamp: p.timestamp,
+          takenAt: p.taken_at,
+          isApproved: p.is_approved,
+          token: p.token,
           url: `${PHOTO_BASE_URL}/${p.object_key}`
         }));
         const hasMore = photos.length > limit;
@@ -564,7 +588,15 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         ).all();
 
         const photos = (result.results || []).map(p => ({
-          ...p,
+          id: p.id,
+          objectKey: p.object_key,
+          name: p.name,
+          message: p.message,
+          eventTag: p.event_tag,
+          timestamp: p.timestamp,
+          takenAt: p.taken_at,
+          isApproved: p.is_approved,
+          token: p.token,
           url: `${PHOTO_BASE_URL}/${p.object_key}`
         }));
 
@@ -617,11 +649,11 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           );
         } else if (action === 'delete') {
           const placeholders = targetIds.map(() => '?').join(',');
-          const photos = await env.DB.prepare(
+          const photosRes = await env.DB.prepare(
             `SELECT id, object_key FROM photos WHERE id IN (${placeholders})`
           ).bind(...targetIds).all();
 
-          for (const photo of photos.results || []) {
+          for (const photo of photosRes.results || []) {
             if (photo.object_key) {
               try {
                 await env.PHOTOS_BUCKET.delete(photo.object_key);
