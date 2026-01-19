@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { Buffer } from 'buffer';
 
 const ENVIRONMENT = env.ENVIRONMENT;
 const PHOTO_BASE_URL = env.PHOTO_BASE_URL;
@@ -20,9 +21,9 @@ Rules:
   6) Deliberate humiliation/embarrassment likely to upset couple/families later.
 - UNSURE if cannot confidently classify as safe or unsafe.
 
-Output ONLY valid JSON with one of:
-{"result":"safe","reason":"[short_reason]"} OR {"result":"unsafe","reason":"[short_reason]"} OR {"result":"unsure","reason":"[short_reason]"}.
-No extra keys. No prose.`;
+Respond ONLY with valid JSON:
+{"result":"safe"|"unsafe"|"unsure","reason":"[very_short_reason_without_description]"}.
+No other text.`;
 
 const IMAGE_SYSTEM_PROMPT = `You are a moderator for a Malay Wedding LIVE Digital Guestbook.
 Decide if this image is safe to display publicly.
@@ -47,7 +48,7 @@ UNSAFE if ANY apply:
 UNSURE if cannot confidently classify as safe or unsafe.
 
 Respond ONLY with valid JSON:
-{"result":"safe","reason":"[short_reason]"} OR {"result":"unsafe","reason":"[short_reason]"} OR {"result":"unsure","reason":"[short_reason]"}.
+{"result":"safe"|"unsafe"|"unsure","reason":"[very_short_reason_without_description]"}.
 No other text.`;
 
 export default {
@@ -261,17 +262,17 @@ export default {
       }
     };
 
-    const moderateImageWithAI = async (imageUrl, env) => {
+    const moderateImageWithAI = async (imageBlob, env) => {
       try {
-        if (isDevelopment) {
-          console.log('Development mode, skipping image moderation');
-          return { status: 'unsure', reason: 'development' };
-        }
-
         if (!env.AI) {
           console.log('AI binding not available, requires manual review');
           return { status: 'unsure', reason: 'ai_unavailable' };
         }
+
+        const buf = await imageBlob.arrayBuffer();
+        const b64 = Buffer.from(buf).toString('base64');
+        const mime = imageBlob.type || 'image/jpeg';
+        const dataUrl = `data:${mime};base64,${b64}`;
 
         const response = await withTimeout(
           env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
@@ -284,7 +285,7 @@ export default {
                     type: 'text',
                     text: 'Classify this image for guestbook safety.',
                   },
-                  { type: 'image_url', image_url: { url: imageUrl } },
+                  { type: 'image_url', image_url: { url: dataUrl } },
                 ],
               },
             ],
@@ -298,7 +299,7 @@ export default {
           (response &&
             (response.response || response.output_text || response.text)) ||
           response;
-        console.log('AI image moderation raw:', JSON.stringify(aiRaw));
+        console.log('AI image moderation raw:', aiRaw);
 
         return parseAIModerationResponse(aiRaw, 'ai_image');
       } catch (error) {
@@ -410,17 +411,19 @@ export default {
           });
         }
 
-        // Clone the image blob for processing
-        const imageArrayBuffer = await image.arrayBuffer();
         const extension = format === 'image/webp' ? '.webp' : '.jpg';
         const filename = `${crypto.randomUUID()}${extension}`;
         const objectKey = `photos/${filename}`;
+
+        // Clone the image blob for AI processing
+        const imageArrayBuffer = await image.arrayBuffer();
+        const imageBlob = new Blob([imageArrayBuffer], { type: format });
 
         // STEP 1: Moderate text first
         const textResult = await moderateTextWithAI(name, message, env);
         console.log('Text moderation:', JSON.stringify(textResult));
 
-        // REJECT immediately if text is unsafe
+        // REJECT immediately if text is unsafe (400 Bad Request)
         if (textResult.status === 'unsafe') {
           return new Response(
             JSON.stringify({
@@ -435,25 +438,12 @@ export default {
           );
         }
 
-        // STEP 2: Upload to R2 so we have a URL for image moderation
-        await env.PHOTOS_BUCKET.put(objectKey, imageArrayBuffer, {
-          httpMetadata: { contentType: format },
-        });
-
-        const imageUrl = `${PHOTO_BASE_URL}/${objectKey}`;
-
-        // STEP 3: Moderate image using the public URL
-        const imageResult = await moderateImageWithAI(imageUrl, env);
+        // STEP 2: Moderate image (only if text passed)
+        const imageResult = await moderateImageWithAI(imageBlob, env);
         console.log('Image moderation:', JSON.stringify(imageResult));
 
-        // IF UNSAFE: Delete from R2 immediately and reject
+        // REJECT immediately if image is unsafe (400 Bad Request)
         if (imageResult.status === 'unsafe') {
-          try {
-            await env.PHOTOS_BUCKET.delete(objectKey);
-          } catch (e) {
-            console.error('Failed to cleanup unsafe image:', e);
-          }
-
           return new Response(
             JSON.stringify({
               error:
@@ -474,6 +464,12 @@ export default {
           textResult.status === 'safe' && imageResult.status === 'safe';
         const isApproved = bothSafe ? 1 : 0;
 
+        // Proceed with upload to R2
+        await env.PHOTOS_BUCKET.put(objectKey, imageArrayBuffer, {
+          httpMetadata: { contentType: format },
+        });
+
+        const imageUrl = `${PHOTO_BASE_URL}/${objectKey}`;
         const takenAt = formData.get('takenAt') || new Date().toISOString();
         const timestamp = new Date().toISOString();
 
@@ -496,7 +492,7 @@ export default {
           )
           .run();
 
-        // Get the inserted photo ID
+        // Get the inserted photo ID by token
         const insertedPhoto = await env.DB.prepare(
           'SELECT id FROM photos WHERE token = ?',
         )
@@ -509,8 +505,8 @@ export default {
             url: imageUrl,
             id: insertedPhoto?.id,
             token: editToken,
+            pending: !bothSafe,
             autoApproved: bothSafe,
-            pending: !bothSafe, // Indicate to UI if it's pending review
             moderationReason: bothSafe
               ? 'auto_approved'
               : textResult.status === 'unsure'
