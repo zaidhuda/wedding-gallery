@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS photos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   url TEXT NOT NULL,
+  object_key TEXT NOT NULL,
   name TEXT NOT NULL,
   message TEXT DEFAULT '',
   eventTag TEXT NOT NULL,
@@ -25,6 +26,9 @@ CREATE INDEX IF NOT EXISTS idx_is_approved ON photos(is_approved);
 
 -- Create index for token lookups (for edit window feature)
 CREATE INDEX IF NOT EXISTS idx_token ON photos(token);
+
+-- Create index for object key lookups
+CREATE INDEX IF NOT EXISTS idx_object_key ON photos(object_key);
 
 -- Migration: Add taken_at column to existing table (run manually if needed)
 -- ALTER TABLE photos ADD COLUMN taken_at TEXT;

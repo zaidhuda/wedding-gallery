@@ -317,9 +317,9 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
 
         // Save to D1 with moderation result and edit token
         await env.DB.prepare(
-          'INSERT INTO photos (url, name, message, eventTag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO photos (url, object_key, name, message, eventTag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
         )
-          .bind(imageUrl, name, message, eventTag, timestamp, takenAt, isApproved, editToken)
+          .bind(imageUrl, objectKey, name, message, eventTag, timestamp, takenAt, isApproved, editToken)
           .run();
 
         // Get the inserted photo ID by token
@@ -424,7 +424,7 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
 
         // Verify token and check 1-hour limit
         const photo = await env.DB.prepare(
-          'SELECT id, url, timestamp, token FROM photos WHERE id = ? AND token = ?'
+          'SELECT id, url, object_key, timestamp, token FROM photos WHERE id = ? AND token = ?'
         )
           .bind(id, token)
           .first();
@@ -449,11 +449,9 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         }
 
         // Delete from R2
-        if (photo.url) {
-          const urlObj = new URL(photo.url);
-          const objectKey = urlObj.pathname;
+        if (photo.object_key) {
           try {
-            await env.PHOTOS_BUCKET.delete(objectKey);
+            await env.PHOTOS_BUCKET.delete(photo.object_key);
           } catch (e) {
             console.error('R2 delete error:', e);
           }
@@ -588,15 +586,13 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         } else if (action === 'delete') {
           const placeholders = targetIds.map(() => '?').join(',');
           const photos = await env.DB.prepare(
-            `SELECT id, url FROM photos WHERE id IN (${placeholders})`
+            `SELECT id, url, object_key FROM photos WHERE id IN (${placeholders})`
           ).bind(...targetIds).all();
 
           for (const photo of photos.results || []) {
-            if (photo.url) {
-              const urlObj = new URL(photo.url);
-              const objectKey = urlObj.pathname;
+            if (photo.object_key) {
               try {
-                await env.PHOTOS_BUCKET.delete(objectKey);
+                await env.PHOTOS_BUCKET.delete(photo.object_key);
               } catch (e) {
                 console.error('R2 delete error:', e);
               }
