@@ -1257,6 +1257,23 @@ body.theme-tandang .upload-cta {
     color: var(--tandang-text);
 }
 
+/* Form Helper Text */
+.form-helper-text {
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 0.75rem;
+    color: #2C2C2C;
+}
+
+.modal-theme-sanding .form-helper-text {
+    color: var(--sanding-text-soft);
+}
+
+.modal-theme-tandang .form-helper-text {
+    color: var(--tandang-text-soft);
+}
+
 /* ===== LOADING STATE ===== */
 .loading-state {
     column-span: all;
@@ -1540,4 +1557,45 @@ body.theme-tandang .upload-cta {
 .test-cancel:hover {
     border-color: rgba(255,255,255,0.3);
     color: rgba(255,255,255,0.8);
+}
+
+/* ===== NEW ENTRY HIGHLIGHT ===== */
+@keyframes highlight-pulse {
+    0% {
+        box-shadow: 0 0 0 2px var(--ijab-accent), 0 0 20px rgba(184, 168, 138, 0.4);
+        background-color: rgba(184, 168, 138, 0.1);
+    }
+    100% {
+        box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
+        background-color: transparent;
+    }
+}
+
+.photo-card.new-entry-highlight .photo-item {
+    animation: highlight-pulse 4s ease-out forwards;
+}
+
+/* Theme-specific highlights */
+body.theme-sanding .photo-card.new-entry-highlight .photo-item {
+    animation-name: highlight-pulse-sanding;
+}
+
+body.theme-tandang .photo-card.new-entry-highlight .photo-item {
+    animation-name: highlight-pulse-tandang;
+}
+
+@keyframes highlight-pulse-sanding {
+    0% {
+        box-shadow: 0 0 0 2px var(--sanding-accent), 0 0 20px rgba(201, 162, 39, 0.4);
+        background-color: rgba(201, 162, 39, 0.1);
+    }
+    100% { box-shadow: none; background-color: transparent; }
+}
+
+@keyframes highlight-pulse-tandang {
+    0% {
+        box-shadow: 0 0 0 2px var(--tandang-accent), 0 0 20px rgba(79, 195, 247, 0.4);
+        background-color: rgba(79, 195, 247, 0.1);
+    }
+    100% { box-shadow: none; background-color: transparent; }
 }

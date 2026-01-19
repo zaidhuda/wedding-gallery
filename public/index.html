@@ -7,7 +7,7 @@
     <!-- SEO Meta Tags -->
     <meta name="description" content="A celebration of love — Join Zaid & Munawwarah's wedding journey through Ijab & Qabul, Sanding, and Tandang. February 2026.">
     <meta name="author" content="Zaid & Munawwarah">
-    <meta name="keywords" content="wedding, Zaid, Munawwarah, celebration, gallery, February 2026">
+    <meta name="keywords" content="wedding, Zaid, Munawwarah, celebration, guestbook, February 2026">
     <meta name="robots" content="noindex, nofollow">
 
     <!-- Open Graph / Facebook -->
@@ -61,8 +61,8 @@
             </h1>
             <p class="hero-date">February 2026</p>
         </div>
-        <div class="scroll-indicator" role="complementary" aria-label="Scroll to explore galleries">
-            <span>Explore</span>
+        <div class="scroll-indicator" role="complementary" aria-label="Scroll to explore guestbook">
+            <span>Guestbook</span>
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                 <path d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
             </svg>
@@ -78,7 +78,7 @@
             <p class="section-date" aria-label="Event date: February 7, 2026">February 7, 2026</p>
         </div>
         <div class="masonry-container">
-            <div class="masonry-grid" id="gallery-ijab" role="list" aria-label="Ijab & Qabul ceremony photos">
+            <div class="masonry-grid" id="gallery-ijab" role="list" aria-label="Ijab & Qabul ceremony wishes">
                 <!-- Photos loaded dynamically -->
             </div>
         </div>
@@ -92,7 +92,7 @@
             <p class="section-date" aria-label="Event date: February 8, 2026">February 8, 2026</p>
         </div>
         <div class="masonry-container">
-            <div class="masonry-grid" id="gallery-sanding" role="list" aria-label="Sanding ceremony photos">
+            <div class="masonry-grid" id="gallery-sanding" role="list" aria-label="Sanding ceremony wishes">
                 <!-- Photos loaded dynamically -->
             </div>
         </div>
@@ -106,7 +106,7 @@
             <p class="section-date" aria-label="Event date: February 14, 2026">February 14, 2026</p>
         </div>
         <div class="masonry-container">
-            <div class="masonry-grid" id="gallery-tandang" role="list" aria-label="Tandang ceremony photos">
+            <div class="masonry-grid" id="gallery-tandang" role="list" aria-label="Tandang ceremony wishes">
                 <!-- Photos loaded dynamically -->
             </div>
         </div>
@@ -114,14 +114,14 @@
     </main>
 
     <!-- Floating Navigation -->
-    <nav class="floating-nav" id="floatingNav" role="navigation" aria-label="Gallery sections navigation">
-        <button class="nav-item active" data-section="section-night" data-event="Ijab & Qabul" aria-label="Navigate to Ijab & Qabul night ceremony" aria-current="page">Night</button>
-        <button class="nav-item" data-section="section-grandeur" data-event="Sanding" aria-label="Navigate to Sanding grandeur ceremony">Grandeur</button>
-        <button class="nav-item" data-section="section-journey" data-event="Tandang" aria-label="Navigate to Tandang journey ceremony">Journey</button>
+    <nav class="floating-nav" id="floatingNav" role="navigation" aria-label="Guestbook sections navigation">
+        <button class="nav-item active" data-section="section-night" data-event="Ijab & Qabul" aria-label="Navigate to Ijab & Qabul ceremony" aria-current="page">Ijab & Qabul</button>
+        <button class="nav-item" data-section="section-grandeur" data-event="Sanding" aria-label="Navigate to Sanding ceremony">Sanding</button>
+        <button class="nav-item" data-section="section-journey" data-event="Tandang" aria-label="Navigate to Tandang ceremony">Tandang</button>
     </nav>
 
     <!-- Upload CTA -->
-    <button class="upload-cta hidden" id="uploadCta" aria-label="Share a memory - Open photo upload form">
+    <button class="upload-cta hidden" id="uploadCta" aria-label="Leave a wish - Open guestbook form">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" aria-hidden="true">
             <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
         </svg>
@@ -140,8 +140,8 @@
                 </svg>
             </button>
             <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Share a Memory</h3>
-                <p class="modal-subtitle" id="modalSubtitle">Add your photo to our collection</p>
+                <h3 class="modal-title" id="modalTitle">Leave a Wish</h3>
+                <p class="modal-subtitle" id="modalSubtitle">Add a photo and a message for the couple</p>
                 <span class="event-indicator" id="eventIndicator" aria-live="polite">Night</span>
             </div>
             <form class="modal-form" id="photoForm" aria-label="Photo upload form">
@@ -165,7 +165,8 @@
                     <textarea id="photoMessage" class="form-input form-textarea form-input-handwriting" placeholder="A few words about this moment..." aria-required="false" maxlength="500"></textarea>
                 </div>
                 <input type="hidden" id="hiddenEventTag" aria-hidden="true">
-                <button type="submit" class="submit-btn" id="uploadBtn" aria-label="Submit photo and share memory">Share Memory</button>
+                <button type="submit" class="submit-btn" id="uploadBtn" aria-label="Submit photo and share memory">Post to Guestbook</button>
+                <p class="form-helper-text">After posting, you can edit or delete your entry from this device.</p>
             </form>
         </div>
     </div>
@@ -180,7 +181,7 @@
                 </svg>
             </button>
             <div class="modal-header">
-                <h3 class="modal-title" id="editModalTitle">Edit Your Memory</h3>
+                <h3 class="modal-title" id="editModalTitle">Edit Your Wish</h3>
                 <p class="modal-subtitle" id="editModalSubtitle">Update your name or message</p>
                 <span class="event-indicator" id="editEventIndicator" aria-live="polite">Night</span>
             </div>

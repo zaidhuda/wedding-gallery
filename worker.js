@@ -423,6 +423,19 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           );
         }
 
+        // Run AI text moderation on the new name/message
+        const textModeration = await moderateTextWithAI(name.trim(), (message || '').trim(), env);
+
+        if (!textModeration.safe) {
+          return new Response(
+            JSON.stringify({
+              error: "Your post couldn't be published. Please update your content and try again.",
+              code: 'TEXT_MODERATION_FAILED',
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         // Update name and message
         await env.DB.prepare(
           'UPDATE photos SET name = ?, message = ? WHERE id = ?'
@@ -521,25 +534,46 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         const eventTag = url.searchParams.get('eventTag');
         const limit = parseInt(url.searchParams.get('limit')) || 12;
         const offset = parseInt(url.searchParams.get('offset')) || 0;
+        const sinceId = parseInt(url.searchParams.get('since_id'));
 
         let query;
         let countQuery;
         let params;
 
-        if (eventTag) {
-          query = 'SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
-          countQuery = 'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1 AND event_tag = ?';
-          params = [eventTag, limit + 1, offset];
+        if (sinceId) {
+          // Polling mode: fetch all new approved photos since given ID
+          // We still respect eventTag if provided
+          if (eventTag) {
+            query = 'SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? AND id > ? ORDER BY id DESC';
+            params = [eventTag, sinceId];
+          } else {
+            query = 'SELECT * FROM photos WHERE is_approved = 1 AND id > ? ORDER BY id DESC';
+            params = [sinceId];
+          }
+          // No need for count/limit in polling usually, but D1 might limit result size.
+          // We'll let it return all changes or maybe limit to 50 just in case.
+           query += ' LIMIT 50';
         } else {
-          query = 'SELECT * FROM photos WHERE is_approved = 1 ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
-          countQuery = 'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1';
-          params = [limit + 1, offset];
+          // Standard pagination mode
+          if (eventTag) {
+            query = 'SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
+            countQuery = 'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1 AND event_tag = ?';
+            params = [eventTag, limit + 1, offset];
+          } else {
+            query = 'SELECT * FROM photos WHERE is_approved = 1 ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
+            countQuery = 'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1';
+            params = [limit + 1, offset];
+          }
         }
 
         const result = await env.DB.prepare(query).bind(...params).all();
-        const countResult = eventTag
-          ? await env.DB.prepare(countQuery).bind(eventTag).first()
-          : await env.DB.prepare(countQuery).first();
+
+        let countResult;
+        if (!sinceId) {
+           countResult = eventTag
+            ? await env.DB.prepare(countQuery).bind(eventTag).first()
+            : await env.DB.prepare(countQuery).first();
+        }
 
         const photos = (result.results || []).map(p => ({
           id: p.id,

@@ -46,9 +46,9 @@ const WEDDING_DATES = {
 const PHOTOS_PER_PAGE = 12;
 
 const EVENT_CONFIG = {
-    'Ijab & Qabul': { theme: 'ijab', section: 'section-night', gallery: 'gallery-ijab', label: 'Night' },
-    'Sanding': { theme: 'sanding', section: 'section-grandeur', gallery: 'gallery-sanding', label: 'Grandeur' },
-    'Tandang': { theme: 'tandang', section: 'section-journey', gallery: 'gallery-tandang', label: 'Journey' }
+    'Ijab & Qabul': { theme: 'ijab', section: 'section-night', gallery: 'gallery-ijab', label: 'Ijab & Qabul' },
+    'Sanding': { theme: 'sanding', section: 'section-grandeur', gallery: 'gallery-sanding', label: 'Sanding' },
+    'Tandang': { theme: 'tandang', section: 'section-journey', gallery: 'gallery-tandang', label: 'Tandang' }
 };
 
 // Pagination state for each gallery
@@ -60,6 +60,7 @@ const galleryState = {
 
 let currentEventTag = null;
 let selectedFile = null;
+let globalMaxPhotoId = 0;
 
 // ===== UTILITY FUNCTIONS =====
 function applyTheme(theme) {
@@ -221,7 +222,7 @@ function showModerationRejection(message) {
             <p class="rejection-cta">
                 ${message || "Your message contains content that doesn't match the wedding vibe. Please try a different caption!"}
             </p>
-            <button class="rejection-close" aria-label="Close dialog and try again">Try Again</button>
+            <button class="rejection-close" aria-label="Close dialog and try again">Okay</button>
         </div>
     `;
 
@@ -250,7 +251,7 @@ function showUploadSuccess(autoApproved = false) {
     // Different messages based on auto-approval status
     const title = autoApproved ? 'Success!' : 'Thank you!';
     const message = autoApproved
-        ? 'Your photo is now in the gallery. Scroll down to see it!'
+        ? 'Your wish is now in the guestbook!'
         : 'Your photo has been sent to the couple for a quick look before it goes live.';
     const iconColor = autoApproved ? '#16a34a' : 'var(--ink-navy)';
 
@@ -346,19 +347,19 @@ function showTestModeSelector() {
                     <p class="test-title" id="test-selector-title">Select Event Bucket</p>
                 </div>
                 <div class="test-selector-options" role="group" aria-label="Event selection">
-                    <button class="test-option" data-event="Ijab & Qabul" data-label="Night" aria-label="Select Ijab & Qabul night ceremony, February 7">
+                    <button class="test-option" data-event="Ijab & Qabul" data-label="Ijab & Qabul" aria-label="Select Ijab & Qabul ceremony, February 7">
                         <span class="test-option-emoji" aria-hidden="true">🌙</span>
-                        <span class="test-option-label">Night</span>
+                        <span class="test-option-label">Ijab & Qabul</span>
                         <span class="test-option-date">Feb 7</span>
                     </button>
-                    <button class="test-option" data-event="Sanding" data-label="Grandeur" aria-label="Select Sanding grandeur ceremony, February 8">
+                    <button class="test-option" data-event="Sanding" data-label="Sanding" aria-label="Select Sanding ceremony, February 8">
                         <span class="test-option-emoji" aria-hidden="true">👑</span>
-                        <span class="test-option-label">Grandeur</span>
+                        <span class="test-option-label">Sanding</span>
                         <span class="test-option-date">Feb 8</span>
                     </button>
-                    <button class="test-option" data-event="Tandang" data-label="Journey" aria-label="Select Tandang journey ceremony, February 14">
+                    <button class="test-option" data-event="Tandang" data-label="Tandang" aria-label="Select Tandang ceremony, February 14">
                         <span class="test-option-emoji" aria-hidden="true">🚗</span>
-                        <span class="test-option-label">Journey</span>
+                        <span class="test-option-label">Tandang</span>
                         <span class="test-option-date">Feb 14</span>
                     </button>
                 </div>
@@ -462,7 +463,7 @@ async function loadPhotosForEvent(eventTag, append = false) {
         gallery.innerHTML = `
             <div class="loading-state">
                 <div class="loading-spinner"></div>
-                <p style="opacity: 0.4; font-size: 0.85rem;">Loading memories...</p>
+                <p style="opacity: 0.4; font-size: 0.85rem;">Loading wishes...</p>
             </div>
         `;
     } else {
@@ -483,6 +484,13 @@ async function loadPhotosForEvent(eventTag, append = false) {
 
         const data = await response.json();
         const photos = data.photos || [];
+
+        // Update global max ID for polling
+        if (photos.length > 0) {
+            const batchMax = Math.max(...photos.map(p => p.id));
+            if (batchMax > globalMaxPhotoId) globalMaxPhotoId = batchMax;
+        }
+
         state.hasMore = data.hasMore;
         state.offset += photos.length;
 
@@ -551,8 +559,8 @@ function createPhotoCard(photo, eventTag = null) {
 
     card.innerHTML = `
         <div class="photo-item" role="listitem">
-            <img src="${optimizedUrl}" alt="Memory shared by ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}" loading="lazy">
-            ${isAdmin ? `<button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from gallery" aria-label="Remove photo by ${photo.name || 'Guest'} from gallery">✕</button>` : ''}
+            <img src="${optimizedUrl}" alt="Wish from ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}" loading="lazy">
+            ${isAdmin ? `<button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from guestbook" aria-label="Remove wish by ${photo.name || 'Guest'} from guestbook">✕</button>` : ''}
             ${hasEditToken ? `<button class="edit-btn" data-photo-id="${photo.id}" data-photo-url="${optimizedUrl}" data-photo-name="${(photo.name || '').replace(/"/g, '&quot;')}" data-photo-message="${(photo.message || '').replace(/"/g, '&quot;')}" data-event-tag="${eventTag || photo.eventTag || ''}" title="Edit your submission" aria-label="Edit your photo submission">Edit</button>` : ''}
         </div>
         <div class="photo-caption">
@@ -586,7 +594,7 @@ function createLoadMoreCard(eventTag) {
     card.dataset.eventTag = eventTag;
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
-    card.setAttribute('aria-label', 'Load more memories');
+    card.setAttribute('aria-label', 'Load more wishes');
 
     card.innerHTML = `
         <div class="load-more-content">
@@ -595,7 +603,7 @@ function createLoadMoreCard(eventTag) {
                     <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
                 </svg>
             </div>
-            <p class="load-more-text">See more memories</p>
+            <p class="load-more-text">See more wishes</p>
             <div class="load-more-spinner" role="status" aria-live="polite" aria-label="Loading more photos">
                 <div class="loading-spinner"></div>
             </div>
@@ -622,14 +630,14 @@ function createLoadMoreCard(eventTag) {
 function renderPhotos(photos, gallery, eventTag, hasMore) {
     if (!photos || photos.length === 0) {
         gallery.innerHTML = `
-            <div class="empty-state" role="status" aria-label="No memories yet">
+            <div class="empty-state" role="status" aria-label="No wishes yet">
                 <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
-                <p class="empty-state-title">No memories yet</p>
-                <p class="empty-state-text">Be the first to share a moment</p>
+                <p class="empty-state-title">No wishes yet</p>
+                <p class="empty-state-text">Be the first to leave a wish</p>
             </div>
         `;
         return;
@@ -917,12 +925,20 @@ async function uploadPhoto(file, name, message, eventTag) {
             <p class="upload-zone-text">Tap to select a photo</p>
         `;
 
-        // Show success notification with approval status
-        showUploadSuccess(autoApproved);
-
         // If auto-approved, refresh the gallery to show the new photo
         if (autoApproved) {
             await loadPhotosForEvent(eventTag, false);
+            // Highlight the new photo
+            setTimeout(() => {
+                const newCard = document.querySelector(`.photo-card[data-photo-id="${result.id}"]`);
+                if (newCard) {
+                   newCard.classList.add('new-entry-highlight');
+                   newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        } else {
+             // Pending approval (subtle notification instead of popup)
+             alert('Your post is pending approval and will appear once approved.');
         }
     } catch (error) {
         console.error('Upload error:', error);
@@ -973,12 +989,16 @@ async function editPhoto(photoId, name, message) {
         closeEditModal();
 
         // Refresh the gallery to show updated photo
+        // Refresh the gallery to show updated photo and highlight
         if (currentEditEventTag) {
             await loadPhotosForEvent(currentEditEventTag, false);
+            setTimeout(() => {
+                const updatedCard = document.querySelector(`.photo-card[data-photo-id="${photoId}"]`);
+                if (updatedCard) {
+                   updatedCard.classList.add('new-entry-highlight');
+                }
+            }, 100);
         }
-
-        // Show success notification
-        showUploadSuccess(true);
     } catch (error) {
         console.error('Edit error:', error);
         alert(`Unable to edit: ${error.message}`);
@@ -1037,37 +1057,6 @@ async function deletePhoto(photoId) {
             card.style.transform = 'scale(0.9)';
             setTimeout(() => card.remove(), 300);
         }
-
-        // Show success notification
-        const overlay = document.createElement('div');
-        overlay.className = 'rejection-overlay';
-        overlay.setAttribute('role', 'alertdialog');
-        overlay.setAttribute('aria-modal', 'true');
-        overlay.innerHTML = `
-            <div class="rejection-popup">
-                <div class="rejection-icon" style="color: #16a34a;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path d="M9 12l2 2 4-4"/>
-                        <circle cx="12" cy="12" r="10"/>
-                    </svg>
-                </div>
-                <p class="rejection-message" style="color: #16a34a;">Deleted</p>
-                <p class="rejection-cta">Your photo has been removed.</p>
-                <button class="rejection-close" aria-label="Close notification">OK</button>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-        requestAnimationFrame(() => overlay.classList.add('visible'));
-
-        const closePopup = () => {
-            overlay.classList.remove('visible');
-            setTimeout(() => overlay.remove(), 300);
-        };
-        overlay.querySelector('.rejection-close').addEventListener('click', closePopup);
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closePopup();
-        });
-        setTimeout(closePopup, 3000);
     } catch (error) {
         console.error('Delete error:', error);
         alert(`Unable to delete: ${error.message}`);
@@ -1269,6 +1258,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup scroll observer
     setupScrollObserver();
 
+    // Start live updates
+    startPolling();
+
     // Setup upload button
     setupUploadButton();
 
@@ -1418,3 +1410,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+
+// ===== LIVE POLLING =====
+let pollInterval;
+
+function startPolling() {
+    // Initial poll after 5 seconds, then every 12s
+    setTimeout(pollForNewPhotos, 5000);
+    pollInterval = setInterval(pollForNewPhotos, 12000);
+
+    // Handle visibility change to save resources
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            clearInterval(pollInterval);
+        } else {
+            pollForNewPhotos(); // Check immediately when coming back
+            pollInterval = setInterval(pollForNewPhotos, 12000);
+        }
+    });
+}
+
+async function pollForNewPhotos() {
+    if (document.hidden) return;
+
+    try {
+        // Fetch new photos since last seen ID
+        const url = `${WORKER_URL}/photos?since_id=${globalMaxPhotoId}`;
+        const response = await fetch(url);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const newPhotos = data.photos || [];
+
+        if (newPhotos.length === 0) return;
+
+        // Update global max ID
+        const batchMax = Math.max(...newPhotos.map(p => p.id));
+        if (batchMax > globalMaxPhotoId) globalMaxPhotoId = batchMax;
+
+        // Distribute photos to their respective galleries (Reverse to maintain order when prepending)
+        newPhotos.reverse().forEach(photo => {
+            const config = EVENT_CONFIG[photo.eventTag];
+            if (!config) return;
+
+            const gallery = document.getElementById(config.gallery);
+            if (!gallery) return;
+
+            // Dedupe checks
+            if (gallery.querySelector(`.photo-card[data-photo-id="${photo.id}"]`)) return;
+
+            const card = createPhotoCard(photo, photo.eventTag);
+            card.classList.add('new-entry-highlight');
+            card.classList.add('visible');
+
+            gallery.prepend(card);
+
+            // If empty state exists, remove it
+            const emptyState = gallery.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+        });
+
+    } catch (e) {
+        console.warn('Polling failed', e);
+    }
+}

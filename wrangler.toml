@@ -14,6 +14,8 @@ routes = [
 
 # Environment variables (optional)
 [vars]
+# ENVIRONMENT = "development"
+# PHOTO_BASE_URL = "http://localhost:8787/images"
 ENVIRONMENT = "production"
 PHOTO_BASE_URL = "https://photos.wedding-gallery.zaidhuda.com"
 
