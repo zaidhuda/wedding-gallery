@@ -330,9 +330,9 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
 
         // Save to D1 with moderation result and edit token
         await env.DB.prepare(
-          'INSERT INTO photos (url, object_key, name, message, eventTag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO photos (object_key, name, message, eventTag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )
-          .bind(imageUrl, objectKey, name, message, eventTag, timestamp, takenAt, isApproved, editToken)
+          .bind(objectKey, name, message, eventTag, timestamp, takenAt, isApproved, editToken)
           .run();
 
         // Get the inserted photo ID by token
@@ -450,7 +450,7 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
 
         // Verify token and check 1-hour limit
         const photo = await env.DB.prepare(
-          'SELECT id, url, object_key, timestamp, token FROM photos WHERE id = ? AND token = ?'
+          'SELECT id, object_key, timestamp, token FROM photos WHERE id = ? AND token = ?'
         )
           .bind(id, token)
           .first();
@@ -525,7 +525,10 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           ? await env.DB.prepare(countQuery).bind(eventTag).first()
           : await env.DB.prepare(countQuery).first();
 
-        const photos = result.results || [];
+        const photos = (result.results || []).map(p => ({
+          ...p,
+          url: `${PHOTO_BASE_URL}/${p.object_key}`
+        }));
         const hasMore = photos.length > limit;
 
         if (hasMore) photos.pop();
@@ -560,7 +563,10 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
           'SELECT * FROM photos WHERE is_approved = 0 ORDER BY timestamp DESC'
         ).all();
 
-        const photos = result.results || [];
+        const photos = (result.results || []).map(p => ({
+          ...p,
+          url: `${PHOTO_BASE_URL}/${p.object_key}`
+        }));
 
         return new Response(
           JSON.stringify({ photos, admin: adminEmail }),
@@ -612,7 +618,7 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         } else if (action === 'delete') {
           const placeholders = targetIds.map(() => '?').join(',');
           const photos = await env.DB.prepare(
-            `SELECT id, url, object_key FROM photos WHERE id IN (${placeholders})`
+            `SELECT id, object_key FROM photos WHERE id IN (${placeholders})`
           ).bind(...targetIds).all();
 
           for (const photo of photos.results || []) {

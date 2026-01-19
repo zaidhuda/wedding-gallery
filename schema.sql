@@ -1,7 +1,6 @@
 -- Create photos table for Cloudflare D1
 CREATE TABLE IF NOT EXISTS photos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  url TEXT NOT NULL,
   object_key TEXT NOT NULL,
   name TEXT NOT NULL,
   message TEXT DEFAULT '',
