@@ -268,58 +268,6 @@ function showModerationRejection(message) {
   });
 }
 
-// ===== UPLOAD SUCCESS NOTIFICATION =====
-function showUploadSuccess(autoApproved = false) {
-  const overlay = document.createElement('div');
-  overlay.className = 'rejection-overlay';
-  overlay.setAttribute('role', 'alertdialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'success-title');
-
-  // Different messages based on auto-approval status
-  const title = autoApproved ? 'Success!' : 'Thank you!';
-  const message = autoApproved
-    ? 'Your wish is now in the guestbook!'
-    : 'Your photo has been sent to the couple for a quick look before it goes live.';
-  const iconColor = autoApproved ? '#16a34a' : 'var(--ink-navy)';
-
-  overlay.innerHTML = `
-        <div class="rejection-popup">
-            <div class="rejection-icon" style="color: ${iconColor};">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                    <path d="M9 12l2 2 4-4"/>
-                    <circle cx="12" cy="12" r="10"/>
-                </svg>
-            </div>
-            <p class="rejection-message" id="success-title" style="color: ${iconColor};">
-                ${title}
-            </p>
-            <p class="rejection-cta">
-                ${message}
-            </p>
-            <button class="rejection-close" aria-label="Close success notification">${autoApproved ? 'Awesome!' : 'Got it'}</button>
-        </div>
-    `;
-
-  document.body.appendChild(overlay);
-  requestAnimationFrame(() => overlay.classList.add('visible'));
-
-  const closePopup = () => {
-    overlay.classList.remove('visible');
-    setTimeout(() => overlay.remove(), 300);
-  };
-
-  overlay
-    .querySelector('.rejection-close')
-    .addEventListener('click', closePopup);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closePopup();
-  });
-
-  // Auto-close after 5 seconds (longer for auto-approved to give time to read)
-  setTimeout(closePopup, autoApproved ? 4000 : 5000);
-}
-
 // ===== REJECTION POPUP =====
 function showRejectionPopup() {
   // Create overlay
@@ -615,9 +563,12 @@ function createPhotoCard(photo, eventTag = null) {
   const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
   const hasEditToken = editTokens[photo.id] !== undefined;
 
+  const isPending = photo.pending;
+
   card.innerHTML = `
         <div class="photo-item" role="listitem">
             <img src="${optimizedUrl}" alt="Wish from ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}" loading="lazy">
+            ${isPending ? `<div class="reviewing-badge" aria-label="This photo is currently being reviewed">Reviewing photo...</div>` : ''}
             ${isAdmin ? `<button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from guestbook" aria-label="Remove wish by ${photo.name || 'Guest'} from guestbook">✕</button>` : ''}
             ${hasEditToken ? `<button class="edit-btn" data-photo-id="${photo.id}" data-photo-url="${optimizedUrl}" data-photo-name="${(photo.name || '').replace(/"/g, '&quot;')}" data-photo-message="${(photo.message || '').replace(/"/g, '&quot;')}" data-event-tag="${eventTag || photo.eventTag || ''}" title="Edit your submission" aria-label="Edit your photo submission">Edit</button>` : ''}
         </div>
@@ -1001,22 +952,28 @@ async function uploadPhoto(file, name, message, eventTag) {
             <p class="upload-zone-text">Tap to select a photo</p>
         `;
 
-    // If auto-approved, refresh the gallery to show the new photo
-    if (autoApproved) {
-      await loadPhotosForEvent(eventTag, false);
-      // Highlight the new photo
-      setTimeout(() => {
-        const newCard = document.querySelector(
-          `.photo-card[data-photo-id="${result.id}"]`,
-        );
-        if (newCard) {
-          newCard.classList.add('new-entry-highlight');
-          newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 100);
-    } else {
-      // Pending approval (subtle notification instead of popup)
-      alert('Your post is pending approval and will appear once approved.');
+    // If auto-approved OR pending review, show the photo immediately
+    if (autoApproved || result.pending) {
+      // For pending photos, we create a temporary card data object
+      const photoData = {
+        id: result.id,
+        url: result.url,
+        name: name,
+        message: message,
+        eventTag: eventTag,
+        pending: result.pending,
+        is_approved: result.pending ? 0 : 1,
+      };
+
+      const gallery = document.getElementById(EVENT_CONFIG[eventTag].gallery);
+      if (gallery) {
+        // If it's a new upload and we're on the first page, prepend it
+        // Or just refresh if it's easier, but prepending is smoother
+        const newCard = createPhotoCard(photoData, eventTag);
+        newCard.classList.add('visible', 'new-entry-highlight');
+        gallery.prepend(newCard);
+        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   } catch (error) {
     console.error('Upload error:', error);

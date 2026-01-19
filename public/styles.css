@@ -316,6 +316,36 @@ body.theme-tandang .section-title {
     border-radius: 3px;
 }
 
+/* Reviewing Badge - Subtle overlay for pending photos */
+.reviewing-badge {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: 1.4rem;
+    color: var(--ijab-text);
+    padding: 1rem;
+    text-align: center;
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+body.theme-sanding .reviewing-badge {
+    background: rgba(74, 28, 28, 0.3);
+    color: var(--sanding-accent);
+}
+
+body.theme-tandang .reviewing-badge {
+    background: rgba(224, 242, 254, 0.3);
+    color: var(--tandang-text);
+}
+
 .photo-item img {
     width: 100%;
     height: auto;
