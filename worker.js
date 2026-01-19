@@ -21,7 +21,7 @@ Rules:
 - UNSURE if cannot confidently classify as safe or unsafe.
 
 Output ONLY valid JSON with one of:
-{"result":"safe","reason":"short"} OR {"result":"unsafe","reason":"short"} OR {"result":"unsure","reason":"short"}.
+{"result":"safe","reason":"[short_reason]"} OR {"result":"unsafe","reason":"[short_reason]"} OR {"result":"unsure","reason":"[short_reason]"}.
 No extra keys. No prose.`;
 
 const IMAGE_SYSTEM_PROMPT = `You are a moderator for a Malay Wedding LIVE Digital Guestbook.
@@ -46,7 +46,7 @@ UNSAFE if ANY apply:
 UNSURE if cannot confidently classify as safe or unsafe.
 
 Respond ONLY with valid JSON:
-{"result":"safe","reason":"short"} OR {"result":"unsafe","reason":"short"} OR {"result":"unsure","reason":"short"}.
+{"result":"safe","reason":"[short_reason]"} OR {"result":"unsafe","reason":"[short_reason]"} OR {"result":"unsure","reason":"[short_reason]"}.
 No other text.`;
 
 export default {
@@ -117,15 +117,19 @@ export default {
 
     const extractJsonObject = (text) => {
       if (!text) return null;
-      const start = text.indexOf('{');
-      const end = text.lastIndexOf('}');
+      if (typeof text === 'object') return JSON.stringify(text);
+      const raw = text.toString();
+      const start = raw.indexOf('{');
+      const end = raw.lastIndexOf('}');
       if (start === -1 || end === -1 || end <= start) return null;
-      const candidate = text.slice(start, end + 1);
+      const candidate = raw.slice(start, end + 1);
       return candidate;
     };
 
     const parseSafeUnsafeFallback = (textRaw) => {
-      const t = (textRaw || '').trim();
+      if (!textRaw) return null;
+      const raw = textRaw.toString();
+      const t = (raw || '').trim();
       if (!t) return null;
 
       // Take the first token only to avoid "not unsafe" traps
@@ -137,6 +141,59 @@ export default {
       if (firstToken === 'UNSURE')
         return { result: 'unsure', reason: 'ai_unsure_fallback' };
       return null;
+    };
+
+    const parseAIModerationResponse = (aiRaw, defaultReasonPrefix) => {
+      const aiText =
+        typeof aiRaw === 'object'
+          ? JSON.stringify(aiRaw)
+          : (aiRaw || '').toString();
+
+      // Preferred: JSON parsing
+      const candidate = extractJsonObject(aiRaw);
+      if (candidate) {
+        try {
+          const parsed = JSON.parse(candidate);
+          if (parsed.result === 'safe' || parsed.safe === true) {
+            return {
+              status: 'safe',
+              reason: parsed.reason || `${defaultReasonPrefix}_approved`,
+              detail: aiText,
+            };
+          } else if (parsed.result === 'unsafe' || parsed.safe === false) {
+            return {
+              status: 'unsafe',
+              reason: parsed.reason || `${defaultReasonPrefix}_flagged`,
+              detail: aiText,
+            };
+          } else if (parsed.result === 'unsure') {
+            return {
+              status: 'unsure',
+              reason: parsed.reason || `${defaultReasonPrefix}_unsure`,
+              detail: aiText,
+            };
+          }
+        } catch (e) {
+          console.error('Failed to parse AI JSON:', e);
+        }
+      }
+
+      // Fallback: SAFE/UNSAFE/UNSURE first token
+      const fallback = parseSafeUnsafeFallback(aiText);
+      if (fallback) {
+        return {
+          status: fallback.result,
+          reason: fallback.reason,
+          detail: aiText,
+        };
+      }
+
+      // Default: Unclear output => unsure
+      return {
+        status: 'unsure',
+        reason: `${defaultReasonPrefix}_needs_review`,
+        detail: aiText,
+      };
     };
 
     // Timeout wrapper for AI calls (10 seconds)
@@ -180,18 +237,6 @@ export default {
           top_p: 1,
           max_tokens: 40,
           stop: ['\n\n', '```'],
-          response_format: {
-            type: 'json_schema',
-            json_schema: {
-              type: 'object',
-              properties: {
-                result: { type: 'string', enum: ['safe', 'unsafe', 'unsure'] },
-                reason: { type: 'string' },
-              },
-              required: ['result'],
-              additionalProperties: false,
-            },
-          },
         };
 
         const response = await withTimeout(
@@ -204,44 +249,7 @@ export default {
           '';
         console.log('AI text moderation raw:', aiText);
 
-        const candidate = extractJsonObject(aiText);
-        if (candidate) {
-          try {
-            const parsed = JSON.parse(candidate);
-            if (parsed.result === 'safe' || parsed.safe === true) {
-              return {
-                status: 'safe',
-                reason: parsed.reason || 'ai_approved',
-                detail: aiText,
-              };
-            } else if (parsed.result === 'unsafe' || parsed.safe === false) {
-              return {
-                status: 'unsafe',
-                reason: parsed.reason || 'ai_flagged',
-                detail: aiText,
-              };
-            } else if (parsed.result === 'unsure') {
-              return {
-                status: 'unsure',
-                reason: parsed.reason || 'ai_unsure',
-                detail: aiText,
-              };
-            }
-          } catch (e) {
-            console.error('Failed to parse AI JSON:', e);
-          }
-        }
-
-        const fallback = parseSafeUnsafeFallback(aiText);
-        if (fallback) {
-          return {
-            status: fallback.result,
-            reason: fallback.reason,
-            detail: aiText,
-          };
-        }
-
-        return { status: 'unsure', reason: 'needs_review', detail: aiText };
+        return parseAIModerationResponse(aiText, 'ai_text');
       } catch (error) {
         console.error('AI text moderation error:', error);
         return {
@@ -259,66 +267,49 @@ export default {
           return { status: 'unsure', reason: 'ai_unavailable' };
         }
 
+        function arrayBufferToBase64(buffer) {
+          const bytes = new Uint8Array(buffer);
+          let binary = '';
+          // chunk to avoid call stack issues
+          const chunkSize = 0x8000;
+          for (let i = 0; i < bytes.length; i += chunkSize) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+          }
+          return btoa(binary);
+        }
+
         const buf = await imageBlob.arrayBuffer();
-        const image = new Uint8Array(buf);
+        const b64 = arrayBufferToBase64(buf);
+        const dataUrl = `data:${imageBlob.type || 'image/jpeg'};base64,${b64}`;
 
         const response = await withTimeout(
           env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
-            image,
-            prompt: IMAGE_SYSTEM_PROMPT,
+            messages: [
+              { role: 'system', content: IMAGE_SYSTEM_PROMPT },
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'Classify this image for guestbook safety.',
+                  },
+                  { type: 'image_url', image_url: { url: dataUrl } },
+                ],
+              },
+            ],
             max_tokens: 60,
             temperature: 0,
             top_p: 1,
           }),
         );
 
-        const raw =
+        const aiRaw =
           (response &&
-            (response.response ||
-              response.description ||
-              response.output_text ||
-              response.text)) ||
-          '';
-        console.log('AI image moderation raw:', raw);
+            (response.response || response.output_text || response.text)) ||
+          response;
+        console.log('AI image moderation raw:', JSON.stringify(aiRaw));
 
-        const jsonCandidate = extractJsonObject(raw);
-        if (jsonCandidate) {
-          try {
-            const parsed = JSON.parse(jsonCandidate);
-            if (parsed.result === 'safe' || parsed.safe === true) {
-              return {
-                status: 'safe',
-                reason: parsed.reason || 'ai_approved',
-                detail: raw,
-              };
-            } else if (parsed.result === 'unsafe' || parsed.safe === false) {
-              return {
-                status: 'unsafe',
-                reason: parsed.reason || 'ai_flagged',
-                detail: raw,
-              };
-            } else if (parsed.result === 'unsure') {
-              return {
-                status: 'unsure',
-                reason: parsed.reason || 'ai_unsure',
-                detail: raw,
-              };
-            }
-          } catch (e) {
-            console.error('Failed to parse AI JSON:', e);
-          }
-        }
-
-        const fallback = parseSafeUnsafeFallback(raw);
-        if (fallback) {
-          return {
-            status: fallback.result,
-            reason: fallback.reason,
-            detail: raw,
-          };
-        }
-
-        return { status: 'unsure', reason: 'needs_review', detail: raw };
+        return parseAIModerationResponse(aiRaw, 'ai_image');
       } catch (error) {
         console.error('AI image moderation error:', error);
         return {
