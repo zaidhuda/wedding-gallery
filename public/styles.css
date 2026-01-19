@@ -340,6 +340,8 @@ body.theme-tandang .section-title {
     line-height: 1.2;
     color: var(--ijab-text); /* Deep charcoal for off-white theme */
     margin-bottom: 0.15rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .photo-message {
@@ -348,6 +350,8 @@ body.theme-tandang .section-title {
     font-weight: 400;
     line-height: 1.35;
     color: var(--ijab-text-soft); /* Softer charcoal */
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 /* Film Stamp - Photo timestamp with vintage film aesthetic */

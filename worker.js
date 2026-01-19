@@ -259,6 +259,19 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         const image = formData.get('image');
         const name = (formData.get('name') || '').trim() || 'Anonymous';
         const message = (formData.get('message') || '').trim();
+
+        if (name.length > 50) {
+          return new Response(
+            JSON.stringify({ error: 'Name is too long (max 50 characters)' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (message.length > 500) {
+          return new Response(
+            JSON.stringify({ error: 'Message is too long (max 500 characters)' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         const eventTag = formData.get('eventTag');
 
         if (!image || !eventTag) {
@@ -359,6 +372,19 @@ Answer strictly with: "SAFE" or "UNSAFE" followed by a very short reason.`,
         if (!id || !token || !name) {
           return new Response(
             JSON.stringify({ error: 'Missing required fields: id, token, name' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        if (name.length > 50) {
+          return new Response(
+            JSON.stringify({ error: 'Name is too long (max 50 characters)' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (message && message.length > 500) {
+          return new Response(
+            JSON.stringify({ error: 'Message is too long (max 500 characters)' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
