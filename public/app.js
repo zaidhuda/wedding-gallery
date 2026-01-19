@@ -2,6 +2,7 @@
 const isLocalhost =
   window.location.hostname === 'localhost' ||
   window.location.hostname === '127.0.0.1';
+const ADMIN_URL = isLocalhost ? 'http://localhost:8787/admin' : '/admin';
 const WORKER_URL = isLocalhost ? 'http://localhost:8787/api' : '/api';
 
 const GUEST_PASSWORD = 'ZM2026';
@@ -114,7 +115,7 @@ const webpSupported = supportsWebP();
 // Check if current user is authenticated via Cloudflare Access
 async function verifyAdminAccess() {
   try {
-    const response = await fetch(`${WORKER_URL}/admin/verify`, {
+    const response = await fetch(`${ADMIN_URL}/verify`, {
       credentials: 'include', // Include Cloudflare Access cookies
     });
 
@@ -139,7 +140,7 @@ async function unapprovePhoto(photoId) {
   if (!isAdmin) return;
 
   try {
-    const response = await fetch(`${WORKER_URL}/admin/unapprove`, {
+    const response = await fetch(`${ADMIN_URL}/unapprove`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
