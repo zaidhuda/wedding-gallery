@@ -447,6 +447,27 @@ async function resizeImage(file, statusCallback = null) {
           height = Math.floor(height * scale);
         }
 
+        // VALIDATION: Min dimensions
+        if (width < 200 || height < 200) {
+          reject(
+            new Error(
+              'This photo is too small. Please pick a higher quality image (at least 200px).',
+            ),
+          );
+          return;
+        }
+
+        // VALIDATION: Aspect ratio
+        const ratio = width / height;
+        if (ratio > 4 || ratio < 0.25) {
+          reject(
+            new Error(
+              'This photo has an extreme aspect ratio. Please pick a standard photo.',
+            ),
+          );
+          return;
+        }
+
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;

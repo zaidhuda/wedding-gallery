@@ -42,6 +42,7 @@ UNSAFE if ANY apply:
 - Real violence, fights, blood/injuries/gore (excluding henna).
 - Obscene gestures (middle finger).
 - Hate symbols or extremist imagery.
+- JUNK CONTENT: The image is completely blank, solid color, pure noise, extremely blurry to the point of being unrecognizable, or clearly not a photo (e.g., just a single dot or meaningless scribble). If it's a photo but just bad quality, it's SAFE, but if it's "not a real image", it's UNSAFE.
 
 UNSURE if cannot confidently classify as safe or unsafe.
 
@@ -369,12 +370,41 @@ export default {
           );
         }
         const eventTag = formData.get('eventTag');
+        const format = formData.get('format') || 'image/jpeg';
 
         if (!image || !eventTag) {
           return new Response(
             JSON.stringify({
               error: 'Missing required fields: image and eventTag',
             }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            },
+          );
+        }
+
+        // VALIDATION: MIME type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (
+          !allowedTypes.includes(format) ||
+          (image.type && !allowedTypes.includes(image.type))
+        ) {
+          return new Response(
+            JSON.stringify({
+              error: 'Invalid file type. Only JPG, PNG, and WebP are allowed.',
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            },
+          );
+        }
+
+        // VALIDATION: Payload size (10MB limit)
+        if (image.size > 10 * 1024 * 1024) {
+          return new Response(
+            JSON.stringify({ error: 'Photo is too large (max 10MB).' }),
             {
               status: 400,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -390,7 +420,6 @@ export default {
           });
         }
 
-        const format = formData.get('format') || 'image/jpeg';
         const extension = format === 'image/webp' ? '.webp' : '.jpg';
         const filename = `${crypto.randomUUID()}${extension}`;
         const objectKey = `photos/${filename}`;
