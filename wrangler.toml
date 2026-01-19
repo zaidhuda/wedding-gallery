@@ -33,3 +33,8 @@ bucket_name = "muna-li-zaid-photos"
 # Workers AI binding for content moderation
 [ai]
 binding = "AI"
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
