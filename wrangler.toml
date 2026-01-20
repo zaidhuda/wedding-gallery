@@ -18,7 +18,7 @@ routes = [
 # Environment variables (optional)
 [vars]
 ENVIRONMENT = "production"
-PHOTO_BASE_URL = "https://photos.wedding-gallery.zaidhuda.com"
+PHOTO_BASE_URL = "https://photos.guestbook.zaidhuda.com"
 MAX_PHOTO_SIZE = 12
 TEXT_SYSTEM_PROMPT = """You moderate a Malay wedding LIVE digital guestbook. Decide if text is safe to display publicly.
 
