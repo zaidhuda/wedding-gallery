@@ -361,6 +361,31 @@ const moderateImageWithAI = async (imageBlob, env) => {
   }
 };
 
+const processBackgroundModeration = async (
+  photoId,
+  imageBlob,
+  eventTag,
+  env,
+  urlOrigin,
+) => {
+  try {
+    const imageResult = await moderateImageWithAI(imageBlob, env);
+    if (imageResult.status === 'safe') {
+      await env.DB.prepare('UPDATE photos SET is_approved = 1 WHERE id = ?')
+        .bind(photoId)
+        .run();
+      await invalidateCache(urlOrigin, eventTag);
+      console.log(`Photo ${photoId} auto-approved by AI.`);
+    } else {
+      console.log(
+        `Photo ${photoId} moderation result: ${imageResult.status} (${imageResult.reason})`,
+      );
+    }
+  } catch (error) {
+    console.error(`Background moderation failed for photo ${photoId}:`, error);
+  }
+};
+
 // ===== HANDLERS =====
 
 const handleUpload = async (request, env, ctx, corsHeaders) => {
@@ -431,19 +456,7 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       );
     }
 
-    const imageResult = await moderateImageWithAI(imageBlob, env);
-    if (imageResult.status === 'unsafe') {
-      return errorResponse(
-        "Your photo contains content that can't be displayed. Please try a different photo!",
-        400,
-        corsHeaders,
-        'IMAGE_MODERATION_FAILED',
-      );
-    }
-
-    const bothSafe =
-      textResult.status === 'safe' && imageResult.status === 'safe';
-    const isApproved = bothSafe ? 1 : 0;
+    const isApproved = 0; // Always start as unapproved, moderate image in background
     const editToken = crypto.randomUUID();
     const timestamp = new Date().toISOString();
     const takenAt = takenAtParam || timestamp;
@@ -452,7 +465,7 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       httpMetadata: { contentType: format },
     });
 
-    await env.DB.prepare(
+    const dbResult = await env.DB.prepare(
       'INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     )
       .bind(
@@ -467,25 +480,28 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       )
       .run();
 
-    const insertedPhoto = await env.DB.prepare(
-      'SELECT id FROM photos WHERE token = ?',
-    )
-      .bind(editToken)
-      .first();
+    const photoId = dbResult.meta.last_row_id;
+
+    // Background image moderation
+    ctx.waitUntil(
+      processBackgroundModeration(
+        photoId,
+        imageBlob,
+        eventTag,
+        env,
+        url.origin,
+      ),
+    );
 
     return jsonResponse(
       {
         success: true,
         url: `${PHOTO_BASE_URL}/${objectKey}`,
-        id: insertedPhoto?.id,
+        id: photoId,
         token: editToken,
-        pending: !bothSafe,
-        autoApproved: bothSafe,
-        moderationReason: bothSafe
-          ? 'auto_approved'
-          : textResult.status === 'unsure'
-            ? textResult.reason
-            : imageResult.reason,
+        pending: true,
+        autoApproved: false,
+        moderationReason: 'pending_image_moderation',
       },
       200,
       corsHeaders,
