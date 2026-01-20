@@ -11,6 +11,8 @@ preview_urls = true
 routes = [
   { pattern = "wedding-gallery.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
   { pattern = "wedding-gallery.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
+  { pattern = "guestbook.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
+  { pattern = "guestbook.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
 ]
 
 # Environment variables (optional)
