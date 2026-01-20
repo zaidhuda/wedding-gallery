@@ -2,56 +2,12 @@ import { env } from 'cloudflare:workers';
 import { Buffer } from 'buffer';
 
 const ENVIRONMENT = env.ENVIRONMENT;
-const PHOTO_BASE_URL = env.PHOTO_BASE_URL;
 const IS_DEVELOPMENT = ENVIRONMENT === 'development';
-const GUEST_PASSWORD = 'ZM2026';
-
-const TEXT_SYSTEM_PROMPT = `You moderate a Malay wedding LIVE digital guestbook. Decide if text is safe to display publicly.
-
-Allow: praise, congratulations, playful slang, mild swearing used as intensifier, casual jokes, emojis.
-Block: insults that attack dignity, humiliation, sexual content, hate/racism/religion slurs, threats, obscene gestures, animal insults.
-
-Rules:
-- SAFE if message is clearly positive/celebratory OR a compliment (including about a person).
-  Examples SAFE: "Cantik gila Aina", "Handsome gila pengantin", "Sedap sial makanan", "Tahniah setan 🎉".
-- UNSAFE if any of these:
-  1) Negative appearance/body/face/skin/weight remarks (buruk, hodoh, gemuk, hitam, etc) about a person.
-  2) Animal comparisons aimed at a person (babi/anjing, "macam babi", etc).
-  3) Insults where the insult is the main point (no clear celebration).
-  4) Sexual remarks or sexualised body comments (even as a joke).
-  5) Hate/extremism (race/religion slurs).
-  6) Deliberate humiliation/embarrassment likely to upset couple/families later.
-- UNSURE if cannot confidently classify as safe or unsafe.
-
-Respond ONLY with valid JSON:
-{"result":"safe"|"unsafe"|"unsure","reason":"[very_short_reason_without_description]"}.
-No other text.`;
-
-const IMAGE_SYSTEM_PROMPT = `You are a moderator for a Malay Wedding LIVE Digital Guestbook.
-Decide if this image is safe to display publicly.
-
-CULTURAL CONTEXT (do NOT mark unsafe for these):
-- Ceremonial Keris worn at the waist (traditional attire), not a threat.
-- Inai/henna patterns on hands/fingers, not blood or injury.
-- Normal wedding affection: salam/hand-kissing, light hugs, forehead kisses.
-- Traditional formal attire: kebaya, baju melayu, songket, sheer headscarves.
-
-SAFE examples:
-- Group photos, selfies, food/buffet, pelamin, decorations, families, children.
-
-UNSAFE if ANY apply:
-- Nudity or visible genitalia.
-- Sexual acts or sexualised posing/touching (even if clothed).
-- Real violence, fights, blood/injuries/gore (excluding henna).
-- Obscene gestures (middle finger).
-- Hate symbols or extremist imagery.
-- JUNK CONTENT: The image is completely blank, solid color, pure noise, extremely blurry to the point of being unrecognizable, or clearly not a photo (e.g., just a single dot or meaningless scribble). If it's a photo but just bad quality, it's SAFE, but if it's "not a real image", it's UNSAFE.
-
-UNSURE if cannot confidently classify as safe or unsafe.
-
-Respond ONLY with valid JSON:
-{"result":"safe"|"unsafe"|"unsure","reason":"[very_short_reason_without_description]"}.
-No other text.`;
+const PHOTO_BASE_URL = env.PHOTO_BASE_URL;
+const GUEST_PASSWORD = env.GUEST_PASSWORD;
+const MAX_PHOTO_SIZE = env.MAX_PHOTO_SIZE;
+const TEXT_SYSTEM_PROMPT = env.TEXT_SYSTEM_PROMPT;
+const IMAGE_SYSTEM_PROMPT = env.IMAGE_SYSTEM_PROMPT;
 
 // ===== HELPERS =====
 
@@ -432,8 +388,12 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       );
     }
 
-    if (image.size > 10 * 1024 * 1024) {
-      return errorResponse('Photo is too large (max 10MB).', 400, corsHeaders);
+    if (image.size > MAX_PHOTO_SIZE * 1024 * 1024) {
+      return errorResponse(
+        `Photo is too large (max ${MAX_PHOTO_SIZE}MB).`,
+        400,
+        corsHeaders,
+      );
     }
 
     const validEventTags = ['Ijab & Qabul', 'Sanding', 'Tandang'];
