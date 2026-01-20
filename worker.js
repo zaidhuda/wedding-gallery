@@ -154,48 +154,70 @@ const parseSafeUnsafeFallback = (textRaw) => {
 };
 
 const parseAIModerationResponse = (aiRaw, defaultReasonPrefix) => {
-  const aiText =
-    typeof aiRaw === 'object'
-      ? JSON.stringify(aiRaw)
-      : (aiRaw || '').toString();
+  let parsed = null;
 
-  const candidate = extractJsonObject(aiRaw);
-  if (candidate) {
-    try {
-      const parsed = JSON.parse(candidate);
-      if (parsed.result === 'safe' || parsed.safe === true) {
-        return {
-          status: 'safe',
-          reason: parsed.reason || `${defaultReasonPrefix}_approved`,
-          detail: aiText,
-        };
-      } else if (parsed.result === 'unsafe' || parsed.safe === false) {
-        return {
-          status: 'unsafe',
-          reason: parsed.reason || `${defaultReasonPrefix}_flagged`,
-          detail: aiText,
-        };
-      } else if (parsed.result === 'unsure') {
-        return {
-          status: 'unsure',
-          reason: parsed.reason || `${defaultReasonPrefix}_unsure`,
-          detail: aiText,
-        };
+  if (typeof aiRaw === 'object' && aiRaw !== null) {
+    // Some Cloudflare AI models return the message object or just the response text
+    const extracted =
+      aiRaw.response || aiRaw.output_text || aiRaw.text || aiRaw;
+
+    if (typeof extracted === 'string') {
+      const candidate = extractJsonObject(extracted);
+      if (candidate) {
+        try {
+          parsed = JSON.parse(candidate);
+        } catch (e) {}
       }
-    } catch (e) {
-      console.error('Failed to parse AI JSON:', e);
+    } else if (typeof extracted === 'object') {
+      parsed = extracted;
+    }
+  } else {
+    const raw = (aiRaw || '').toString();
+    const candidate = extractJsonObject(raw);
+    if (candidate) {
+      try {
+        parsed = JSON.parse(candidate);
+      } catch (e) {
+        console.error('Failed to parse AI JSON:', e);
+      }
     }
   }
 
-  const fallback = parseSafeUnsafeFallback(aiText);
+  if (parsed && typeof parsed === 'object') {
+    if (parsed.result === 'safe' || parsed.safe === true) {
+      return {
+        status: 'safe',
+        reason: parsed.reason || `${defaultReasonPrefix}_approved`,
+      };
+    } else if (parsed.result === 'unsafe' || parsed.safe === false) {
+      return {
+        status: 'unsafe',
+        reason: parsed.reason || `${defaultReasonPrefix}_flagged`,
+      };
+    } else if (parsed.result === 'unsure') {
+      return {
+        status: 'unsure',
+        reason: parsed.reason || `${defaultReasonPrefix}_unsure`,
+      };
+    }
+  }
+
+  const fallbackSource =
+    typeof aiRaw === 'object' && aiRaw !== null
+      ? aiRaw.response || aiRaw.output_text || aiRaw.text || ''
+      : aiRaw || '';
+
+  const fallback = parseSafeUnsafeFallback(fallbackSource);
   if (fallback) {
-    return { status: fallback.result, reason: fallback.reason, detail: aiText };
+    return {
+      status: fallback.result,
+      reason: fallback.reason,
+    };
   }
 
   return {
     status: 'unsure',
     reason: `${defaultReasonPrefix}_needs_review`,
-    detail: aiText,
   };
 };
 
@@ -257,7 +279,6 @@ const moderateTextWithAI = async (name, message, env) => {
     return {
       status: 'unsure',
       reason: 'ai_error_review',
-      detail: error?.message || String(error),
     };
   }
 };
@@ -307,7 +328,6 @@ const moderateImageWithAI = async (imageBlob, env) => {
     return {
       status: 'unsure',
       reason: 'ai_error_review',
-      detail: error?.message || String(error),
     };
   }
 };
