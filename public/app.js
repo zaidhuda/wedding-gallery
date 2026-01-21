@@ -1205,8 +1205,11 @@ function setupScrollObserver() {
   const sections = document.querySelectorAll('.gallery-section');
   const sectionTitles = document.querySelectorAll('.section-title');
   const navItems = document.querySelectorAll('.nav-item');
+  const navbar = document.querySelector('.floating-nav');
+  const hero = document.querySelector('.hero');
 
   let ticking = false;
+  let observer;
 
   function updateActiveSection() {
     // Find the section title closest to (but below or at) the top of viewport
@@ -1281,6 +1284,25 @@ function setupScrollObserver() {
 
   // Initial check on load
   updateActiveSection();
+
+  function observeHeroScroll() {
+    observer?.disconnect();
+
+    const offset = navbar.offsetHeight;
+    const threshold = Math.max(0, Math.min(1, 1 - offset / window.innerHeight));
+
+    observer = new IntersectionObserver(
+      ([entry]) => {
+        navbar.classList.toggle('floating-nav-hidden', entry.isIntersecting);
+      },
+      { threshold },
+    );
+
+    observer.observe(hero);
+  }
+
+  observeHeroScroll();
+  window.addEventListener('resize', observeHeroScroll);
 }
 
 // ===== SETUP UPLOAD BUTTON =====

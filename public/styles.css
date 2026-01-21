@@ -804,6 +804,10 @@ body.theme-tandang .load-more-text {
     transition: all var(--transition-medium);
 }
 
+.floating-nav-hidden {
+    bottom: -3rem !important;
+}
+
 body.theme-sanding .floating-nav {
     background: rgba(77, 34, 34, 0.6);
     border-color: rgba(201, 162, 39, 0.2);
