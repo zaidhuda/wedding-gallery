@@ -80,35 +80,6 @@ const getEditWindowStatus = (timestamp) => {
   return now - uploadTime <= oneHourInMs;
 };
 
-// ===== CACHE HELPERS =====
-
-const invalidateCache = async (urlOrigin, eventTag = null) => {
-  const cache = caches.default;
-
-  // Always invalidate the main feed
-  const paths = ['/api/photos'];
-
-  // If a specific eventTag is provided, invalidate only that one.
-  // Otherwise, invalidate all tags.
-  const tagsToInvalidate = eventTag
-    ? [eventTag]
-    : ['Ijab & Qabul', 'Sanding', 'Tandang'];
-
-  for (const tag of tagsToInvalidate) {
-    const encodedTag = encodeURIComponent(tag);
-    paths.push(`/api/photos?eventTag=${encodedTag}&limit=12&offset=0`);
-    paths.push(`/api/photos?eventTag=${encodedTag}`);
-  }
-
-  for (const path of paths) {
-    try {
-      await cache.delete(new Request(`${urlOrigin}${path}`));
-    } catch (e) {
-      console.error('Cache delete error:', e);
-    }
-  }
-};
-
 // ===== AI MODERATION =====
 
 const extractJsonObject = (text) => {
@@ -344,8 +315,7 @@ const processBackgroundModeration = async (
 
 // ===== HANDLERS =====
 
-const handleUpload = async (request, env, ctx, corsHeaders) => {
-  const url = new URL(request.url);
+const handleUpload = async (request, env, corsHeaders) => {
   const formData = await request.formData();
   const uploadPassword = formData.get('pass');
 
@@ -469,14 +439,10 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
   } catch (error) {
     console.error('Upload error:', error);
     return errorResponse('Upload failed', 500, corsHeaders);
-  } finally {
-    const eventTag = formData.get('eventTag');
-    // Invalidate cache even if DB insert failed (to be safe)
-    ctx.waitUntil(invalidateCache(url.origin, eventTag));
   }
 };
 
-const handleEdit = async (request, env, ctx, corsHeaders) => {
+const handleEdit = async (request, env, corsHeaders) => {
   try {
     const body = await request.json();
     const { id, token } = body;
@@ -525,19 +491,9 @@ const handleEdit = async (request, env, ctx, corsHeaders) => {
       );
     }
 
-    const photoToEdit = await env.DB.prepare(
-      'SELECT event_tag FROM photos WHERE id = ?',
-    )
-      .bind(id)
-      .first();
-
     await env.DB.prepare('UPDATE photos SET name = ?, message = ? WHERE id = ?')
       .bind(name, message, id)
       .run();
-
-    ctx.waitUntil(
-      invalidateCache(new URL(request.url).origin, photoToEdit?.event_tag),
-    );
 
     return jsonResponse({ success: true }, 200, corsHeaders);
   } catch (error) {
@@ -546,7 +502,7 @@ const handleEdit = async (request, env, ctx, corsHeaders) => {
   }
 };
 
-const handleDelete = async (request, env, ctx, corsHeaders) => {
+const handleDelete = async (request, env, corsHeaders) => {
   try {
     const { id, token } = await request.json();
     if (!id || !token)
@@ -557,7 +513,7 @@ const handleDelete = async (request, env, ctx, corsHeaders) => {
       );
 
     const photo = await env.DB.prepare(
-      'SELECT id, object_key, timestamp, event_tag FROM photos WHERE id = ? AND token = ?',
+      'SELECT id, object_key, timestamp FROM photos WHERE id = ? AND token = ?',
     )
       .bind(id, token)
       .first();
@@ -586,11 +542,6 @@ const handleDelete = async (request, env, ctx, corsHeaders) => {
     }
 
     await env.DB.prepare('DELETE FROM photos WHERE id = ?').bind(id).run();
-
-    ctx.waitUntil(
-      invalidateCache(new URL(request.url).origin, photo.event_tag),
-    );
-
     return jsonResponse({ success: true }, 200, corsHeaders);
   } catch (error) {
     console.error('Delete error:', error);
@@ -598,19 +549,7 @@ const handleDelete = async (request, env, ctx, corsHeaders) => {
   }
 };
 
-const handleGetPhotos = async (request, env, ctx, corsHeaders) => {
-  const url = new URL(request.url);
-  const cache = caches.default;
-
-  // Try cache first
-  const cacheKey = new Request(url.toString(), request);
-  let cachedResponse = await cache.match(cacheKey);
-  if (cachedResponse) {
-    console.log('Cache hit:', url.toString());
-    // Return a clone because we can only use a response body once
-    return cachedResponse.clone();
-  }
-
+const handleGetPhotos = async (url, env, corsHeaders) => {
   try {
     const eventTag = url.searchParams.get('eventTag');
     const limit = parseInt(url.searchParams.get('limit')) || 12;
@@ -654,7 +593,7 @@ const handleGetPhotos = async (request, env, ctx, corsHeaders) => {
         : await env.DB.prepare(countQuery).first();
     }
 
-    const response = jsonResponse(
+    return jsonResponse(
       {
         photos,
         hasMore,
@@ -665,14 +604,6 @@ const handleGetPhotos = async (request, env, ctx, corsHeaders) => {
       200,
       corsHeaders,
     );
-
-    // Cache for 60 seconds at the edge
-    response.headers.set('Cache-Control', 'public, s-maxage=60');
-
-    // Background the cache put
-    ctx.waitUntil(cache.put(cacheKey, response.clone()));
-
-    return response;
   } catch (error) {
     console.error('Fetch photos error:', error);
     return errorResponse('Failed to fetch photos', 500, corsHeaders);
@@ -695,7 +626,7 @@ const handleAdminPending = async (request, env, corsHeaders) => {
   }
 };
 
-const handleAdminAction = async (request, env, ctx, corsHeaders) => {
+const handleAdminAction = async (request, env, corsHeaders) => {
   try {
     if (!isAccessAuthenticated(request))
       return errorResponse('Unauthorized', 401, corsHeaders);
@@ -709,24 +640,11 @@ const handleAdminAction = async (request, env, ctx, corsHeaders) => {
     const placeholders = targetIds.map(() => '?').join(',');
 
     if (action === 'approve') {
-      const photosToApprove = await env.DB.prepare(
-        `SELECT DISTINCT event_tag FROM photos WHERE id IN (${placeholders})`,
-      )
-        .bind(...targetIds)
-        .all();
-
       await env.DB.prepare(
         `UPDATE photos SET is_approved = 1 WHERE id IN (${placeholders})`,
       )
         .bind(...targetIds)
         .run();
-
-      for (const p of photosToApprove.results || []) {
-        ctx.waitUntil(
-          invalidateCache(new URL(request.url).origin, p.event_tag),
-        );
-      }
-
       return jsonResponse(
         { success: true, action: 'approved', count: targetIds.length },
         200,
@@ -734,14 +652,12 @@ const handleAdminAction = async (request, env, ctx, corsHeaders) => {
       );
     } else if (action === 'delete') {
       const photosRes = await env.DB.prepare(
-        `SELECT id, object_key, event_tag FROM photos WHERE id IN (${placeholders})`,
+        `SELECT id, object_key FROM photos WHERE id IN (${placeholders})`,
       )
         .bind(...targetIds)
         .all();
 
-      const tagsToInvalidate = new Set();
       for (const photo of photosRes.results || []) {
-        if (photo.event_tag) tagsToInvalidate.add(photo.event_tag);
         if (photo.object_key) {
           try {
             await env.PHOTOS_BUCKET.delete(photo.object_key);
@@ -754,11 +670,6 @@ const handleAdminAction = async (request, env, ctx, corsHeaders) => {
       await env.DB.prepare(`DELETE FROM photos WHERE id IN (${placeholders})`)
         .bind(...targetIds)
         .run();
-
-      for (const tag of tagsToInvalidate) {
-        ctx.waitUntil(invalidateCache(new URL(request.url).origin, tag));
-      }
-
       return jsonResponse(
         { success: true, action: 'deleted', count: targetIds.length },
         200,
@@ -776,27 +687,16 @@ const handleAdminAction = async (request, env, ctx, corsHeaders) => {
   }
 };
 
-const handleAdminUnapprove = async (request, env, ctx, corsHeaders) => {
+const handleAdminUnapprove = async (request, env, corsHeaders) => {
   try {
     if (!isAccessAuthenticated(request))
       return errorResponse('Unauthorized', 401, corsHeaders);
     const { id } = await request.json();
     if (!id) return errorResponse('Missing photo id', 400, corsHeaders);
 
-    const photo = await env.DB.prepare(
-      'SELECT event_tag FROM photos WHERE id = ?',
-    )
-      .bind(id)
-      .first();
-
     await env.DB.prepare('UPDATE photos SET is_approved = 0 WHERE id = ?')
       .bind(id)
       .run();
-
-    ctx.waitUntil(
-      invalidateCache(new URL(request.url).origin, photo?.event_tag),
-    );
-
     return jsonResponse(
       { success: true, action: 'unapproved', id },
       200,
@@ -875,23 +775,23 @@ export default {
 
     // Routing
     if (path === '/api/upload' && method === 'POST')
-      return handleUpload(request, env, ctx, corsHeaders);
+      return handleUpload(request, env, corsHeaders);
     if (path === '/api/edit' && method === 'POST')
-      return handleEdit(request, env, ctx, corsHeaders);
+      return handleEdit(request, env, corsHeaders);
     if (path === '/api/delete' && method === 'POST')
-      return handleDelete(request, env, ctx, corsHeaders);
+      return handleDelete(request, env, corsHeaders);
     if (path === '/api/photos' && method === 'GET')
-      return handleGetPhotos(request, env, ctx, corsHeaders);
+      return handleGetPhotos(url, env, corsHeaders);
 
     // Admin routes
     if (path === '/admin/pending' && method === 'GET')
       return handleAdminPending(request, env, corsHeaders);
     if (path === '/admin/action' && method === 'POST')
-      return handleAdminAction(request, env, ctx, corsHeaders);
+      return handleAdminAction(request, env, corsHeaders);
     if (path === '/admin/verify' && method === 'GET')
       return handleAdminVerify(request, corsHeaders);
     if (path === '/admin/unapprove' && method === 'POST')
-      return handleAdminUnapprove(request, env, ctx, corsHeaders);
+      return handleAdminUnapprove(request, env, corsHeaders);
 
     // Dev only: Serve images from R2
     if (IS_DEVELOPMENT && path.startsWith('/images/'))
