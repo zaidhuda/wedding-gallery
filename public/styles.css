@@ -46,7 +46,7 @@ body {
     background-color: var(--ijab-bg);
     color: var(--ijab-text);
     min-height: 100vh;
-    min-width: 420px;
+    min-width: 360px;
     overflow-x: hidden;
     transition: background-color var(--transition-slow), color var(--transition-slow);
 }
@@ -857,12 +857,9 @@ body.theme-tandang .nav-item.active {
 
 /* ===== UPLOAD BUTTON (Iconic CTA) ===== */
 .upload-cta {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 50;
-    width: 56px;
-    height: 56px;
+    position: relative;
+    width: 38.5px;
+    height: 38.5px;
     border-radius: 50%;
     border: 1px solid currentColor;
     background: transparent;
@@ -871,12 +868,15 @@ body.theme-tandang .nav-item.active {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.5;
-    transition: opacity var(--transition-fast);
+    opacity: 0.6;
+    transition: all var(--transition-fast);
+    margin-left: 0.25rem;
+    flex-shrink: 0;
 }
 
 .upload-cta:hover {
-    opacity: 0.8;
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .upload-cta svg {
@@ -902,10 +902,9 @@ body.theme-tandang .upload-cta {
 
 @media (max-width: 640px) {
     .upload-cta {
-        bottom: 1.5rem;
-        right: 1rem;
-        width: 52px;
-        height: 52px;
+        width: 34px;
+        height: 34px;
+        margin-left: 0.125rem;
     }
 }
 
