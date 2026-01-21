@@ -315,7 +315,8 @@ const processBackgroundModeration = async (
 
 // ===== HANDLERS =====
 
-const handleUpload = async (request, env, corsHeaders) => {
+const handleUpload = async (request, env, ctx, corsHeaders) => {
+  const url = new URL(request.url);
   const formData = await request.formData();
   const uploadPassword = formData.get('pass');
 
@@ -775,7 +776,7 @@ export default {
 
     // Routing
     if (path === '/api/upload' && method === 'POST')
-      return handleUpload(request, env, corsHeaders);
+      return handleUpload(request, env, ctx, corsHeaders);
     if (path === '/api/edit' && method === 'POST')
       return handleEdit(request, env, corsHeaders);
     if (path === '/api/delete' && method === 'POST')

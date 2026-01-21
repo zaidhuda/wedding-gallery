@@ -1392,7 +1392,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('uploadPreview').innerHTML = `
                 <div class="upload-preview">
                     <img src="${evt.target.result}" alt="Preview">
-                    <p class="upload-preview-hint">Your photo will appear exactly like this</p>
                 </div>
             `;
       };
@@ -1420,7 +1419,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('uploadPreview').innerHTML = `
                     <div class="upload-preview">
                         <img src="${evt.target.result}" alt="Preview">
-                        <p class="upload-preview-hint">Your photo will appear exactly like this</p>
                     </div>
                 `;
       };

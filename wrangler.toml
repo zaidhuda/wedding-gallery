@@ -66,10 +66,6 @@ Respond ONLY with valid JSON:
 {"result":"safe"|"unsafe"|"unsure","reason":"[very_short_reason_without_description]"}.
 No other text."""
 
-[env.development.vars]
-ENVIRONMENT = "development"
-PHOTO_BASE_URL = "http://localhost:8787/images"
-
 # D1 Database binding
 [[d1_databases]]
 binding = "DB"
