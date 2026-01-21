@@ -246,9 +246,9 @@ function showModerationRejection(message) {
                 Oops!
             </p>
             <p class="rejection-cta">
-                ${message || "Your message contains content that doesn't match the wedding vibe. Please try a different caption!"}
+                ${message || "This message can't be posted as it is. Please revise and try again."}
             </p>
-            <button class="rejection-close" aria-label="Close dialog and try again">Okay</button>
+            <button class="rejection-close" aria-label="Close dialog and try again">Got it</button>
         </div>
     `;
 
@@ -928,12 +928,14 @@ async function uploadPhoto(file, name, message, eventTag) {
       throw new Error(result.error || 'Upload failed');
     }
 
+    const { photo } = result;
+
     // Save edit token to localStorage if we got one
-    if (result.id && result.token) {
+    if (photo.id && photo.token) {
       const editTokens = JSON.parse(
         localStorage.getItem(EDIT_TOKENS_KEY) || '{}',
       );
-      editTokens[result.id] = result.token;
+      editTokens[photo.id] = photo.token;
       localStorage.setItem(EDIT_TOKENS_KEY, JSON.stringify(editTokens));
     }
 
@@ -952,14 +954,12 @@ async function uploadPhoto(file, name, message, eventTag) {
         `;
 
     // If auto-approved OR pending review, show the photo immediately
-    if (result.photo) {
-      const photoData = result.photo;
-
+    if (photo) {
       const gallery = document.getElementById(EVENT_CONFIG[eventTag].gallery);
       if (gallery) {
         // If it's a new upload and we're on the first page, prepend it
         // Or just refresh if it's easier, but prepending is smoother
-        const newCard = createPhotoCard(photoData, eventTag);
+        const newCard = createPhotoCard(photo, eventTag);
         newCard.classList.add('visible', 'new-entry-highlight');
         gallery.prepend(newCard);
         newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1012,6 +1012,11 @@ async function editPhoto(photoId, name, message) {
       .catch(() => ({ error: 'Edit failed' }));
 
     if (!response.ok) {
+      // Check if it's a text moderation rejection (400 with specific code)
+      if (response.status === 400 && result.code === 'TEXT_MODERATION_FAILED') {
+        showModerationRejection(result.error);
+        return;
+      }
       throw new Error(result.error || 'Edit failed');
     }
 
@@ -1022,10 +1027,21 @@ async function editPhoto(photoId, name, message) {
         `.photo-card[data-photo-id="${photoId}"]`,
       );
       if (updatedCard) {
-        console.log(updatedCard);
         updatedCard.classList.add('new-entry-highlight');
-        updatedCard.querySelector('.photo-name').innerText = name;
-        updatedCard.querySelector('.photo-message').innerText = `“${message}”`;
+        const photoName = updatedCard.querySelector('.photo-name');
+        const photoMessage = updatedCard.querySelector('.photo-message');
+        const editBtn = updatedCard.querySelector('.edit-btn');
+
+        if (photoName) {
+          photoName.innerText = name;
+        }
+        if (photoMessage) {
+          photoMessage.innerText = message ? `“${message}”` : '';
+        }
+        if (editBtn) {
+          editBtn.dataset.photoName = name;
+          editBtn.dataset.photoMessage = message;
+        }
       }
     }, 100);
   } catch (error) {

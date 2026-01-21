@@ -370,9 +370,9 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
     const imageBlob = new Blob([imageArrayBuffer], { type: format });
 
     const textResult = await moderateTextWithAI(name, message, env);
-    if (textResult.status === 'unsafe') {
+    if (textResult.status !== 'safe') {
       return errorResponse(
-        "Your message contains content that doesn't match the wedding vibe. Please try a different caption!",
+        "This message can't be posted as it is. Please revise and try again.",
         400,
         corsHeaders,
         'TEXT_MODERATION_FAILED',
@@ -470,7 +470,7 @@ const handleEdit = async (request, env, corsHeaders) => {
     const textModeration = await moderateTextWithAI(name, message, env);
     if (textModeration.status !== 'safe') {
       return errorResponse(
-        "Your post couldn't be published. Please update your content and try again.",
+        "This message can't be posted as it is. Please revise and try again.",
         400,
         corsHeaders,
         'TEXT_MODERATION_FAILED',

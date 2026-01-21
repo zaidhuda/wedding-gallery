@@ -527,22 +527,6 @@ body.theme-tandang .edit-btn:hover {
     background: rgba(255, 255, 255, 1);
 }
 
-/* Edit modal preview zone */
-.edit-preview-zone {
-    margin-bottom: 1.5rem;
-    text-align: center;
-}
-
-.edit-preview-zone .upload-preview {
-    margin-bottom: 0;
-}
-
-.edit-preview-zone .upload-preview img {
-    max-height: 200px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
 /* Edit form actions - container for delete and submit buttons */
 .edit-form-actions {
     display: flex;
@@ -1038,7 +1022,7 @@ body.theme-tandang .upload-cta {
     padding: 2rem 2.5rem 2.5rem;
 }
 
-.upload-zone {
+.upload-zone, .edit-preview-zone {
     border: 1px dashed rgba(0, 0, 0, 0.2);
     border-radius: 16px;
     padding: 1rem;
@@ -1048,28 +1032,28 @@ body.theme-tandang .upload-cta {
     background: rgba(0, 0, 0, 0.02);
 }
 
-.upload-zone:hover {
+.upload-zone:hover, .edit-preview-zone:hover {
     border-color: rgba(0, 0, 0, 0.4);
     background: rgba(0, 0, 0, 0.04);
 }
 
-.modal-theme-sanding .upload-zone {
+.modal-theme-sanding .upload-zone, .modal-theme-sanding .edit-preview-zone {
     border-color: rgba(201, 162, 39, 0.3);
     background: rgba(201, 162, 39, 0.05);
 }
 
-.modal-theme-sanding .upload-zone:hover {
+.modal-theme-sanding .upload-zone:hover, .modal-theme-sanding .edit-preview-zone:hover {
     border-color: var(--sanding-accent);
     background: rgba(201, 162, 39, 0.1);
 }
 
-.modal-theme-tandang .upload-zone {
+.modal-theme-tandang .upload-zone, .modal-theme-tandang .edit-preview-zone {
     border-color: rgba(79, 195, 247, 0.5);
     background: rgba(79, 195, 247, 0.1);
     border-radius: 24px;
 }
 
-.modal-theme-tandang .upload-zone:hover {
+.modal-theme-tandang .upload-zone:hover, .modal-theme-tandang .edit-preview-zone:hover {
     border-color: var(--tandang-accent);
 }
 
@@ -1099,7 +1083,7 @@ body.theme-tandang .upload-cta {
     color: var(--tandang-text-soft);
 }
 
-.upload-preview img {
+.upload-preview img, .edit-preview-zone .upload-preview img {
     max-width: 100%;
     max-height: 280px;
     width: auto;
@@ -1137,7 +1121,7 @@ body.theme-tandang .upload-cta {
     }
 
     .modal-header {
-        padding: 3.5rem 1.5rem 1rem;
+        padding: 1rem 1.5rem 0;
         text-align: left;
     }
 
