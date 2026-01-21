@@ -288,20 +288,13 @@ const moderateImageWithAI = async (imageBlob, env) => {
   }
 };
 
-const processBackgroundModeration = async (
-  photoId,
-  imageBlob,
-  eventTag,
-  env,
-  urlOrigin,
-) => {
+const processBackgroundModeration = async (photoId, imageBlob, env) => {
   try {
     const imageResult = await moderateImageWithAI(imageBlob, env);
     if (imageResult.status === 'safe') {
       await env.DB.prepare('UPDATE photos SET is_approved = 1 WHERE id = ?')
         .bind(photoId)
         .run();
-      await invalidateCache(urlOrigin, eventTag);
       console.log(`Photo ${photoId} auto-approved by AI.`);
     } else {
       console.log(
@@ -316,7 +309,6 @@ const processBackgroundModeration = async (
 // ===== HANDLERS =====
 
 const handleUpload = async (request, env, ctx, corsHeaders) => {
-  const url = new URL(request.url);
   const formData = await request.formData();
   const uploadPassword = formData.get('pass');
 
@@ -414,15 +406,7 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
     const photoId = dbResult.meta.last_row_id;
 
     // Background image moderation
-    ctx.waitUntil(
-      processBackgroundModeration(
-        photoId,
-        imageBlob,
-        eventTag,
-        env,
-        url.origin,
-      ),
-    );
+    ctx.waitUntil(processBackgroundModeration(photoId, imageBlob, env));
 
     const photoObject = {
       id: photoId,
