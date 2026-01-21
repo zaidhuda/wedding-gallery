@@ -1304,7 +1304,7 @@ function setupScrollObserver() {
   function observeHeroScroll() {
     observer?.disconnect();
 
-    const offset = navbar.offsetHeight;
+    const offset = navbar.offsetHeight * 2;
     const threshold = Math.max(0, Math.min(1, 1 - offset / window.innerHeight));
 
     observer = new IntersectionObserver(
