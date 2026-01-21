@@ -424,19 +424,20 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       ),
     );
 
-    return jsonResponse(
-      {
-        success: true,
-        url: `${PHOTO_BASE_URL}/${objectKey}`,
-        id: photoId,
-        token: editToken,
-        pending: true,
-        autoApproved: false,
-        moderationReason: 'pending_image_moderation',
-      },
-      200,
-      corsHeaders,
-    );
+    const photoObject = {
+      id: photoId,
+      objectKey,
+      name,
+      message,
+      eventTag,
+      timestamp,
+      takenAt,
+      isApproved,
+      token: editToken,
+      url: `${PHOTO_BASE_URL}/${objectKey}`,
+    };
+
+    return jsonResponse({ photo: photoObject }, 200, corsHeaders);
   } catch (error) {
     console.error('Upload error:', error);
     return errorResponse('Upload failed', 500, corsHeaders);
@@ -556,8 +557,25 @@ const handleGetPhotos = async (url, env, corsHeaders) => {
     const limit = parseInt(url.searchParams.get('limit')) || 12;
     const offset = parseInt(url.searchParams.get('offset')) || 0;
     const sinceId = parseInt(url.searchParams.get('since_id'));
+    const checkIds = url.searchParams.get('check_ids');
 
     let query, countQuery, params;
+    let checkedPhotos = [];
+
+    if (checkIds) {
+      const ids = checkIds
+        .split(',')
+        .map((id) => parseInt(id))
+        .filter((id) => !isNaN(id));
+      if (ids.length > 0) {
+        const placeholders = ids.map(() => '?').join(',');
+        const checkQuery = `SELECT * FROM photos WHERE id IN (${placeholders})`;
+        const checkResult = await env.DB.prepare(checkQuery)
+          .bind(...ids)
+          .all();
+        checkedPhotos = (checkResult.results || []).map(mapToPhotoObject);
+      }
+    }
 
     if (sinceId) {
       query = eventTag
@@ -584,8 +602,16 @@ const handleGetPhotos = async (url, env, corsHeaders) => {
       .bind(...params)
       .all();
     const photos = (result.results || []).map(mapToPhotoObject);
+
+    const allPhotos = [...checkedPhotos];
+    photos.forEach((p) => {
+      if (!allPhotos.find((cp) => cp.id === p.id)) {
+        allPhotos.push(p);
+      }
+    });
+
     const hasMore = photos.length > limit;
-    if (hasMore) photos.pop();
+    if (hasMore) allPhotos.pop();
 
     let countResult = { total: 0 };
     if (!sinceId) {
@@ -596,7 +622,7 @@ const handleGetPhotos = async (url, env, corsHeaders) => {
 
     return jsonResponse(
       {
-        photos,
+        photos: allPhotos,
         hasMore,
         total: countResult?.total || 0,
         limit,
@@ -647,7 +673,7 @@ const handleAdminAction = async (request, env, corsHeaders) => {
         .bind(...targetIds)
         .run();
       return jsonResponse(
-        { success: true, action: 'approved', count: targetIds.length },
+        { action: 'approved', count: targetIds.length },
         200,
         corsHeaders,
       );
@@ -672,7 +698,7 @@ const handleAdminAction = async (request, env, corsHeaders) => {
         .bind(...targetIds)
         .run();
       return jsonResponse(
-        { success: true, action: 'deleted', count: targetIds.length },
+        { action: 'deleted', count: targetIds.length },
         200,
         corsHeaders,
       );
@@ -698,11 +724,7 @@ const handleAdminUnapprove = async (request, env, corsHeaders) => {
     await env.DB.prepare('UPDATE photos SET is_approved = 0 WHERE id = ?')
       .bind(id)
       .run();
-    return jsonResponse(
-      { success: true, action: 'unapproved', id },
-      200,
-      corsHeaders,
-    );
+    return jsonResponse({ action: 'unapproved', id }, 200, corsHeaders);
   } catch (error) {
     console.error('Unapprove error:', error);
     return errorResponse('Unapprove failed', 500, corsHeaders);

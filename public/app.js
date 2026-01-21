@@ -540,7 +540,7 @@ function formatFilmTimestamp(isoString) {
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return null;
 
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString('en-MS', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
@@ -563,7 +563,7 @@ function createPhotoCard(photo, eventTag = null) {
   const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
   const hasEditToken = editTokens[photo.id] !== undefined;
 
-  const isPending = photo.pending;
+  const isPending = photo.isApproved === 0;
 
   card.innerHTML = `
         <div class="photo-item" role="listitem">
@@ -574,8 +574,8 @@ function createPhotoCard(photo, eventTag = null) {
         </div>
         <div class="photo-caption">
             ${filmTime ? `<span class="film-stamp" aria-label="Photo taken at ${filmTime}">${filmTime}</span>` : ''}
-            ${photo.name ? `<p class="photo-name">${photo.name}</p>` : ''}
-            ${photo.message ? `<p class="photo-message">"${photo.message}"</p>` : ''}
+            <p class="photo-name">${photo.name}</p>
+            <p class="photo-message">${photo.message ? `“${photo.message}”` : ''}</p>
         </div>
     `;
 
@@ -927,7 +927,6 @@ async function uploadPhoto(file, name, message, eventTag) {
       }
       throw new Error(result.error || 'Upload failed');
     }
-    const autoApproved = result.autoApproved || false;
 
     // Save edit token to localStorage if we got one
     if (result.id && result.token) {
@@ -953,17 +952,8 @@ async function uploadPhoto(file, name, message, eventTag) {
         `;
 
     // If auto-approved OR pending review, show the photo immediately
-    if (autoApproved || result.pending) {
-      // For pending photos, we create a temporary card data object
-      const photoData = {
-        id: result.id,
-        url: result.url,
-        name: name,
-        message: message,
-        eventTag: eventTag,
-        pending: result.pending,
-        is_approved: result.pending ? 0 : 1,
-      };
+    if (result.photo) {
+      const photoData = result.photo;
 
       const gallery = document.getElementById(EVENT_CONFIG[eventTag].gallery);
       if (gallery) {
@@ -973,6 +963,9 @@ async function uploadPhoto(file, name, message, eventTag) {
         newCard.classList.add('visible', 'new-entry-highlight');
         gallery.prepend(newCard);
         newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const emptyState = gallery.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
       }
     }
   } catch (error) {
@@ -986,7 +979,6 @@ async function uploadPhoto(file, name, message, eventTag) {
 
 // ===== EDIT WINDOW FUNCTIONS =====
 let currentEditPhotoId = null;
-let currentEditEventTag = null;
 
 async function editPhoto(photoId, name, message) {
   const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
@@ -1025,19 +1017,17 @@ async function editPhoto(photoId, name, message) {
 
     closeEditModal();
 
-    // Refresh the gallery to show updated photo
-    // Refresh the gallery to show updated photo and highlight
-    if (currentEditEventTag) {
-      await loadPhotosForEvent(currentEditEventTag, false);
-      setTimeout(() => {
-        const updatedCard = document.querySelector(
-          `.photo-card[data-photo-id="${photoId}"]`,
-        );
-        if (updatedCard) {
-          updatedCard.classList.add('new-entry-highlight');
-        }
-      }, 100);
-    }
+    setTimeout(() => {
+      const updatedCard = document.querySelector(
+        `.photo-card[data-photo-id="${photoId}"]`,
+      );
+      if (updatedCard) {
+        console.log(updatedCard);
+        updatedCard.classList.add('new-entry-highlight');
+        updatedCard.querySelector('.photo-name').innerText = name;
+        updatedCard.querySelector('.photo-message').innerText = `“${message}”`;
+      }
+    }, 100);
   } catch (error) {
     console.error('Edit error:', error);
     alert(`Unable to edit: ${error.message}`);
@@ -1512,31 +1502,50 @@ async function pollForNewPhotos() {
   if (document.hidden) return;
 
   try {
-    // Fetch new photos since last seen ID
-    const url = `${WORKER_URL}/photos?since_id=${globalMaxPhotoId}`;
+    const pendingIds = Array.from(document.querySelectorAll('.reviewing-badge'))
+      .map((badge) => badge.closest('.photo-card')?.dataset.photoId)
+      .filter((id) => id);
+
+    let url = `${WORKER_URL}/photos?since_id=${globalMaxPhotoId}`;
+    if (pendingIds.length > 0) {
+      url += `&check_ids=${pendingIds.join(',')}`;
+    }
+
     const response = await fetch(url);
     if (!response.ok) return;
 
     const data = await response.json();
-    const newPhotos = data.photos || [];
+    const photos = data.photos || [];
 
-    if (newPhotos.length === 0) return;
+    if (photos.length === 0) return;
 
     // Update global max ID
+    const newPhotos = photos.filter((p) => p.id > globalMaxPhotoId);
     const batchMax = Math.max(...newPhotos.map((p) => p.id));
     if (batchMax > globalMaxPhotoId) globalMaxPhotoId = batchMax;
 
     // Distribute photos to their respective galleries (Reverse to maintain order when prepending)
-    newPhotos.reverse().forEach((photo) => {
+    photos.reverse().forEach((photo) => {
       const config = EVENT_CONFIG[photo.eventTag];
       if (!config) return;
 
       const gallery = document.getElementById(config.gallery);
       if (!gallery) return;
 
-      // Dedupe checks
-      if (gallery.querySelector(`.photo-card[data-photo-id="${photo.id}"]`))
+      const existingCard = gallery.querySelector(
+        `.photo-card[data-photo-id="${photo.id}"]`,
+      );
+
+      if (existingCard) {
+        if (photo.isApproved === 1) {
+          const badge = existingCard.querySelector('.reviewing-badge');
+          if (badge) {
+            badge.remove();
+            existingCard.classList.add('new-entry-highlight');
+          }
+        }
         return;
+      }
 
       const card = createPhotoCard(photo, photo.eventTag);
       card.classList.add('new-entry-highlight');
