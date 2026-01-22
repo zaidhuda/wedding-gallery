@@ -2,18 +2,17 @@ name = "wedding-gallery"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
-
 workers_dev = true
 preview_urls = true
 
 # Routes (for Cloudflare Pages integration)
 # If deploying as a Worker, you can also use routes here
-routes = [
-  { pattern = "wedding-gallery.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
-  { pattern = "wedding-gallery.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
-  { pattern = "guestbook.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
-  { pattern = "guestbook.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
-]
+# routes = [
+#   { pattern = "wedding-gallery.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
+#   { pattern = "wedding-gallery.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
+#   { pattern = "guestbook.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
+#   { pattern = "guestbook.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
+# ]
 
 [assets]
 directory = "./public/"
