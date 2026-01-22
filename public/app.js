@@ -1,10 +1,4 @@
 // ===== CONFIGURATION =====
-const isLocalhost =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1';
-const ADMIN_URL = isLocalhost ? 'http://localhost:8787/admin' : '/admin';
-const WORKER_URL = isLocalhost ? 'http://localhost:8787/api' : '/api';
-
 const GUEST_PASSWORD = 'ZM2026';
 const STORAGE_KEY = 'wedding_gallery_access';
 const NAME_STORAGE_KEY = 'wedding_gallery_name';
@@ -115,7 +109,7 @@ const webpSupported = supportsWebP();
 // Check if current user is authenticated via Cloudflare Access
 async function verifyAdminAccess() {
   try {
-    const response = await fetch(`${ADMIN_URL}/verify`, {
+    const response = await fetch('/admin/verify', {
       credentials: 'include', // Include Cloudflare Access cookies
     });
 
@@ -140,7 +134,7 @@ async function unapprovePhoto(photoId) {
   if (!isAdmin) return;
 
   try {
-    const response = await fetch(`${ADMIN_URL}/unapprove`, {
+    const response = await fetch('/admin/unapprove', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -483,7 +477,7 @@ async function loadPhotosForEvent(eventTag, append = false) {
   state.loading = true;
 
   try {
-    const url = `${WORKER_URL}/photos?eventTag=${encodeURIComponent(eventTag)}&limit=${PHOTOS_PER_PAGE}&offset=${state.offset}`;
+    const url = `/api/photos?eventTag=${encodeURIComponent(eventTag)}&limit=${PHOTOS_PER_PAGE}&offset=${state.offset}`;
     const response = await fetch(url);
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -911,7 +905,7 @@ async function uploadPhoto(file, name, message, eventTag) {
     formData.append('format', format); // Send format to worker
     formData.append('takenAt', takenAt); // Send original photo timestamp
 
-    const response = await fetch(`${WORKER_URL}/upload`, {
+    const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData,
     });
@@ -996,7 +990,7 @@ async function editPhoto(photoId, name, message) {
     editBtn.disabled = true;
     editBtn.textContent = 'Saving...';
 
-    const response = await fetch(`${WORKER_URL}/edit`, {
+    const response = await fetch('/api/edit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1077,7 +1071,7 @@ async function deletePhoto(photoId) {
     deleteBtn.disabled = true;
     deleteBtn.textContent = 'Deleting...';
 
-    const response = await fetch(`${WORKER_URL}/delete`, {
+    const response = await fetch('/api/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1544,7 +1538,7 @@ async function pollForNewPhotos() {
       .map((badge) => badge.closest('.photo-card')?.dataset.photoId)
       .filter((id) => id);
 
-    let url = `${WORKER_URL}/photos?since_id=${globalMaxPhotoId}`;
+    let url = `/api/photos?since_id=${globalMaxPhotoId}`;
     if (pendingIds.length > 0) {
       url += `&check_ids=${pendingIds.join(',')}`;
     }

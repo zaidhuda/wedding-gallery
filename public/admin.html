@@ -268,13 +268,8 @@
     </div>
 
     <script>
-      const isLocalhost =
-        window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1';
-      const API_BASE = isLocalhost ? 'http://localhost:8787' : '';
-
       // Only include credentials in production (for Cloudflare Access cookies)
-      const fetchOptions = isLocalhost ? {} : { credentials: 'include' };
+      const fetchOptions = { credentials: 'include' };
 
       let pendingPhotos = [];
 
@@ -300,7 +295,7 @@
         photoGrid.classList.add('hidden');
 
         try {
-          const res = await fetch(`${API_BASE}/admin/pending`, fetchOptions);
+          const res = await fetch('/admin/pending', fetchOptions);
 
           if (res.status === 401) {
             loadingState.classList.add('hidden');
@@ -432,7 +427,7 @@
         if (card) card.classList.add('loading', 'animate-pulse');
 
         try {
-          const res = await fetch(`${API_BASE}/admin/action`, {
+          const res = await fetch('/admin/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, ids }),
