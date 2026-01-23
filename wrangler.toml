@@ -1,5 +1,5 @@
 name = "wedding-gallery"
-main = "worker.js"
+main = "./worker/index.ts"
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
@@ -8,17 +8,16 @@ preview_urls = true
 # Routes (for Cloudflare Pages integration)
 # If deploying as a Worker, you can also use routes here
 # routes = [
-#   { pattern = "wedding-gallery.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
+#   { pattern = "wedding-gallery.zaidhuda.com/api/admin/*", zone_name = "zaidhuda.com" },
 #   { pattern = "wedding-gallery.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
 #   { pattern = "guestbook.zaidhuda.com/api/*", zone_name = "zaidhuda.com" },
-#   { pattern = "guestbook.zaidhuda.com/admin/*", zone_name = "zaidhuda.com" },
+#   { pattern = "guestbook.zaidhuda.com/api/admin/*", zone_name = "zaidhuda.com" },
 # ]
 
 [assets]
 directory = "./public/"
 not_found_handling = "single-page-application"
-binding = "ASSETS"
-run_worker_first = [ "/api/*", "/admin/*", "/images/*" ]
+run_worker_first = [ "/api/*" ]
 
 # Environment variables (optional)
 [vars]
@@ -31,6 +30,7 @@ Allow: praise, congratulations, playful slang, mild swearing used as intensifier
 Block: insults that attack dignity, humiliation, sexual content, hate/racism/religion slurs, threats, obscene gestures, animal insults.
 
 Rules:
+- ALLOW empty message, user is not required to write a message.
 - SAFE if message is clearly positive/celebratory OR a compliment (including about a person).
   Examples SAFE: "Cantik gila Aina", "Handsome gila pengantin", "Sedap sial makanan", "Tahniah setan 🎉".
 - UNSAFE if any of these:
