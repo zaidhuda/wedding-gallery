@@ -1,8 +1,13 @@
+import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
+
 export default function HeroSection() {
+  const ref = useRegisterHtmlElementRef('hero');
+
   return (
     <>
       {/* <!-- Hero Section --> */}
       <section
+        ref={ref}
         className="hero"
         id="hero"
         role="banner"

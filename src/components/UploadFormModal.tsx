@@ -19,16 +19,17 @@ import {
 } from '../utils';
 import useEditTokens from '../hooks/useHasEditToken';
 import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
+import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
 
 const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD as string;
 
 export default function UploadFormModal() {
+  const hiddenFileRef = useRegisterHtmlElementRef('hiddenFileInput');
   const invalidatePhotosRef = useRef<NodeJS.Timeout>(undefined);
-  const hiddenFileRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
   const [image, setImage] = useState<string | null>(null);
-  const { currentEventTag } = useAppState();
+  const { currentEventTag, htmlElementRefMap } = useAppState();
   const { openModal, closeModal } = useFormModal('uploadModal');
   const { mode } = useQueryParams(['mode']);
   const { setNewPhoto } = useNewPhotoId();
@@ -158,7 +159,8 @@ export default function UploadFormModal() {
 
   const handleHiddenFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      handleFileChange(e);
+      await handleFileChange(e);
+      e.target.value = '';
     },
     [handleFileChange],
   );
@@ -166,13 +168,10 @@ export default function UploadFormModal() {
   const handleClose = useCallback(() => {
     closeModal();
     form.reset();
-    if (hiddenFileRef.current) {
-      hiddenFileRef.current.value = '';
-    }
   }, []);
 
   const handleUploadZoneClick = useCallback(() => {
-    hiddenFileRef.current?.click();
+    htmlElementRefMap.current['hiddenFileInput']?.click();
   }, []);
 
   return (

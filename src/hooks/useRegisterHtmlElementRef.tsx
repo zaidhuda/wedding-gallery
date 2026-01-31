@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAppActions, type HtmlElementRefKey } from './useContext';
 
 export default function useRegisterHtmlElementRef(name: HtmlElementRefKey) {
@@ -8,6 +8,12 @@ export default function useRegisterHtmlElementRef(name: HtmlElementRefKey) {
     (el: HTMLElement | null) => registerHtmlElementRef(name, el),
     [registerHtmlElementRef],
   );
+
+  useEffect(() => {
+    return () => {
+      registerHtmlElementRef(name, null);
+    };
+  }, [registerHtmlElementRef]);
 
   return register;
 }

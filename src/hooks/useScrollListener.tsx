@@ -2,46 +2,37 @@ import { useLayoutEffect, useRef } from 'react';
 import { useAppActions, useAppState } from './useContext';
 import type { EventTitle } from '../constants';
 
+function applyTheme(theme?: string) {
+  document.body.classList.remove(
+    'theme-ijab',
+    'theme-sanding',
+    'theme-tandang',
+  );
+  if (theme) document.body.classList.add(`theme-${theme}`);
+}
+
 export default function useScrollListener() {
-  const { currentEventTag } = useAppState();
+  const { htmlElementRefMap } = useAppState();
   const { setCurrentEventTag } = useAppActions();
 
   const tickingRef = useRef(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useLayoutEffect(() => {
-    const sections =
-      document.querySelectorAll<HTMLDivElement>('.gallery-section');
-    const sectionTitles =
-      document.querySelectorAll<HTMLDivElement>('.section-title');
-    const navItems = document.querySelectorAll<HTMLDivElement>('.nav-item');
-    const navbar = document.querySelector<HTMLDivElement>(
-      '.floating-nav',
-    ) as HTMLDivElement;
-    const hero = document.querySelector<HTMLDivElement>(
-      '.hero',
-    ) as HTMLDivElement;
-
-    if (!navbar || !hero) {
-      // Nothing to observe yet; avoid crashing.
-      return;
-    }
-
-    function applyTheme(theme?: string) {
-      document.body.classList.remove(
-        'theme-ijab',
-        'theme-sanding',
-        'theme-tandang',
-      );
-      if (theme) document.body.classList.add(`theme-${theme}`);
-    }
+    const sections = [
+      htmlElementRefMap.current['gallery-ijab'],
+      htmlElementRefMap.current['gallery-sanding'],
+      htmlElementRefMap.current['gallery-tandang'],
+    ].filter(Boolean) as HTMLElement[];
+    const navbar = htmlElementRefMap.current['floating-nav'];
+    const navItems = navbar?.querySelectorAll<HTMLDivElement>('.nav-item');
 
     function updateActiveSection() {
       let activeSection: Element | null = null;
       let bestPosition = -Infinity;
 
-      sectionTitles.forEach((title) => {
-        const section = title.closest('.gallery-section');
+      sections.forEach((section) => {
+        const title = section.querySelector('.section-title') as HTMLDivElement;
         const rect = title.getBoundingClientRect();
 
         const triggerTop = -200;
@@ -58,8 +49,10 @@ export default function useScrollListener() {
       });
 
       if (!activeSection) {
-        sectionTitles.forEach((title) => {
-          const section = title.closest('.gallery-section');
+        sections.forEach((section) => {
+          const title = section.querySelector(
+            '.section-title',
+          ) as HTMLDivElement;
           const rect = title.getBoundingClientRect();
           if (rect.top < 0 && rect.top > bestPosition) {
             bestPosition = rect.top;
@@ -75,11 +68,11 @@ export default function useScrollListener() {
         const theme = el.dataset.theme;
         const event = el.dataset.event as EventTitle;
 
-        if (event && currentEventTag !== event) {
+        if (event) {
           applyTheme(theme);
           setCurrentEventTag(event);
 
-          navItems.forEach((item) => {
+          navItems?.forEach((item) => {
             item.classList.toggle('active', item.dataset.event === event);
           });
         }
@@ -95,7 +88,26 @@ export default function useScrollListener() {
       }
     }
 
-    function observeHeroScroll() {
+    updateActiveSection();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+    };
+  }, [setCurrentEventTag]);
+
+  useLayoutEffect(() => {
+    const observeHeroScroll = () => {
+      const navbar = htmlElementRefMap.current['floating-nav'];
+      const hero = htmlElementRefMap.current['hero'];
+
+      if (!navbar || !hero) {
+        return;
+      }
+
       observerRef.current?.disconnect();
 
       const offset = navbar.offsetHeight * 2;
@@ -112,19 +124,15 @@ export default function useScrollListener() {
       );
 
       observerRef.current.observe(hero);
-    }
+    };
 
-    updateActiveSection();
     observeHeroScroll();
-
-    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', observeHeroScroll);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', observeHeroScroll);
       observerRef.current?.disconnect();
       observerRef.current = null;
     };
-  }, [currentEventTag, setCurrentEventTag]);
+  }, []);
 }

@@ -13,8 +13,7 @@ import { useMutation } from 'react-query';
 import useNewPhotoId from '../hooks/useNewPhotoId';
 import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
 
-// Format timestamp for film stamp display (e.g., "8:42 PM")
-function formatFilmTimestamp(isoString: string) {
+function formatTimeStamp(isoString: string) {
   if (!isoString) return null;
   try {
     const date = new Date(isoString);
@@ -30,9 +29,7 @@ function formatFilmTimestamp(isoString: string) {
   }
 }
 
-export default function PhotoEntry(
-  photo: PhotoResponse & { deletedAt?: Date },
-) {
+export default function PhotoCard(photo: PhotoResponse & { deletedAt?: Date }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const entranceObserver = useRef<IntersectionObserver>(null);
   const { selectPhoto: setSelectedPhoto } = useAppActions();
@@ -47,7 +44,7 @@ export default function PhotoEntry(
   }, [hasEditToken, photo.token]);
 
   const filmTime = useMemo(
-    () => formatFilmTimestamp(photo.takenAt),
+    () => formatTimeStamp(photo.takenAt),
     [photo.takenAt],
   );
   const isPending = photo.isApproved === 0;

@@ -122,24 +122,23 @@ export async function getEventTag(
   mode?: string | null,
   currentEventTag?: EventTitle,
 ) {
-  // Extract photo timestamp for validation
   const takenAt = await extractPhotoTimestamp(file);
   let eventTag = currentEventTag;
 
-  // TEST MODE: Bypass date validation, show manual selector
   if (mode === 'test') {
     const selection = await showTestModeSelector();
     if (!selection) {
       return;
     }
+
     eventTag = selection.eventTag;
   } else {
-    // PRODUCTION MODE: Smart-sort based on photo date
     const validation = validatePhotoDate(takenAt);
-
     if (!validation.valid || !validation.eventTag) {
-      // Photo is not from wedding dates - show rejection popup
-      showRejectionPopup();
+      alert(
+        "This photo doesn't seem to be from our wedding dates!\n\n" +
+          'Please pick a photo taken at 7th, 8th, or 14th of February.',
+      );
       return;
     }
 
@@ -274,49 +273,5 @@ export function showTestModeSelector(): Promise<{
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) closePopup(null);
     });
-  });
-}
-
-// ===== REJECTION POPUP =====
-export function showRejectionPopup() {
-  // Create overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'rejection-overlay';
-  overlay.setAttribute('role', 'alertdialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'date-rejection-title');
-  overlay.innerHTML = `
-        <div class="rejection-popup">
-            <div class="rejection-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    <path d="M12 11v4M12 17h.01"/>
-                </svg>
-            </div>
-            <p class="rejection-message" id="date-rejection-title">
-                This photo doesn't seem to be from our wedding dates
-                <span class="rejection-dates">(Feb 7, 8, or 14)</span>
-            </p>
-            <p class="rejection-cta">Please pick a photo from the celebrations!</p>
-            <button class="rejection-close" aria-label="Close dialog and try again">Got it</button>
-        </div>
-    `;
-
-  document.body.appendChild(overlay);
-
-  // Animate in
-  requestAnimationFrame(() => overlay.classList.add('visible'));
-
-  // Close handlers
-  const closePopup = () => {
-    overlay.classList.remove('visible');
-    setTimeout(() => overlay.remove(), 300);
-  };
-
-  (
-    overlay.querySelector('.rejection-close') as HTMLButtonElement
-  ).addEventListener('click', closePopup);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closePopup();
   });
 }

@@ -10,9 +10,12 @@ import type { EventTitle } from '../constants';
 import type { PhotoResponse } from '../worker/types';
 
 export type HtmlElementRefKey =
+  | 'hero'
+  | 'floating-nav'
   | 'gallery-ijab'
   | 'gallery-sanding'
   | 'gallery-tandang'
+  | 'hiddenFileInput'
   | 'uploadModal'
   | 'editModal';
 type HtmlElementRefMap = Partial<Record<HtmlElementRefKey, HTMLElement | null>>;

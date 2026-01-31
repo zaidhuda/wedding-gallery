@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from 'react-query';
-import PhotoEntry from './PhotoEntry';
+import PhotoCard from './PhotoCard';
 import type { PhotoResponse, PhotosResponse } from '../worker/types';
 import { PHOTOS_STALE_TIME, type EVENTS } from '../constants';
 import { useMemo } from 'react';
@@ -77,10 +77,10 @@ function RenderPhotos({
   if (photos.length < 1) {
     return <EmptyState />;
   }
-  return photos.map((photo) => <PhotoEntry key={photo.id} {...photo} />);
+  return photos.map((photo) => <PhotoCard key={photo.id} {...photo} />);
 }
 
-export default function EventSection({
+export default function GallerySection({
   name,
   section,
   gallery,

@@ -2,20 +2,26 @@ import { useCallback } from 'react';
 import useValidateAccess from '../hooks/useValidateAccess';
 import { EVENTS } from '../constants';
 import useScrollTo from '../hooks/useScrollTo';
+import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
+import { useAppState } from '../hooks/useContext';
 
 export default function FloatingNavigation() {
+  const { htmlElementRefMap } = useAppState();
+  const ref = useRegisterHtmlElementRef('floating-nav');
   const validateAccess = useValidateAccess();
   const scrollToSection = useScrollTo();
 
   const handleClickUpload = useCallback(async () => {
     if (await validateAccess()) {
-      document.getElementById('hiddenFileInput')?.click();
+      const fileInput = htmlElementRefMap.current['hiddenFileInput'];
+      fileInput?.click();
     }
   }, [validateAccess]);
 
   return (
     <>
       <nav
+        ref={ref}
         className="floating-nav"
         id="floatingNav"
         role="navigation"
