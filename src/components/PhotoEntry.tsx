@@ -1,18 +1,50 @@
-import { Fragment } from 'react/jsx-runtime';
-import type { PhotoResponse } from '../../worker/types';
-import useScript from '../hooks/useScript';
-import { STORED_EDIT_TOKENS } from '../hooks/useLocalStorage';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useAppState } from '../hooks/useContext';
-import useHasEditToken from '../hooks/useHasEditToken';
+import type { PhotoResponse } from '../worker/types';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
+import { useAppActions, useAppState } from '../hooks/useContext';
+import useEditTokens from '../hooks/useHasEditToken';
+import useFormModal from '../hooks/useFormModal';
+import { useMutation } from 'react-query';
+import useNewPhotoId from '../hooks/useNewPhotoId';
+import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
 
-export default function PhotoEntry(photo: PhotoResponse['photos'][number]) {
+// Format timestamp for film stamp display (e.g., "8:42 PM")
+function formatFilmTimestamp(isoString: string) {
+  if (!isoString) return null;
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return null;
+
+    return date.toLocaleTimeString('en-MS', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch {
+    return null;
+  }
+}
+
+export default function PhotoEntry(
+  photo: PhotoResponse & { deletedAt?: Date },
+) {
   const cardRef = useRef<HTMLDivElement>(null);
   const entranceObserver = useRef<IntersectionObserver>(null);
-  const { formatFilmTimestamp } = useScript();
+  const { selectPhoto: setSelectedPhoto } = useAppActions();
   const { isAdmin } = useAppState();
-  const [isRemoved, setIsRemoved] = useState(false);
-  const hasEditToken = useHasEditToken(photo.token);
+  const { hasEditToken } = useEditTokens();
+  const { openModal } = useFormModal('editModal');
+  const { isNewPhoto, setNewPhoto } = useNewPhotoId();
+  const { removePhotoEntry } = useManagePhotoEntry();
+
+  const canEdit = useMemo(() => {
+    return hasEditToken(photo.token);
+  }, [hasEditToken, photo.token]);
 
   const filmTime = useMemo(
     () => formatFilmTimestamp(photo.takenAt),
@@ -20,8 +52,51 @@ export default function PhotoEntry(photo: PhotoResponse['photos'][number]) {
   );
   const isPending = photo.isApproved === 0;
 
+  const unapproveMutation = useMutation({
+    mutationFn: async () => {
+      if (isAdmin) {
+        await fetch('/api/admin/unapprove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id: photo.id }),
+        });
+      }
+    },
+    onSuccess: () => {
+      removePhotoEntry(photo.eventTag, photo.id);
+      console.log(`Photo ${photo.id} unapproved`);
+    },
+    onError: (error: any) => {
+      console.error('Failed to unapprove photo', error);
+      alert(`Failed to unapprove photo:\n\n${error.message}`);
+    },
+  });
+
+  const handleEditClick = useCallback(() => {
+    setSelectedPhoto(photo);
+    openModal(photo.eventTag);
+  }, [openModal, setSelectedPhoto, photo]);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      if (isNewPhoto(photo.id)) {
+        cardRef.current.classList.add('visible', 'new-entry-highlight');
+        cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setNewPhoto();
+      }
+      if (photo.deletedAt) {
+        cardRef.current.style.transition =
+          'opacity 0.3s ease, transform 0.3s ease';
+        cardRef.current.style.opacity = '0';
+        cardRef.current.style.transform = 'scale(0.9)';
+      }
+    }
+  }, [cardRef.current, photo]);
+
   useLayoutEffect(() => {
     if (cardRef.current) {
+      entranceObserver.current?.disconnect();
       entranceObserver.current = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -46,39 +121,8 @@ export default function PhotoEntry(photo: PhotoResponse['photos'][number]) {
     };
   }, []);
 
-  const handleUnapprovePhoto = useCallback(async () => {
-    if (isAdmin) {
-      try {
-        const photoId = photo.id;
-        const response = await fetch('/api/admin/unapprove', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ id: photoId }),
-        });
-
-        if (response.ok && cardRef.current) {
-          cardRef.current.style.transition =
-            'opacity 0.3s ease, transform 0.3s ease';
-          cardRef.current.style.opacity = '0';
-          cardRef.current.style.transform = 'scale(0.9)';
-          setTimeout(() => setIsRemoved(true), 300);
-          console.log(`Photo ${photoId} unapproved`);
-        } else {
-          console.error('Failed to unapprove photo');
-        }
-      } catch (error) {
-        console.error('Unapprove error:', error);
-      }
-    }
-  }, [isAdmin, photo.id]);
-
-  if (isRemoved) {
-    return undefined;
-  }
-
   return (
-    <Fragment key={photo.id}>
+    <>
       <div ref={cardRef} className="photo-card" data-photo-id={photo.id}>
         <div className="photo-item" role="listitem">
           <img
@@ -96,7 +140,7 @@ export default function PhotoEntry(photo: PhotoResponse['photos'][number]) {
           ) : null}
           {isAdmin ? (
             <button
-              onClick={handleUnapprovePhoto}
+              onClick={() => unapproveMutation.mutate()}
               className="unapprove-btn"
               title="Remove from guestbook"
               aria-label={`Remove wish by ${photo.name || 'Guest'} from guestbook`}
@@ -104,14 +148,10 @@ export default function PhotoEntry(photo: PhotoResponse['photos'][number]) {
               ✕
             </button>
           ) : null}
-          {hasEditToken ? (
+          {canEdit ? (
             <button
               className="edit-btn"
-              data-photo-id={photo.id}
-              data-photo-url={photo.url}
-              data-photo-name={(photo.name || '').replace(/"/g, '&quot;')}
-              data-photo-message={(photo.message || '').replace(/"/g, '&quot;')}
-              data-event-tag={photo.eventTag || ''}
+              onClick={handleEditClick}
               title="Edit your submission"
               aria-label="Edit your photo submission"
             >
@@ -134,6 +174,6 @@ export default function PhotoEntry(photo: PhotoResponse['photos'][number]) {
           </p>
         </div>
       </div>
-    </Fragment>
+    </>
   );
 }

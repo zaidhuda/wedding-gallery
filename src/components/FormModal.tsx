@@ -1,10 +1,13 @@
-import { type ReactNode } from 'react';
+import { useCallback, useMemo, type ReactNode } from 'react';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
 import useFormModal from '../hooks/useFormModal';
+import { EVENT_MAP } from '../constants';
+import { useAppState } from '../hooks/useContext';
 
 type Props = {
   children: ReactNode;
   type: 'upload' | 'edit';
+  onClose: () => void;
 };
 
 const CONFIGS = {
@@ -20,10 +23,21 @@ const CONFIGS = {
   },
 } as const;
 
-export default function FormModal({ children, type }: Props) {
+export default function FormModal({ children, type, onClose }: Props) {
+  const { currentEventTag } = useAppState();
   const { id, modalTitle, modalSubtitle } = CONFIGS[type];
   const ref = useRegisterHtmlElementRef(id);
-  const { close } = useFormModal(id);
+  const { closeModal } = useFormModal(id);
+
+  const eventIndicator = useMemo(
+    () => (currentEventTag ? EVENT_MAP[currentEventTag].label : 'Night'),
+    [currentEventTag],
+  );
+
+  const handleClose = useCallback(() => {
+    closeModal();
+    onClose();
+  }, [closeModal, onClose]);
 
   return (
     <>
@@ -39,7 +53,7 @@ export default function FormModal({ children, type }: Props) {
         <div className="modal-backdrop" id="modalBackdrop"></div>
         <div className="modal-content">
           <button
-            onClick={close}
+            onClick={handleClose}
             className="modal-close"
             id="modalClose"
             aria-label="Close photo upload form"
@@ -50,7 +64,7 @@ export default function FormModal({ children, type }: Props) {
               height="24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              strokeWidth="1.5"
               aria-hidden="true"
             >
               <path d="M18 6L6 18M6 6l12 12" />
@@ -68,7 +82,7 @@ export default function FormModal({ children, type }: Props) {
               id="eventIndicator"
               aria-live="polite"
             >
-              Night
+              {eventIndicator}
             </span>
           </div>
           {children}

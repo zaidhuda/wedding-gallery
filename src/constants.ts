@@ -39,4 +39,4 @@ export const EVENT_MAP = EVENTS.reduce(
   {} as Record<EventTitle, (typeof EVENTS)[number]>,
 );
 
-export const PHOTOS_STALE_TIME = 15 * 1000;
+export const PHOTOS_STALE_TIME = 15_000;

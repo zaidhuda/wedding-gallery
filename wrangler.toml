@@ -1,5 +1,5 @@
 name = "wedding-gallery"
-main = "./worker/index.ts"
+main = "./src/worker/index.ts"
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true

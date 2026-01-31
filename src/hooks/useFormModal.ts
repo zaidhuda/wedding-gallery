@@ -1,15 +1,13 @@
 import { useCallback } from 'react';
 import { EVENT_MAP, type EventTitle } from '../constants';
 import { useAppActions, useAppState } from './useContext';
-import { STORED_NAME } from './useLocalStorage';
 
 export default function useFormModal(id: 'uploadModal' | 'editModal') {
   const { setCurrentEventTag } = useAppActions();
   const { htmlElementRefMap } = useAppState();
 
-  const modal = htmlElementRefMap.current[id];
-
-  const open = useCallback((eventTag: EventTitle) => {
+  const openModal = useCallback((eventTag: EventTitle) => {
+    const modal = htmlElementRefMap.current[id];
     const config = EVENT_MAP[eventTag];
     if (!config) return;
 
@@ -22,39 +20,23 @@ export default function useFormModal(id: 'uploadModal' | 'editModal') {
         'modal-theme-sanding',
         'modal-theme-tandang',
       );
-      modal.classList.add(`modal-theme-${config.theme}`);
-
-      (document.getElementById('hiddenEventTag') as HTMLInputElement).value =
-        eventTag;
-      (
-        document.getElementById('eventIndicator') as HTMLSpanElement
-      ).textContent = config.label;
-
-      // Pre-fill the name field with saved value from localStorage
-      const savedName = localStorage.getItem(STORED_NAME);
-      if (savedName) {
-        (document.getElementById('photoName') as HTMLInputElement).value =
-          savedName;
-      }
-
-      modal.classList.add('visible');
+      modal.classList.add('visible', `modal-theme-${config.theme}`);
       document.body.style.overflow = 'hidden';
     }
   }, []);
 
-  const close = useCallback(() => {
+  const closeModal = useCallback(() => {
+    const modal = htmlElementRefMap.current[id];
     if (modal) {
-      modal.classList.remove('visible');
       modal.classList.remove(
+        'visible',
         'modal-theme-ijab',
         'modal-theme-sanding',
         'modal-theme-tandang',
       );
       document.body.style.overflow = '';
-      (document.getElementById('hiddenFileInput') as HTMLInputElement).value =
-        '';
     }
   }, []);
 
-  return { open, close };
+  return { openModal, closeModal };
 }

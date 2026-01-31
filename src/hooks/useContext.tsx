@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import type { EventTitle } from '../constants';
+import type { PhotoResponse } from '../worker/types';
 
 export type HtmlElementRefKey =
   | 'gallery-ijab'
@@ -22,6 +23,7 @@ type AppState = {
   htmlElementRefMap: React.RefObject<
     Partial<Record<HtmlElementRefKey, HTMLElement | null>>
   >;
+  selectedPhoto: PhotoResponse | null;
 };
 
 type AppActions = {
@@ -31,6 +33,7 @@ type AppActions = {
     name: HtmlElementRefKey,
     ref: HTMLElement | null,
   ) => void;
+  selectPhoto: (photo: PhotoResponse | null) => void;
 };
 
 const AppStateContext = createContext<AppState | null>(null);
@@ -44,6 +47,7 @@ export function AppContextProvider({
   const [currentEventTag, setCurrentEventTag] = useState<EventTitle>();
   const [isAdmin, setIsAdmin] = useState(false);
   const htmlElementRefMap = useRef<HtmlElementRefMap>({});
+  const [selectedPhoto, selectPhoto] = useState<PhotoResponse | null>(null);
 
   const registerHtmlElementRef = useCallback(
     (name: keyof HtmlElementRefMap, ref: HTMLElement | null) => {
@@ -54,16 +58,17 @@ export function AppContextProvider({
   );
 
   const states = useMemo(
-    () => ({ currentEventTag, isAdmin, htmlElementRefMap }),
-    [currentEventTag, isAdmin, htmlElementRefMap],
+    () => ({ currentEventTag, isAdmin, htmlElementRefMap, selectedPhoto }),
+    [currentEventTag, isAdmin, htmlElementRefMap, selectedPhoto],
   );
   const actions = useMemo(
     () => ({
       setCurrentEventTag,
       setIsAdmin,
       registerHtmlElementRef,
+      selectPhoto,
     }),
-    [setCurrentEventTag, setIsAdmin, registerHtmlElementRef],
+    [setCurrentEventTag, setIsAdmin, registerHtmlElementRef, selectPhoto],
   );
 
   return (

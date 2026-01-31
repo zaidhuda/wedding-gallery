@@ -1,19 +1,14 @@
-import { QueryClient, QueryClientProvider } from 'react-query';
-import HeroSection from './components/HeroSection';
-import MainContent from './components/MainContent';
-import FloatingNavigation from './components/FloatingNavigation';
-import UploadFormModal from './components/UploadFormModal';
-import EditFormModal from './components/EditFormModal';
+import { lazy, Suspense } from 'react';
 import { AppContextProvider } from './hooks/useContext';
 import useScrollListener from './hooks/useScrollListener';
+import HeroSection from './components/HeroSection';
+import FloatingNavigation from './components/FloatingNavigation';
 import './App.css';
-import useVerifyAdmin from './hooks/useVerifyAdmin';
 
-const queryClient = new QueryClient();
+const MainContent = lazy(() => import('./components/MainContent'));
 
 function AppContent() {
   useScrollListener();
-  useVerifyAdmin();
 
   return (
     <>
@@ -23,10 +18,11 @@ function AppContent() {
       </a>
 
       <HeroSection />
-      <MainContent />
       <FloatingNavigation />
-      <UploadFormModal />
-      <EditFormModal />
+
+      <Suspense fallback={<div>Loading...</div>}>
+        <MainContent />
+      </Suspense>
     </>
   );
 }
@@ -34,9 +30,7 @@ function AppContent() {
 function App() {
   return (
     <AppContextProvider>
-      <QueryClientProvider client={queryClient}>
-        <AppContent />
-      </QueryClientProvider>
+      <AppContent />
     </AppContextProvider>
   );
 }

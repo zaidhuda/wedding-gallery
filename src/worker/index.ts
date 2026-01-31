@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { Buffer } from 'buffer';
-import type { CorsHeaders, PhotoEntity } from './types';
+import type { CorsHeaders, PhotoEntity, PhotoResponse } from './types';
 
 const ENVIRONMENT = env.ENVIRONMENT;
 const IS_DEVELOPMENT = ENVIRONMENT === 'development';
@@ -325,11 +325,17 @@ const handleUpload = async (
   }
 
   try {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'] as const;
+    const validEventTags = ['Ijab & Qabul', 'Sanding', 'Tandang'] as const;
+
     const image = formData.get('image') as File;
     const name = ((formData.get('name') as string) || '').trim() || 'Anonymous';
     const message = ((formData.get('message') as string) || '').trim();
-    const eventTag = formData.get('eventTag') as string;
-    const format = (formData.get('format') as string) || 'image/jpeg';
+    const eventTag = formData.get(
+      'eventTag',
+    ) as (typeof validEventTags)[number];
+    const format =
+      (formData.get('format') as (typeof allowedTypes)[number]) || 'image/jpeg';
     const takenAtParam = formData.get('takenAt') as string;
 
     const validationError = validateUserInput(name, message);
@@ -344,10 +350,9 @@ const handleUpload = async (
       );
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (
       !allowedTypes.includes(format) ||
-      (image.type && !allowedTypes.includes(image.type))
+      (image.type && !allowedTypes.includes(image.type as any))
     ) {
       return errorResponse(
         'Invalid file type. Only JPG, PNG, and WebP are allowed.',
@@ -364,7 +369,6 @@ const handleUpload = async (
       );
     }
 
-    const validEventTags = ['Ijab & Qabul', 'Sanding', 'Tandang'];
     if (!validEventTags.includes(eventTag)) {
       return errorResponse('Invalid eventTag', 400, corsHeaders);
     }
@@ -413,7 +417,7 @@ const handleUpload = async (
     // Background image moderation
     ctx.waitUntil(processBackgroundModeration(photoId, imageBlob, env));
 
-    const photoObject = {
+    const photoObject: PhotoResponse = {
       id: photoId,
       objectKey,
       name,

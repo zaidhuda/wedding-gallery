@@ -1,9 +1,8 @@
-import { useQuery } from 'react-query';
-import { Fragment } from 'react/jsx-runtime';
+import { useQuery, useQueryClient } from 'react-query';
 import PhotoEntry from './PhotoEntry';
-import type { PhotoResponse } from '../../worker/types';
+import type { PhotoResponse, PhotosResponse } from '../worker/types';
 import { PHOTOS_STALE_TIME, type EVENTS } from '../constants';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
 
 type Props = (typeof EVENTS)[number];
@@ -47,7 +46,7 @@ function EmptyState() {
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="1"
+        strokeWidth="1"
         aria-hidden="true"
       >
         <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -67,7 +66,7 @@ function RenderPhotos({
 }: {
   isLoading: boolean;
   error: unknown;
-  photos: PhotoResponse['photos'] | never[];
+  photos: PhotoResponse[] | never[];
 }) {
   if (isLoading) {
     return <LoadingState />;
@@ -78,7 +77,7 @@ function RenderPhotos({
   if (photos.length < 1) {
     return <EmptyState />;
   }
-  return photos.map(PhotoEntry);
+  return photos.map((photo) => <PhotoEntry key={photo.id} {...photo} />);
 }
 
 export default function EventSection({
@@ -89,23 +88,27 @@ export default function EventSection({
   label,
   date,
 }: Props) {
+  const queryClient = useQueryClient();
   const sectionRef = useRegisterHtmlElementRef(gallery);
 
-  const { isLoading, error, data } = useQuery({
+  const { offset = 0 } = useMemo(() => {
+    return (
+      queryClient.getQueryData<PhotosResponse>(['photos', title]) ??
+      ({} as Partial<PhotosResponse>)
+    );
+  }, [queryClient, title]);
+
+  const { isLoading, error, data } = useQuery<PhotosResponse>({
     queryKey: ['photos', title],
     queryFn: () =>
       fetch(
-        `/api/photos?eventTag=${encodeURIComponent(title)}&limit=${PHOTOS_PER_PAGE}&offset=${0}`,
-      ).then((res) => res.json() as Promise<PhotoResponse>),
+        `/api/photos?eventTag=${encodeURIComponent(title)}&limit=${PHOTOS_PER_PAGE}&offset=${offset}`,
+      ).then((res) => res.json()),
     staleTime: PHOTOS_STALE_TIME,
   });
 
-  const photos = useMemo(() => {
-    return data?.photos || [];
-  }, [data]);
-
   return (
-    <Fragment key={name}>
+    <>
       <section
         ref={sectionRef}
         className={`gallery-section section-${name}`}
@@ -131,10 +134,14 @@ export default function EventSection({
             role="list"
             aria-label={`${name} ceremony wishes`}
           >
-            <RenderPhotos isLoading={isLoading} error={error} photos={photos} />
+            <RenderPhotos
+              isLoading={isLoading}
+              error={error}
+              photos={data?.photos ?? []}
+            />
           </div>
         </div>
       </section>
-    </Fragment>
+    </>
   );
 }

@@ -1,11 +1,10 @@
 {
-  "include": [
-    "worker"
-  ],
   "compilerOptions": {
-    "types": [
-      "./worker-configuration.d.ts",
-      "node"
-    ]
-  }
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "worker-configuration.d.ts",
+    "src/worker/**/*.ts"
+  ]
 }

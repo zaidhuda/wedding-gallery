@@ -1,56 +1,42 @@
 import type { ReactNode } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+import type { EventTitle } from '../constants';
+
+export type PhotoFormValues = {
+  file?: File;
+  name: string;
+  message: string;
+  eventTag: EventTitle;
+};
 
 type Props = {
   children: ReactNode;
+  form: UseFormReturn<PhotoFormValues>;
+  PhotoElement: React.FC;
+  onSubmit: (data: PhotoFormValues) => void;
 };
 
-export default function BaseForm({ children }: Props) {
+export default function BaseForm({
+  children,
+  form,
+  PhotoElement,
+  onSubmit,
+}: Props) {
   return (
     <>
       <form
         className="modal-form"
-        id="photoForm"
         aria-label="Photo upload form"
+        onSubmit={form.handleSubmit(onSubmit)}
       >
-        <div
-          className="upload-zone"
-          id="uploadZone"
-          role="button"
-          tabIndex={0}
-          aria-label="Select photo to upload"
-        >
-          <input
-            type="file"
-            id="photoFile"
-            accept="image/*"
-            className="sr-only"
-            aria-label="Photo file input"
-          />
-          <div id="uploadPreview">
-            <svg
-              className="upload-zone-icon"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1"
-              aria-hidden="true"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
-            </svg>
-            <p className="upload-zone-text">Tap to select a photo</p>
-          </div>
-        </div>
+        <PhotoElement />
         <div className="form-field">
-          <label className="form-label" htmlFor="photoName">
+          <label className="form-label" htmlFor="name">
             Your Name
           </label>
           <input
+            {...form.register('name')}
             type="text"
-            id="photoName"
             className="form-input form-input-handwriting"
             placeholder="Write your name here..."
             aria-required="true"
@@ -58,26 +44,18 @@ export default function BaseForm({ children }: Props) {
           />
         </div>
         <div className="form-field">
-          <label className="form-label" htmlFor="photoMessage">
+          <label className="form-label" htmlFor="message">
             Message (Optional)
           </label>
           <textarea
-            id="photoMessage"
+            {...form.register('message')}
             className="form-input form-textarea form-input-handwriting"
             placeholder="A few words about this moment..."
             aria-required="false"
             maxLength={500}
           ></textarea>
         </div>
-        <input type="hidden" id="hiddenEventTag" aria-hidden="true" />
-        <button
-          type="submit"
-          className="submit-btn"
-          id="uploadBtn"
-          aria-label="Submit photo and share wish"
-        >
-          Post to Guestbook
-        </button>
+        {children}
         <p className="form-helper-text">
           You can edit or delete your entry from this device within 1 hour after
           posting.

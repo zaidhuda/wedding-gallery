@@ -11,20 +11,20 @@ export type PhotoEntity = {
 };
 
 export type PhotoResponse = {
-  photos: [
-    {
-      id: number;
-      objectKey: string;
-      name: string;
-      message?: string;
-      eventTag: PhotoEntity['event_tag'];
-      timestamp: string;
-      takenAt: string;
-      isApproved: 0 | 1;
-      token?: string;
-      url: string;
-    },
-  ];
+  id: number;
+  objectKey: string;
+  name: string;
+  message?: string;
+  eventTag: PhotoEntity['event_tag'];
+  timestamp: string;
+  takenAt: string;
+  isApproved: 0 | 1;
+  token?: string;
+  url: string;
+};
+
+export type PhotosResponse = {
+  photos: PhotoResponse[];
   hasMore: boolean;
   total: number;
   limit: number;

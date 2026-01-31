@@ -29,7 +29,7 @@ export default function HeroSection() {
             height="24"
             fill="none"
             stroke="currentColor"
-            stroke-width="1.5"
+            strokeWidth="1.5"
             aria-hidden="true"
           >
             <path d="M19 14l-7 7m0 0l-7-7m7 7V3" />

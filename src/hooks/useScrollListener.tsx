@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { useAppActions, useAppState } from './useContext';
+import type { EventTitle } from '../constants';
 
 export default function useScrollListener() {
   const { currentEventTag } = useAppState();
@@ -72,7 +73,7 @@ export default function useScrollListener() {
       if (activeSection) {
         const el = activeSection as HTMLDivElement;
         const theme = el.dataset.theme;
-        const event = el.dataset.event;
+        const event = el.dataset.event as EventTitle;
 
         if (event && currentEventTag !== event) {
           applyTheme(theme);

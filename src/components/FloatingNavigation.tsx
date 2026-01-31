@@ -49,7 +49,7 @@ export default function FloatingNavigation() {
             stroke="currentColor"
             aria-hidden="true"
           >
-            <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+            <path d="M12 5v14M5 12h14" strokeLinecap="round" />
           </svg>
         </button>
       </nav>
