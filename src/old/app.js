@@ -109,7 +109,7 @@ const webpSupported = supportsWebP();
 // Check if current user is authenticated via Cloudflare Access
 async function verifyAdminAccess() {
   try {
-    const response = await fetch('/admin/verify', {
+    const response = await fetch('/api/admin/verify', {
       credentials: 'include', // Include Cloudflare Access cookies
     });
 
@@ -134,7 +134,7 @@ async function unapprovePhoto(photoId) {
   if (!isAdmin) return;
 
   try {
-    const response = await fetch('/admin/unapprove', {
+    const response = await fetch('/api/admin/unapprove', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

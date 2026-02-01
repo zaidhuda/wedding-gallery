@@ -1,5 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { Buffer } from 'buffer';
+import type { CorsHeaders, PhotoEntity, PhotoResponse } from './types';
 
 const ENVIRONMENT = env.ENVIRONMENT;
 const IS_DEVELOPMENT = ENVIRONMENT === 'development';
@@ -11,7 +12,7 @@ const IMAGE_SYSTEM_PROMPT = env.IMAGE_SYSTEM_PROMPT;
 
 // ===== HELPERS =====
 
-const normalizeOrigin = (value) => {
+const normalizeOrigin = (value?: string | null) => {
   if (!value) return null;
   try {
     return new URL(value).origin;
@@ -20,19 +21,23 @@ const normalizeOrigin = (value) => {
   }
 };
 
-const isAccessAuthenticated = (request) => {
+const isAccessAuthenticated = (request: Request) => {
   if (IS_DEVELOPMENT) return true;
   const jwt = request.headers.get('Cf-Access-Jwt-Assertion');
   const email = request.headers.get('Cf-Access-Authenticated-User-Email');
   return !!(jwt && email);
 };
 
-const getAccessEmail = (request) => {
+const getAccessEmail = (request: Request) => {
   if (IS_DEVELOPMENT) return 'dev@localhost';
   return request.headers.get('Cf-Access-Authenticated-User-Email') || 'unknown';
 };
 
-const jsonResponse = (data, status = 200, corsHeaders = {}) => {
+const jsonResponse = (
+  data: Record<string, any>,
+  status = 200,
+  corsHeaders = {},
+) => {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -43,24 +48,24 @@ const jsonResponse = (data, status = 200, corsHeaders = {}) => {
 };
 
 const errorResponse = (
-  message,
+  message: string,
   status = 400,
   corsHeaders = {},
-  code = null,
+  code?: string,
 ) => {
-  const body = { error: message };
+  const body: { error: string; code?: string } = { error: message };
   if (code) body.code = code;
   return jsonResponse(body, status, corsHeaders);
 };
 
-const validateUserInput = (name, message) => {
+const validateUserInput = (name: string, message: string) => {
   if (name && name.length > 50) return 'Name is too long (max 50 characters)';
   if (message && message.length > 500)
     return 'Message is too long (max 500 characters)';
   return null;
 };
 
-const mapToPhotoObject = (p) => ({
+const mapToPhotoObject = (p: PhotoEntity) => ({
   id: p.id,
   objectKey: p.object_key,
   name: p.name,
@@ -70,10 +75,12 @@ const mapToPhotoObject = (p) => ({
   takenAt: p.taken_at,
   isApproved: p.is_approved,
   token: p.token,
+  width: p.width,
+  height: p.height,
   url: `${PHOTO_BASE_URL}/${p.object_key}`,
 });
 
-const getEditWindowStatus = (timestamp) => {
+const getEditWindowStatus = (timestamp: string) => {
   const uploadTime = new Date(timestamp).getTime();
   const now = Date.now();
   const oneHourInMs = 60 * 60 * 1000;
@@ -82,7 +89,7 @@ const getEditWindowStatus = (timestamp) => {
 
 // ===== AI MODERATION =====
 
-const extractJsonObject = (text) => {
+const extractJsonObject = (text: string) => {
   if (!text) return null;
   if (typeof text === 'object') return JSON.stringify(text);
   const raw = text.toString();
@@ -93,7 +100,9 @@ const extractJsonObject = (text) => {
   return candidate;
 };
 
-const parseSafeUnsafeFallback = (textRaw) => {
+const parseSafeUnsafeFallback = (
+  textRaw: string | Ai_Cf_Meta_Llama_3_2_11B_Vision_Instruct_Output,
+) => {
   if (!textRaw) return null;
   const raw = textRaw.toString();
   const t = (raw || '').trim();
@@ -109,13 +118,15 @@ const parseSafeUnsafeFallback = (textRaw) => {
   return null;
 };
 
-const parseAIModerationResponse = (aiRaw, defaultReasonPrefix) => {
+const parseAIModerationResponse = (
+  aiRaw: string | Ai_Cf_Meta_Llama_3_2_11B_Vision_Instruct_Output,
+  defaultReasonPrefix: string,
+) => {
   let parsed = null;
 
   if (typeof aiRaw === 'object' && aiRaw !== null) {
     // Some Cloudflare AI models return the message object or just the response text
-    const extracted =
-      aiRaw.response || aiRaw.output_text || aiRaw.text || aiRaw;
+    const extracted = aiRaw.response || aiRaw;
 
     if (typeof extracted === 'string') {
       const candidate = extractJsonObject(extracted);
@@ -160,7 +171,7 @@ const parseAIModerationResponse = (aiRaw, defaultReasonPrefix) => {
 
   const fallbackSource =
     typeof aiRaw === 'object' && aiRaw !== null
-      ? aiRaw.response || aiRaw.output_text || aiRaw.text || ''
+      ? (aiRaw.response ?? '')
       : aiRaw || '';
 
   const fallback = parseSafeUnsafeFallback(fallbackSource);
@@ -177,16 +188,7 @@ const parseAIModerationResponse = (aiRaw, defaultReasonPrefix) => {
   };
 };
 
-const withTimeout = (promise, ms = 10000) => {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('AI_TIMEOUT')), ms),
-    ),
-  ]);
-};
-
-const moderateTextWithAI = async (name, message, env) => {
+const moderateTextWithAI = async (name: string, message: string, env: Env) => {
   try {
     const hasUserText =
       (name && name.trim() && name !== 'Anonymous') ||
@@ -219,14 +221,12 @@ const moderateTextWithAI = async (name, message, env) => {
       stop: ['\n\n', '```'],
     };
 
-    const response = await withTimeout(
-      env.AI.run('@cf/meta/llama-3.2-3b-instruct', payload),
+    const response = await env.AI.run(
+      '@cf/meta/llama-3.2-3b-instruct',
+      payload,
     );
 
-    const aiText =
-      (response &&
-        (response.response || response.output_text || response.text)) ||
-      '';
+    const aiText = (response && response.response) || '';
     console.log('AI text moderation raw:', aiText);
 
     return parseAIModerationResponse(aiText, 'ai_text');
@@ -239,7 +239,7 @@ const moderateTextWithAI = async (name, message, env) => {
   }
 };
 
-const moderateImageWithAI = async (imageBlob, env) => {
+const moderateImageWithAI = async (imageBlob: Blob, env: Env) => {
   try {
     if (!env.AI) {
       console.log('AI binding not available, requires manual review');
@@ -251,8 +251,9 @@ const moderateImageWithAI = async (imageBlob, env) => {
     const mime = imageBlob.type || 'image/jpeg';
     const dataUrl = `data:${mime};base64,${b64}`;
 
-    const response = await withTimeout(
-      env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+    const response = await env.AI.run(
+      '@cf/meta/llama-3.2-11b-vision-instruct',
+      {
         messages: [
           { role: 'system', content: IMAGE_SYSTEM_PROMPT },
           {
@@ -269,13 +270,10 @@ const moderateImageWithAI = async (imageBlob, env) => {
         max_tokens: 60,
         temperature: 0,
         top_p: 1,
-      }),
+      },
     );
 
-    const aiRaw =
-      (response &&
-        (response.response || response.output_text || response.text)) ||
-      response;
+    const aiRaw = (response && response.response) || response;
     console.log('AI image moderation raw:', aiRaw);
 
     return parseAIModerationResponse(aiRaw, 'ai_image');
@@ -288,7 +286,11 @@ const moderateImageWithAI = async (imageBlob, env) => {
   }
 };
 
-const processBackgroundModeration = async (photoId, imageBlob, env) => {
+const processBackgroundModeration = async (
+  photoId: number,
+  imageBlob: Blob,
+  env: Env,
+) => {
   try {
     const imageResult = await moderateImageWithAI(imageBlob, env);
     if (imageResult.status === 'safe') {
@@ -308,9 +310,14 @@ const processBackgroundModeration = async (photoId, imageBlob, env) => {
 
 // ===== HANDLERS =====
 
-const handleUpload = async (request, env, ctx, corsHeaders) => {
+const handleUpload = async (
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+  corsHeaders: CorsHeaders,
+) => {
   const formData = await request.formData();
-  const uploadPassword = formData.get('pass');
+  const uploadPassword = formData.get('pass') as string;
 
   if (
     !uploadPassword ||
@@ -320,12 +327,18 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
   }
 
   try {
-    const image = formData.get('image');
-    const name = (formData.get('name') || '').trim() || 'Anonymous';
-    const message = (formData.get('message') || '').trim();
-    const eventTag = formData.get('eventTag');
-    const format = formData.get('format') || 'image/jpeg';
-    const takenAtParam = formData.get('takenAt');
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'] as const;
+    const validEventTags = ['Ijab & Qabul', 'Sanding', 'Tandang'] as const;
+
+    const image = formData.get('image') as File;
+    const name = ((formData.get('name') as string) || '').trim() || 'Anonymous';
+    const message = ((formData.get('message') as string) || '').trim();
+    const eventTag = formData.get(
+      'eventTag',
+    ) as (typeof validEventTags)[number];
+    const format =
+      (formData.get('format') as (typeof allowedTypes)[number]) || 'image/jpeg';
+    const takenAtParam = formData.get('takenAt') as string;
 
     const validationError = validateUserInput(name, message);
     if (validationError)
@@ -339,10 +352,9 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       );
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (
       !allowedTypes.includes(format) ||
-      (image.type && !allowedTypes.includes(image.type))
+      (image.type && !allowedTypes.includes(image.type as any))
     ) {
       return errorResponse(
         'Invalid file type. Only JPG, PNG, and WebP are allowed.',
@@ -359,7 +371,6 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       );
     }
 
-    const validEventTags = ['Ijab & Qabul', 'Sanding', 'Tandang'];
     if (!validEventTags.includes(eventTag)) {
       return errorResponse('Invalid eventTag', 400, corsHeaders);
     }
@@ -368,6 +379,9 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
     const objectKey = `photos/${crypto.randomUUID()}${extension}`;
     const imageArrayBuffer = await image.arrayBuffer();
     const imageBlob = new Blob([imageArrayBuffer], { type: format });
+
+    const width = parseInt((formData.get('width') as string) || '0');
+    const height = parseInt((formData.get('height') as string) || '0');
 
     const textResult = await moderateTextWithAI(name, message, env);
     if (textResult.status !== 'safe') {
@@ -389,7 +403,7 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
     });
 
     const dbResult = await env.DB.prepare(
-      'INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     )
       .bind(
         objectKey,
@@ -400,6 +414,8 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
         takenAt,
         isApproved,
         editToken,
+        width,
+        height,
       )
       .run();
 
@@ -408,7 +424,7 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
     // Background image moderation
     ctx.waitUntil(processBackgroundModeration(photoId, imageBlob, env));
 
-    const photoObject = {
+    const photoObject: PhotoResponse = {
       id: photoId,
       objectKey,
       name,
@@ -418,6 +434,8 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
       takenAt,
       isApproved,
       token: editToken,
+      width,
+      height,
       url: `${PHOTO_BASE_URL}/${objectKey}`,
     };
 
@@ -428,9 +446,18 @@ const handleUpload = async (request, env, ctx, corsHeaders) => {
   }
 };
 
-const handleEdit = async (request, env, corsHeaders) => {
+const handleEdit = async (
+  request: Request,
+  env: Env,
+  corsHeaders: CorsHeaders,
+) => {
   try {
-    const body = await request.json();
+    const body = await request.json<{
+      id: number;
+      token: string;
+      name?: string;
+      message?: string;
+    }>();
     const { id, token } = body;
     const name = (body.name || '').trim() || 'Anonymous';
     const message = (body.message || '').trim();
@@ -450,7 +477,7 @@ const handleEdit = async (request, env, corsHeaders) => {
       'SELECT id, timestamp FROM photos WHERE id = ? AND token = ?',
     )
       .bind(id, token)
-      .first();
+      .first<{ id: number; timestamp: string }>();
 
     if (!photo)
       return errorResponse(
@@ -488,9 +515,16 @@ const handleEdit = async (request, env, corsHeaders) => {
   }
 };
 
-const handleDelete = async (request, env, corsHeaders) => {
+const handleDelete = async (
+  request: Request,
+  env: Env,
+  corsHeaders: CorsHeaders,
+) => {
   try {
-    const { id, token } = await request.json();
+    const { id, token } = await request.json<{
+      id: number;
+      token: string;
+    }>();
     if (!id || !token)
       return errorResponse(
         'Missing required fields: id, token',
@@ -502,7 +536,11 @@ const handleDelete = async (request, env, corsHeaders) => {
       'SELECT id, object_key, timestamp FROM photos WHERE id = ? AND token = ?',
     )
       .bind(id, token)
-      .first();
+      .first<{
+        id: number;
+        object_key: string;
+        timestamp: string;
+      }>();
 
     if (!photo)
       return errorResponse(
@@ -535,16 +573,22 @@ const handleDelete = async (request, env, corsHeaders) => {
   }
 };
 
-const handleGetPhotos = async (url, env, corsHeaders) => {
+const handleGetPhotos = async (
+  url: URL,
+  env: Env,
+  corsHeaders: CorsHeaders,
+) => {
   try {
     const eventTag = url.searchParams.get('eventTag');
-    const limit = parseInt(url.searchParams.get('limit')) || 12;
-    const offset = parseInt(url.searchParams.get('offset')) || 0;
-    const sinceId = parseInt(url.searchParams.get('since_id'));
+    const limit = parseInt(url.searchParams.get('limit') ?? '') || 12;
+    const offset = parseInt(url.searchParams.get('offset') ?? '') || 0;
+    const sinceId = parseInt(url.searchParams.get('since_id') ?? '');
     const checkIds = url.searchParams.get('check_ids');
 
-    let query, countQuery, params;
-    let checkedPhotos = [];
+    let query: string | undefined = undefined,
+      countQuery: string | undefined = undefined,
+      params: (string | number)[] | undefined = undefined;
+    let checkedPhotos: ReturnType<typeof mapToPhotoObject>[] = [];
 
     if (checkIds) {
       const ids = checkIds
@@ -556,7 +600,7 @@ const handleGetPhotos = async (url, env, corsHeaders) => {
         const checkQuery = `SELECT * FROM photos WHERE id IN (${placeholders})`;
         const checkResult = await env.DB.prepare(checkQuery)
           .bind(...ids)
-          .all();
+          .all<PhotoEntity>();
         checkedPhotos = (checkResult.results || []).map(mapToPhotoObject);
       }
     }
@@ -584,7 +628,7 @@ const handleGetPhotos = async (url, env, corsHeaders) => {
 
     const result = await env.DB.prepare(query)
       .bind(...params)
-      .all();
+      .all<PhotoEntity>();
     const photos = (result.results || []).map(mapToPhotoObject);
 
     const allPhotos = [...checkedPhotos];
@@ -598,10 +642,12 @@ const handleGetPhotos = async (url, env, corsHeaders) => {
     if (hasMore) allPhotos.pop();
 
     let countResult = { total: 0 };
-    if (!sinceId) {
-      countResult = eventTag
-        ? await env.DB.prepare(countQuery).bind(eventTag).first()
-        : await env.DB.prepare(countQuery).first();
+    if (!sinceId && countQuery) {
+      countResult = (
+        eventTag
+          ? await env.DB.prepare(countQuery).bind(eventTag).first()
+          : await env.DB.prepare(countQuery).first()
+      ) as typeof countResult;
     }
 
     return jsonResponse(
@@ -621,14 +667,18 @@ const handleGetPhotos = async (url, env, corsHeaders) => {
   }
 };
 
-const handleAdminPending = async (request, env, corsHeaders) => {
+const handleAdminPending = async (
+  request: Request,
+  env: Env,
+  corsHeaders: CorsHeaders,
+) => {
   try {
     if (!isAccessAuthenticated(request))
       return errorResponse('Unauthorized', 401, corsHeaders);
     const adminEmail = getAccessEmail(request);
     const result = await env.DB.prepare(
       'SELECT * FROM photos WHERE is_approved = 0 ORDER BY timestamp DESC',
-    ).all();
+    ).all<PhotoEntity>();
     const photos = (result.results || []).map(mapToPhotoObject);
     return jsonResponse({ photos, admin: adminEmail }, 200, corsHeaders);
   } catch (error) {
@@ -637,12 +687,19 @@ const handleAdminPending = async (request, env, corsHeaders) => {
   }
 };
 
-const handleAdminAction = async (request, env, corsHeaders) => {
+const handleAdminAction = async (
+  request: Request,
+  env: Env,
+  corsHeaders: CorsHeaders,
+) => {
   try {
     if (!isAccessAuthenticated(request))
       return errorResponse('Unauthorized', 401, corsHeaders);
-    const adminEmail = getAccessEmail(request);
-    const { imageID, action, ids } = await request.json();
+    const { imageID, action, ids } = await request.json<{
+      imageID: number;
+      action: string;
+      ids: number[];
+    }>();
     const targetIds = ids || (imageID ? [imageID] : []);
 
     if (targetIds.length === 0)
@@ -666,7 +723,10 @@ const handleAdminAction = async (request, env, corsHeaders) => {
         `SELECT id, object_key FROM photos WHERE id IN (${placeholders})`,
       )
         .bind(...targetIds)
-        .all();
+        .all<{
+          id: number;
+          object_key: string;
+        }>();
 
       for (const photo of photosRes.results || []) {
         if (photo.object_key) {
@@ -698,11 +758,15 @@ const handleAdminAction = async (request, env, corsHeaders) => {
   }
 };
 
-const handleAdminUnapprove = async (request, env, corsHeaders) => {
+const handleAdminUnapprove = async (
+  request: Request,
+  env: Env,
+  corsHeaders: CorsHeaders,
+) => {
   try {
     if (!isAccessAuthenticated(request))
       return errorResponse('Unauthorized', 401, corsHeaders);
-    const { id } = await request.json();
+    const { id } = await request.json<{ id: number }>();
     if (!id) return errorResponse('Missing photo id', 400, corsHeaders);
 
     await env.DB.prepare('UPDATE photos SET is_approved = 0 WHERE id = ?')
@@ -715,7 +779,10 @@ const handleAdminUnapprove = async (request, env, corsHeaders) => {
   }
 };
 
-const handleAdminVerify = async (request, corsHeaders) => {
+const handleAdminVerify = async (
+  request: Request,
+  corsHeaders: CorsHeaders,
+) => {
   if (!isAccessAuthenticated(request))
     return jsonResponse({ authenticated: false }, 401, corsHeaders);
   return jsonResponse(
@@ -725,9 +792,13 @@ const handleAdminVerify = async (request, corsHeaders) => {
   );
 };
 
-const handleServeImage = async (path, env, corsHeaders) => {
+const handleServeImage = async (
+  path: string,
+  env: Env,
+  corsHeaders: CorsHeaders,
+) => {
   try {
-    const objectKey = path.replace('/images/', '');
+    const objectKey = path.replace('/api/images/', '');
     const object = await env.PHOTOS_BUCKET.get(objectKey);
     if (!object)
       return new Response('Not Found', { status: 404, headers: corsHeaders });
@@ -747,7 +818,7 @@ const handleServeImage = async (path, env, corsHeaders) => {
 };
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
@@ -769,7 +840,7 @@ export default {
       });
     }
 
-    const corsHeaders = {
+    const corsHeaders: CorsHeaders = {
       'Access-Control-Allow-Origin': requestOrigin || selfOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
@@ -778,6 +849,10 @@ export default {
 
     if (method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
+    }
+
+    if (IS_DEVELOPMENT) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     // Routing
@@ -791,17 +866,17 @@ export default {
       return handleGetPhotos(url, env, corsHeaders);
 
     // Admin routes
-    if (path === '/admin/pending' && method === 'GET')
+    if (path === '/api/admin/pending' && method === 'GET')
       return handleAdminPending(request, env, corsHeaders);
-    if (path === '/admin/action' && method === 'POST')
+    if (path === '/api/admin/action' && method === 'POST')
       return handleAdminAction(request, env, corsHeaders);
-    if (path === '/admin/verify' && method === 'GET')
+    if (path === '/api/admin/verify' && method === 'GET')
       return handleAdminVerify(request, corsHeaders);
-    if (path === '/admin/unapprove' && method === 'POST')
+    if (path === '/api/admin/unapprove' && method === 'POST')
       return handleAdminUnapprove(request, env, corsHeaders);
 
     // Dev only: Serve images from R2
-    if (IS_DEVELOPMENT && path.startsWith('/images/'))
+    if (IS_DEVELOPMENT && path.startsWith('/api/images/'))
       return handleServeImage(path, env, corsHeaders);
 
     return new Response('Not Found', { status: 404, headers: corsHeaders });

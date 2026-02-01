@@ -295,7 +295,7 @@
         photoGrid.classList.add('hidden');
 
         try {
-          const res = await fetch('/admin/pending', fetchOptions);
+          const res = await fetch('/api/admin/pending', fetchOptions);
 
           if (res.status === 401) {
             loadingState.classList.add('hidden');
@@ -427,7 +427,7 @@
         if (card) card.classList.add('loading', 'animate-pulse');
 
         try {
-          const res = await fetch('/admin/action', {
+          const res = await fetch('/api/admin/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, ids }),
