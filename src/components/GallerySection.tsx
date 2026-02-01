@@ -6,10 +6,13 @@ import { useParams } from 'react-router';
 import { useAppState } from '../hooks/useContext';
 import {
   useInfiniteQuery,
+  useMutation,
   type InfiniteData,
   type UseInfiniteQueryResult,
+  type UseMutationResult,
 } from '@tanstack/react-query';
 import useCurrentSection from '../hooks/useCurrentSection';
+import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
 
 const PHOTOS_PER_PAGE = 12;
 
@@ -96,13 +99,21 @@ const dedup = (arr: PhotoResponse[]) => {
 };
 
 function RenderPhotos({
+  unapproveMutation,
   isLoading,
   isFetchingNextPage,
   error,
   data,
   hasNextPage,
   fetchNextPage,
-}: UseInfiniteQueryResult<InfiniteData<PhotosResponse, unknown>, Error>) {
+}: UseInfiniteQueryResult<InfiniteData<PhotosResponse, unknown>, Error> & {
+  unapproveMutation: UseMutationResult<
+    PhotoResponse | undefined,
+    any,
+    PhotoResponse,
+    unknown
+  >;
+}) {
   const photos = useMemo(
     () => dedup(data?.pages.flatMap((page) => page.photos) ?? []),
     [data],
@@ -122,7 +133,11 @@ function RenderPhotos({
   return (
     <>
       {photos.map((photo) => (
-        <PhotoCard key={photo.id} {...photo} />
+        <PhotoCard
+          key={photo.id}
+          {...photo}
+          unapproveMutation={unapproveMutation}
+        />
       ))}
       <LoadMore
         hasNextPage={hasNextPage}
@@ -137,7 +152,8 @@ export default function GallerySection() {
   const sectionRef = useRegisterHtmlElementRef('gallery');
   const { name, section, gallery, title, label, date } = useCurrentSection();
   const { section: sectionName } = useParams();
-  const { htmlElementRefMap } = useAppState();
+  const { htmlElementRefMap, isAdmin } = useAppState();
+  const { removePhotoEntry } = useManagePhotoEntry();
 
   const query = useInfiniteQuery({
     queryKey: ['photos', title],
@@ -148,6 +164,31 @@ export default function GallerySection() {
     initialPageParam: 0,
     getNextPageParam: (lastPage, _, lastPageParam) =>
       lastPage.hasMore ? lastPage.photos.length + lastPageParam : null,
+  });
+
+  const unapproveMutation = useMutation({
+    mutationFn: async (photo: PhotoResponse) => {
+      if (isAdmin) {
+        await fetch('/api/admin/unapprove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id: photo.id }),
+        });
+
+        return photo;
+      }
+    },
+    onSuccess: (photo?: PhotoResponse) => {
+      if (photo) {
+        removePhotoEntry(photo.eventTag, photo.id);
+        console.log(`Photo ${photo.id} unapproved`);
+      }
+    },
+    onError: (error: any) => {
+      console.error('Failed to unapprove photo', error);
+      alert(`Failed to unapprove photo:\n\n${error.message}`);
+    },
   });
 
   useEffect(() => {
@@ -186,7 +227,7 @@ export default function GallerySection() {
             role="list"
             aria-label={`${name} ceremony wishes`}
           >
-            <RenderPhotos {...query} />
+            <RenderPhotos unapproveMutation={unapproveMutation} {...query} />
           </div>
         </div>
       </section>

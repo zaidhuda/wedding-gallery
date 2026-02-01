@@ -9,9 +9,8 @@ import {
 import { useAppActions, useAppState } from '../hooks/useContext';
 import useEditTokens from '../hooks/useHasEditToken';
 import useFormModal from '../hooks/useFormModal';
-import { useMutation } from '@tanstack/react-query';
+import { type UseMutationResult } from '@tanstack/react-query';
 import useNewPhotoId from '../hooks/useNewPhotoId';
-import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
 
 function formatTimeStamp(isoString: string) {
   if (!isoString) return null;
@@ -29,7 +28,18 @@ function formatTimeStamp(isoString: string) {
   }
 }
 
-export default function PhotoCard(photo: PhotoResponse & { deletedAt?: Date }) {
+export default function PhotoCard({
+  unapproveMutation,
+  ...photo
+}: PhotoResponse & {
+  deletedAt?: Date;
+  unapproveMutation: UseMutationResult<
+    PhotoResponse,
+    Error,
+    PhotoResponse,
+    unknown
+  >;
+}) {
   const cardRef = useRef<HTMLDivElement>(null);
   const entranceObserver = useRef<IntersectionObserver>(null);
   const { selectPhoto: setSelectedPhoto } = useAppActions();
@@ -37,7 +47,6 @@ export default function PhotoCard(photo: PhotoResponse & { deletedAt?: Date }) {
   const { hasEditToken } = useEditTokens();
   const { openModal } = useFormModal('editModal');
   const { isNewPhoto, setNewPhoto } = useNewPhotoId();
-  const { removePhotoEntry } = useManagePhotoEntry();
 
   const canEdit = useMemo(() => {
     return (
@@ -52,26 +61,9 @@ export default function PhotoCard(photo: PhotoResponse & { deletedAt?: Date }) {
   );
   const isPending = photo.isApproved === 0;
 
-  const unapproveMutation = useMutation({
-    mutationFn: async () => {
-      if (isAdmin) {
-        await fetch('/api/admin/unapprove', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ id: photo.id }),
-        });
-      }
-    },
-    onSuccess: () => {
-      removePhotoEntry(photo.eventTag, photo.id);
-      console.log(`Photo ${photo.id} unapproved`);
-    },
-    onError: (error: any) => {
-      console.error('Failed to unapprove photo', error);
-      alert(`Failed to unapprove photo:\n\n${error.message}`);
-    },
-  });
+  const handleUnapproveClick = useCallback(() => {
+    unapproveMutation.mutate(photo);
+  }, [unapproveMutation, photo]);
 
   const handleEditClick = useCallback(() => {
     setSelectedPhoto(photo);
@@ -148,7 +140,7 @@ export default function PhotoCard(photo: PhotoResponse & { deletedAt?: Date }) {
           ) : null}
           {isAdmin ? (
             <button
-              onClick={() => unapproveMutation.mutate()}
+              onClick={handleUnapproveClick}
               className="unapprove-btn"
               title="Remove from guestbook"
               aria-label={`Remove wish by ${photo.name || 'Guest'} from guestbook`}
