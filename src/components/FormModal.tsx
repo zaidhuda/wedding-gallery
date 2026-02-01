@@ -1,8 +1,7 @@
-import { useCallback, useMemo, type ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
 import useFormModal from '../hooks/useFormModal';
-import { EVENT_MAP } from '../constants';
-import { useAppState } from '../hooks/useContext';
+import useCurrentSection from '../hooks/useCurrentSection';
 
 type Props = {
   children: ReactNode;
@@ -24,15 +23,10 @@ const CONFIGS = {
 } as const;
 
 export default function FormModal({ children, type, onClose }: Props) {
-  const { currentEventTag } = useAppState();
+  const { label: eventIndicator } = useCurrentSection();
   const { id, modalTitle, modalSubtitle } = CONFIGS[type];
   const ref = useRegisterHtmlElementRef(id);
   const { closeModal } = useFormModal(id);
-
-  const eventIndicator = useMemo(
-    () => (currentEventTag ? EVENT_MAP[currentEventTag].label : 'Night'),
-    [currentEventTag],
-  );
 
   const handleClose = useCallback(() => {
     closeModal();

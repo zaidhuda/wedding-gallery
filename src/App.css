@@ -157,7 +157,7 @@ body.theme-tandang .hero::before {
 
 .scroll-indicator {
     position: absolute;
-    bottom: 3rem;
+    bottom: 7rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -805,7 +805,7 @@ body.theme-tandang .floating-nav {
     font-size: 0.8rem;
     font-weight: 500;
     letter-spacing: 0.05em;
-    color: inherit;
+    color: var(--ijab-text);
     background: transparent;
     border: none;
     border-radius: 30px;
@@ -813,6 +813,7 @@ body.theme-tandang .floating-nav {
     transition: background var(--transition-fast), color var(--transition-fast);
     white-space: nowrap;
     opacity: 0.7;
+    text-decoration: none;
 }
 
 .nav-item.active {
@@ -820,9 +821,17 @@ body.theme-tandang .floating-nav {
     background: rgba(255, 255, 255, 0.15);
 }
 
+body.theme-sanding .nav-item {
+    color: var(--sanding-text);
+}
+
 body.theme-sanding .nav-item.active {
     background: rgba(201, 162, 39, 0.25);
     color: var(--sanding-accent);
+}
+
+body.theme-tandang .nav-item {
+    color: var(--tandang-text);
 }
 
 body.theme-tandang .nav-item.active {
@@ -931,7 +940,7 @@ body.theme-tandang .upload-cta {
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     transform: translateY(20px) scale(0.95);
-    transition: transform var(--transition-medium);
+    transition: border-color var(--transition-medium), transform var(--transition-medium);
     flex-shrink: 0;
 }
 
@@ -1334,6 +1343,31 @@ body.theme-tandang .upload-cta {
 
 .modal-theme-tandang .form-helper-text {
     color: var(--tandang-text-soft);
+}
+
+.load-more {
+    column-span: all;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.load-more button {
+    border: 1px dashed var(--ijab-accent);
+    border-radius: 3rem;
+    background: unset;
+    color: var(--ijab-text-soft);
+    cursor: pointer;
+    padding: 2rem;
+}
+
+body.theme-sanding .load-more button {
+    border: 1px dashed var(--sanding-accent);
+    color: var(--sanding-text-soft)
+}
+
+body.theme-tandang .load-more button {
+    border: 1px dashed var(--tandang-accent);
+    color: var(--tandang-text-soft)
 }
 
 /* ===== LOADING STATE ===== */

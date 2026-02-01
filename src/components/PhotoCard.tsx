@@ -9,7 +9,7 @@ import {
 import { useAppActions, useAppState } from '../hooks/useContext';
 import useEditTokens from '../hooks/useHasEditToken';
 import useFormModal from '../hooks/useFormModal';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import useNewPhotoId from '../hooks/useNewPhotoId';
 import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
 

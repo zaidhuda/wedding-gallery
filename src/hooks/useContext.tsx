@@ -6,22 +6,18 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { EventTitle } from '../constants';
 import type { PhotoResponse } from '../worker/types';
 
 export type HtmlElementRefKey =
   | 'hero'
   | 'floating-nav'
-  | 'gallery-ijab'
-  | 'gallery-sanding'
-  | 'gallery-tandang'
-  | 'hiddenFileInput'
+  | 'gallery'
+  | 'file-input'
   | 'uploadModal'
   | 'editModal';
 type HtmlElementRefMap = Partial<Record<HtmlElementRefKey, HTMLElement | null>>;
 
 type AppState = {
-  currentEventTag?: EventTitle;
   isAdmin: boolean;
   htmlElementRefMap: React.RefObject<
     Partial<Record<HtmlElementRefKey, HTMLElement | null>>
@@ -30,7 +26,6 @@ type AppState = {
 };
 
 type AppActions = {
-  setCurrentEventTag: (event?: EventTitle) => void;
   setIsAdmin: (isAdmin: boolean) => void;
   registerHtmlElementRef: (
     name: HtmlElementRefKey,
@@ -47,7 +42,6 @@ export function AppContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [currentEventTag, setCurrentEventTag] = useState<EventTitle>();
   const [isAdmin, setIsAdmin] = useState(false);
   const htmlElementRefMap = useRef<HtmlElementRefMap>({});
   const [selectedPhoto, selectPhoto] = useState<PhotoResponse | null>(null);
@@ -61,17 +55,16 @@ export function AppContextProvider({
   );
 
   const states = useMemo(
-    () => ({ currentEventTag, isAdmin, htmlElementRefMap, selectedPhoto }),
-    [currentEventTag, isAdmin, htmlElementRefMap, selectedPhoto],
+    () => ({ isAdmin, htmlElementRefMap, selectedPhoto }),
+    [isAdmin, htmlElementRefMap, selectedPhoto],
   );
   const actions = useMemo(
     () => ({
-      setCurrentEventTag,
       setIsAdmin,
       registerHtmlElementRef,
       selectPhoto,
     }),
-    [setCurrentEventTag, setIsAdmin, registerHtmlElementRef, selectPhoto],
+    [setIsAdmin, registerHtmlElementRef, selectPhoto],
   );
 
   return (

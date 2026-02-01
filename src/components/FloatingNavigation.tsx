@@ -1,20 +1,18 @@
 import { useCallback } from 'react';
 import useValidateAccess from '../hooks/useValidateAccess';
 import { EVENTS } from '../constants';
-import useScrollTo from '../hooks/useScrollTo';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
 import { useAppState } from '../hooks/useContext';
+import { NavLink } from 'react-router';
 
 export default function FloatingNavigation() {
   const { htmlElementRefMap } = useAppState();
   const ref = useRegisterHtmlElementRef('floating-nav');
   const validateAccess = useValidateAccess();
-  const scrollToSection = useScrollTo();
 
   const handleClickUpload = useCallback(async () => {
     if (await validateAccess()) {
-      const fileInput = htmlElementRefMap.current['hiddenFileInput'];
-      fileInput?.click();
+      htmlElementRefMap.current['file-input']?.click();
     }
   }, [validateAccess]);
 
@@ -28,19 +26,20 @@ export default function FloatingNavigation() {
         aria-label="Guestbook sections navigation"
       >
         {EVENTS.map((event) => (
-          <button
-            onClick={() => scrollToSection(event.gallery)}
+          <NavLink
+            to={`/${event.name}`}
             key={event.name}
-            className="nav-item"
+            className={({ isActive }) =>
+              isActive ? 'nav-item active' : 'nav-item'
+            }
             data-section={event.section}
             data-event={event.title}
             aria-label={`Navigate to ${event.title} ceremony`}
           >
             {event.title}
-          </button>
+          </NavLink>
         ))}
 
-        {/* <!-- Upload CTA moved inside Nav --> */}
         <button
           className="upload-cta"
           id="uploadCta"

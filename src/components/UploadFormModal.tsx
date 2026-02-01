@@ -4,7 +4,7 @@ import { useAppState } from '../hooks/useContext';
 import { useCallback, useRef, useState } from 'react';
 import useQueryParams from '../hooks/useQueryParam';
 import type { PhotoResponse } from '../worker/types';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import type { PhotoFormValues } from './BaseForm';
 import BaseForm from './BaseForm';
@@ -20,16 +20,20 @@ import {
 import useEditTokens from '../hooks/useHasEditToken';
 import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
+import useCurrentSection from '../hooks/useCurrentSection';
+import { EVENT_MAP } from '../constants';
+import { useNavigate } from 'react-router';
 
 const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD as string;
 
 export default function UploadFormModal() {
-  const hiddenFileRef = useRegisterHtmlElementRef('hiddenFileInput');
+  const navigate = useNavigate();
+  const { title: currentEventTag } = useCurrentSection();
+  const fileRef = useRegisterHtmlElementRef('file-input');
   const invalidatePhotosRef = useRef<NodeJS.Timeout>(undefined);
-  const fileRef = useRef<HTMLInputElement>(null);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
   const [image, setImage] = useState<string | null>(null);
-  const { currentEventTag, htmlElementRefMap } = useAppState();
+  const { htmlElementRefMap } = useAppState();
   const { openModal, closeModal } = useFormModal('uploadModal');
   const { mode } = useQueryParams(['mode']);
   const { setNewPhoto } = useNewPhotoId();
@@ -137,32 +141,21 @@ export default function UploadFormModal() {
 
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!fileRef.current) return;
-
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
       const eventTag = await getEventTag(file, mode, currentEventTag);
-      if (!eventTag) return;
+      const config = EVENT_MAP[eventTag!];
+      if (!eventTag || !config) return;
 
-      // Open modal with the determined event
-      openModal(eventTag);
-
-      // Show preview (uncropped)
+      await navigate(`/${config.name}`);
       setImage(URL.createObjectURL(file));
+      openModal(eventTag);
 
       form.setValue('eventTag', eventTag);
       form.setValue('file', file);
     },
     [currentEventTag, openModal, setImage],
-  );
-
-  const handleHiddenFileChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      await handleFileChange(e);
-      e.target.value = '';
-    },
-    [handleFileChange],
   );
 
   const handleClose = useCallback(() => {
@@ -171,21 +164,11 @@ export default function UploadFormModal() {
   }, []);
 
   const handleUploadZoneClick = useCallback(() => {
-    htmlElementRefMap.current['hiddenFileInput']?.click();
+    htmlElementRefMap.current['file-input']?.click();
   }, []);
 
   return (
     <>
-      <input
-        ref={hiddenFileRef}
-        type="file"
-        id="hiddenFileInput"
-        accept="image/*"
-        className="sr-only"
-        aria-label="Select photo file"
-        onChange={handleHiddenFileChange}
-      />
-
       <FormModal type="upload" onClose={handleClose}>
         <BaseForm
           form={form}
@@ -222,7 +205,7 @@ export default function UploadFormModal() {
             className="submit-btn"
             id="submitBtnRef.current"
             aria-label="Submit photo and share wish"
-            disabled={mutation.isLoading}
+            disabled={mutation.isPending}
           >
             Post to Guestbook
           </button>

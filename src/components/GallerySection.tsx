@@ -1,13 +1,17 @@
-import { useQuery, useQueryClient } from 'react-query';
 import PhotoCard from './PhotoCard';
-import type { PhotoResponse, PhotosResponse } from '../worker/types';
-import { PHOTOS_STALE_TIME, type EVENTS } from '../constants';
-import { useMemo } from 'react';
+import type { PhotosResponse } from '../worker/types';
+import { useCallback, useEffect, useMemo } from 'react';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
+import { useParams } from 'react-router';
+import { useAppState } from '../hooks/useContext';
+import {
+  useInfiniteQuery,
+  type InfiniteData,
+  type UseInfiniteQueryResult,
+} from '@tanstack/react-query';
+import useCurrentSection from '../hooks/useCurrentSection';
 
-type Props = (typeof EVENTS)[number];
-
-const PHOTOS_PER_PAGE = 12;
+const PHOTOS_PER_PAGE = 2;
 
 function LoadingState() {
   return (
@@ -59,15 +63,45 @@ function EmptyState() {
   );
 }
 
+function LoadMore({
+  hasNextPage,
+  isFetchingNextPage,
+  handleNextClick,
+}: {
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  handleNextClick: () => void;
+}) {
+  if (isFetchingNextPage) {
+    return <LoadingState />;
+  }
+
+  if (!hasNextPage) {
+    return null;
+  }
+
+  return (
+    <div className="load-more">
+      <button onClick={handleNextClick}>Load more</button>
+    </div>
+  );
+}
+
 function RenderPhotos({
   isLoading,
+  isFetchingNextPage,
   error,
-  photos,
-}: {
-  isLoading: boolean;
-  error: unknown;
-  photos: PhotoResponse[] | never[];
-}) {
+  data,
+  hasNextPage,
+  fetchNextPage,
+}: UseInfiniteQueryResult<InfiniteData<PhotosResponse, unknown>, Error>) {
+  const photos = useMemo(
+    () => data?.pages.flatMap((page) => page.photos) ?? [],
+    [data],
+  );
+
+  const handleNextClick = useCallback(() => fetchNextPage(), [fetchNextPage]);
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -77,35 +111,43 @@ function RenderPhotos({
   if (photos.length < 1) {
     return <EmptyState />;
   }
-  return photos.map((photo) => <PhotoCard key={photo.id} {...photo} />);
+  return (
+    <>
+      {photos.map((photo) => (
+        <PhotoCard key={photo.id} {...photo} />
+      ))}
+      <LoadMore
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        handleNextClick={handleNextClick}
+      />
+    </>
+  );
 }
 
-export default function GallerySection({
-  name,
-  section,
-  gallery,
-  title,
-  label,
-  date,
-}: Props) {
-  const queryClient = useQueryClient();
-  const sectionRef = useRegisterHtmlElementRef(gallery);
+export default function GallerySection() {
+  const sectionRef = useRegisterHtmlElementRef('gallery');
+  const { name, section, gallery, title, label, date } = useCurrentSection();
+  const { section: sectionName = 'ijab' } = useParams();
+  const { htmlElementRefMap } = useAppState();
 
-  const { offset = 0 } = useMemo(() => {
-    return (
-      queryClient.getQueryData<PhotosResponse>(['photos', title]) ??
-      ({} as Partial<PhotosResponse>)
-    );
-  }, [queryClient, title]);
-
-  const { isLoading, error, data } = useQuery<PhotosResponse>({
+  const query = useInfiniteQuery({
     queryKey: ['photos', title],
-    queryFn: () =>
+    queryFn: ({ pageParam }): Promise<PhotosResponse> =>
       fetch(
-        `/api/photos?eventTag=${encodeURIComponent(title)}&limit=${PHOTOS_PER_PAGE}&offset=${offset}`,
+        `/api/photos?eventTag=${encodeURIComponent(title)}&limit=${PHOTOS_PER_PAGE}&offset=${pageParam}`,
       ).then((res) => res.json()),
-    staleTime: PHOTOS_STALE_TIME,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) =>
+      lastPage.hasMore ? lastPage.photos.length + lastPageParam : null,
   });
+
+  useEffect(() => {
+    htmlElementRefMap.current['gallery']?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, [sectionName]);
 
   return (
     <>
@@ -134,11 +176,7 @@ export default function GallerySection({
             role="list"
             aria-label={`${name} ceremony wishes`}
           >
-            <RenderPhotos
-              isLoading={isLoading}
-              error={error}
-              photos={data?.photos ?? []}
-            />
+            <RenderPhotos {...query} />
           </div>
         </div>
       </section>

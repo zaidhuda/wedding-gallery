@@ -1,20 +1,16 @@
 import { useCallback } from 'react';
 import { EVENT_MAP, type EventTitle } from '../constants';
-import { useAppActions, useAppState } from './useContext';
+import { useAppState } from './useContext';
 
 export default function useFormModal(id: 'uploadModal' | 'editModal') {
-  const { setCurrentEventTag } = useAppActions();
   const { htmlElementRefMap } = useAppState();
 
-  const openModal = useCallback((eventTag: EventTitle) => {
+  const openModal = useCallback(async (eventTag: EventTitle) => {
     const modal = htmlElementRefMap.current[id];
     const config = EVENT_MAP[eventTag];
     if (!config) return;
 
-    setCurrentEventTag(eventTag);
-
     if (modal) {
-      // Apply theme class based on photo's event
       modal.classList.remove(
         'modal-theme-ijab',
         'modal-theme-sanding',

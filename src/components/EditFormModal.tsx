@@ -3,12 +3,12 @@ import { useAppState } from '../hooks/useContext';
 import FormModal from './FormModal';
 import BaseForm, { type PhotoFormValues } from './BaseForm';
 import { useForm } from 'react-hook-form';
-import { useMutation } from 'react-query';
 import useEditTokens from '../hooks/useHasEditToken';
 import useNewPhotoId from '../hooks/useNewPhotoId';
 import useFormModal from '../hooks/useFormModal';
 import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
 import { isAnonymous, storeAndGetName } from '../utils';
+import { useMutation } from '@tanstack/react-query';
 
 export default function EditFormModal() {
   const editBtnRef = useRef<HTMLButtonElement>(null);

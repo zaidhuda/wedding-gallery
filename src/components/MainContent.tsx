@@ -1,22 +1,17 @@
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { EVENTS } from '../constants';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import GallerySection from './GallerySection';
 import UploadFormModal from './UploadFormModal';
 import EditFormModal from './EditFormModal';
 import useVerifyAdmin from '../hooks/useVerifyAdmin';
-import useScrollListener from '../hooks/useScrollListener';
 
 const queryClient = new QueryClient();
 
 function Render() {
-  useScrollListener();
   useVerifyAdmin();
 
   return (
     <>
-      {EVENTS.map((event) => (
-        <GallerySection key={event.name} {...event} />
-      ))}
+      <GallerySection />
       <UploadFormModal />
       <EditFormModal />
     </>

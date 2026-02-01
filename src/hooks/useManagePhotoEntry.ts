@@ -1,4 +1,4 @@
-import { useQueryClient } from 'react-query';
+import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useCallback, useRef } from 'react';
 import type { PhotoResponse, PhotosResponse } from '../worker/types';
 import type { EventTitle } from '../constants';
@@ -10,13 +10,27 @@ export default function useManagePhotoEntry() {
   const queryClient = useQueryClient();
 
   const addPhotoEntry = async (photo: PhotoResponse) => {
-    await queryClient.cancelQueries(['photos', photo.eventTag]);
-    queryClient.setQueryData<PhotosResponse | undefined>(
+    await queryClient.cancelQueries({ queryKey: ['photos', photo.eventTag] });
+    queryClient.setQueryData<InfiniteData<PhotosResponse>>(
       ['photos', photo.eventTag],
-      (d) => (d ? { ...d, photos: [photo, ...d.photos] } : d),
+      (d) =>
+        d
+          ? {
+              ...d,
+              pages: d.pages
+                ? [
+                    {
+                      ...d.pages[0],
+                      photos: [photo, ...d.pages[0].photos],
+                    },
+                    ...d.pages.slice(1),
+                  ]
+                : [],
+            }
+          : d,
     );
     invalidatePhotosRef.current = setTimeout(() => {
-      queryClient.invalidateQueries(['photos', photo.eventTag]);
+      queryClient.invalidateQueries({ queryKey: ['photos', photo.eventTag] });
     }, 5000);
   };
 
@@ -25,18 +39,19 @@ export default function useManagePhotoEntry() {
     photoId: number,
     data: PhotoFormValues,
   ) => {
-    await queryClient.cancelQueries(['photos', event]);
-    queryClient.setQueryData<PhotosResponse | undefined>(
+    await queryClient.cancelQueries({ queryKey: ['photos', event] });
+    queryClient.setQueryData<InfiniteData<PhotosResponse>>(
       ['photos', event],
       (d) =>
         d
           ? {
               ...d,
-              photos: d.photos.map((p) =>
-                p.id === photoId
-                  ? { ...p, name: data.name, message: data.message }
-                  : p,
-              ),
+              pages: d.pages.map((p) => ({
+                ...p,
+                photos: p.photos.map((photo) =>
+                  photo.id === photoId ? { ...photo, ...data } : photo,
+                ),
+              })),
             }
           : d,
     );
@@ -44,16 +59,20 @@ export default function useManagePhotoEntry() {
 
   const removePhotoEntry = useCallback(
     async (event: EventTitle, photoId: number) => {
-      await queryClient.cancelQueries(['photos', event]);
-      queryClient.setQueryData<PhotosResponse | undefined>(
+      await queryClient.cancelQueries({ queryKey: ['photos', event] });
+      queryClient.setQueryData<InfiniteData<PhotosResponse>>(
         ['photos', event],
         (d) =>
           d
             ? {
                 ...d,
-                photos: d.photos.map((photo) => ({
-                  ...photo,
-                  ...(photo.id === photoId ? { deletedAt: new Date() } : {}),
+                pages: d.pages.map((p) => ({
+                  ...p,
+                  photos: p.photos.map((photo) =>
+                    photo.id === photoId
+                      ? { ...photo, deletedAt: new Date() }
+                      : photo,
+                  ),
                 })),
               }
             : d,
@@ -61,17 +80,7 @@ export default function useManagePhotoEntry() {
 
       clearTimeout(removeTimeoutRef?.current);
       removeTimeoutRef.current = setTimeout(async () => {
-        await queryClient.cancelQueries(['photos', event]);
-        queryClient.setQueryData<PhotosResponse | undefined>(
-          ['photos', event],
-          (d) =>
-            d
-              ? {
-                  ...d,
-                  photos: d.photos.filter(({ id }) => id !== photoId),
-                }
-              : d,
-        );
+        queryClient.invalidateQueries({ queryKey: ['photos', event] });
       }, 300);
     },
     [queryClient],

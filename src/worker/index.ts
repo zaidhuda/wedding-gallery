@@ -843,6 +843,10 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    if (IS_DEVELOPMENT) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
     // Routing
     if (path === '/api/upload' && method === 'POST')
       return handleUpload(request, env, ctx, corsHeaders);
