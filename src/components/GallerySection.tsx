@@ -136,7 +136,7 @@ function RenderPhotos({
 export default function GallerySection() {
   const sectionRef = useRegisterHtmlElementRef('gallery');
   const { name, section, gallery, title, label, date } = useCurrentSection();
-  const { section: sectionName = 'ijab' } = useParams();
+  const { section: sectionName } = useParams();
   const { htmlElementRefMap } = useAppState();
 
   const query = useInfiniteQuery({
@@ -151,10 +151,12 @@ export default function GallerySection() {
   });
 
   useEffect(() => {
-    htmlElementRefMap.current['gallery']?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
+    if (sectionName) {
+      htmlElementRefMap.current['gallery']?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
   }, [sectionName]);
 
   return (

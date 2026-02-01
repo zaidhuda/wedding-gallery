@@ -5,10 +5,11 @@ import FloatingNavigation from './components/FloatingNavigation';
 import { Route, Routes } from 'react-router';
 import useTheme from './hooks/useTheme';
 import './App.css';
+import GallerySection from './components/GallerySection';
 
 const MainContent = lazy(() => import('./components/MainContent'));
 
-function RenderApp({ children }: { children?: React.ReactNode }) {
+function RenderApp() {
   useTheme();
 
   return (
@@ -22,7 +23,9 @@ function RenderApp({ children }: { children?: React.ReactNode }) {
         <HeroSection />
         <FloatingNavigation />
 
-        {children}
+        <Suspense fallback={<div>Loading...</div>}>
+          <MainContent />
+        </Suspense>
       </>
     </AppContextProvider>
   );
@@ -31,17 +34,9 @@ function RenderApp({ children }: { children?: React.ReactNode }) {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<RenderApp />} />
-      <Route
-        path="/:section"
-        element={
-          <RenderApp>
-            <Suspense fallback={<div>Loading...</div>}>
-              <MainContent />
-            </Suspense>
-          </RenderApp>
-        }
-      />
+      <Route path="/" element={<RenderApp />}>
+        <Route path=":section" element={<GallerySection />} />
+      </Route>
     </Routes>
   );
 }
