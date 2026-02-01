@@ -780,55 +780,64 @@ exports.default = {
         return __awaiter(this, void 0, void 0, function () {
             var url, path, method, selfOrigin, origin, secFetchSite, requestOrigin, isSameOriginByOrigin, isSameOriginByFetchMeta, corsHeaders;
             return __generator(this, function (_a) {
-                url = new URL(request.url);
-                path = url.pathname;
-                method = request.method;
-                selfOrigin = url.origin;
-                origin = request.headers.get('Origin');
-                secFetchSite = request.headers.get('Sec-Fetch-Site');
-                requestOrigin = normalizeOrigin(origin);
-                isSameOriginByOrigin = requestOrigin && requestOrigin === selfOrigin;
-                isSameOriginByFetchMeta = secFetchSite === 'same-origin';
-                if (!isSameOriginByOrigin && !isSameOriginByFetchMeta && !IS_DEVELOPMENT) {
-                    return [2 /*return*/, new Response(JSON.stringify({ error: 'Forbidden' }), {
-                            status: 403,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Access-Control-Allow-Origin': 'null',
-                            },
-                        })];
+                switch (_a.label) {
+                    case 0:
+                        url = new URL(request.url);
+                        path = url.pathname;
+                        method = request.method;
+                        selfOrigin = url.origin;
+                        origin = request.headers.get('Origin');
+                        secFetchSite = request.headers.get('Sec-Fetch-Site');
+                        requestOrigin = normalizeOrigin(origin);
+                        isSameOriginByOrigin = requestOrigin && requestOrigin === selfOrigin;
+                        isSameOriginByFetchMeta = secFetchSite === 'same-origin';
+                        if (!isSameOriginByOrigin && !isSameOriginByFetchMeta && !IS_DEVELOPMENT) {
+                            return [2 /*return*/, new Response(JSON.stringify({ error: 'Forbidden' }), {
+                                    status: 403,
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': 'null',
+                                    },
+                                })];
+                        }
+                        corsHeaders = {
+                            'Access-Control-Allow-Origin': requestOrigin || selfOrigin,
+                            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                            'Access-Control-Allow-Headers': 'Content-Type',
+                            'Access-Control-Allow-Credentials': 'true',
+                        };
+                        if (method === 'OPTIONS') {
+                            return [2 /*return*/, new Response(null, { headers: corsHeaders })];
+                        }
+                        if (!IS_DEVELOPMENT) return [3 /*break*/, 2];
+                        return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 1000); })];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        // Routing
+                        if (path === '/api/upload' && method === 'POST')
+                            return [2 /*return*/, handleUpload(request, env, ctx, corsHeaders)];
+                        if (path === '/api/edit' && method === 'POST')
+                            return [2 /*return*/, handleEdit(request, env, corsHeaders)];
+                        if (path === '/api/delete' && method === 'POST')
+                            return [2 /*return*/, handleDelete(request, env, corsHeaders)];
+                        if (path === '/api/photos' && method === 'GET')
+                            return [2 /*return*/, handleGetPhotos(url, env, corsHeaders)];
+                        // Admin routes
+                        if (path === '/api/admin/pending' && method === 'GET')
+                            return [2 /*return*/, handleAdminPending(request, env, corsHeaders)];
+                        if (path === '/api/admin/action' && method === 'POST')
+                            return [2 /*return*/, handleAdminAction(request, env, corsHeaders)];
+                        if (path === '/api/admin/verify' && method === 'GET')
+                            return [2 /*return*/, handleAdminVerify(request, corsHeaders)];
+                        if (path === '/api/admin/unapprove' && method === 'POST')
+                            return [2 /*return*/, handleAdminUnapprove(request, env, corsHeaders)];
+                        // Dev only: Serve images from R2
+                        if (IS_DEVELOPMENT && path.startsWith('/api/images/'))
+                            return [2 /*return*/, handleServeImage(path, env, corsHeaders)];
+                        return [2 /*return*/, new Response('Not Found', { status: 404, headers: corsHeaders })];
                 }
-                corsHeaders = {
-                    'Access-Control-Allow-Origin': requestOrigin || selfOrigin,
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type',
-                    'Access-Control-Allow-Credentials': 'true',
-                };
-                if (method === 'OPTIONS') {
-                    return [2 /*return*/, new Response(null, { headers: corsHeaders })];
-                }
-                // Routing
-                if (path === '/api/upload' && method === 'POST')
-                    return [2 /*return*/, handleUpload(request, env, ctx, corsHeaders)];
-                if (path === '/api/edit' && method === 'POST')
-                    return [2 /*return*/, handleEdit(request, env, corsHeaders)];
-                if (path === '/api/delete' && method === 'POST')
-                    return [2 /*return*/, handleDelete(request, env, corsHeaders)];
-                if (path === '/api/photos' && method === 'GET')
-                    return [2 /*return*/, handleGetPhotos(url, env, corsHeaders)];
-                // Admin routes
-                if (path === '/api/admin/pending' && method === 'GET')
-                    return [2 /*return*/, handleAdminPending(request, env, corsHeaders)];
-                if (path === '/api/admin/action' && method === 'POST')
-                    return [2 /*return*/, handleAdminAction(request, env, corsHeaders)];
-                if (path === '/api/admin/verify' && method === 'GET')
-                    return [2 /*return*/, handleAdminVerify(request, corsHeaders)];
-                if (path === '/api/admin/unapprove' && method === 'POST')
-                    return [2 /*return*/, handleAdminUnapprove(request, env, corsHeaders)];
-                // Dev only: Serve images from R2
-                if (IS_DEVELOPMENT && path.startsWith('/api/images/'))
-                    return [2 /*return*/, handleServeImage(path, env, corsHeaders)];
-                return [2 /*return*/, new Response('Not Found', { status: 404, headers: corsHeaders })];
             });
         });
     },
