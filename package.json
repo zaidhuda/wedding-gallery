@@ -37,5 +37,6 @@
   },
   "resolutions": {
     "vite": "npm:rolldown-vite@7.2.5"
-  }
+  },
+  "packageManager": "yarn@4.5.0"
 }
