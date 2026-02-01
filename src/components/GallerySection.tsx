@@ -1,5 +1,5 @@
 import PhotoCard from './PhotoCard';
-import type { PhotosResponse } from '../worker/types';
+import type { PhotoResponse, PhotosResponse } from '../worker/types';
 import { useCallback, useEffect, useMemo } from 'react';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
 import { useParams } from 'react-router';
@@ -11,7 +11,7 @@ import {
 } from '@tanstack/react-query';
 import useCurrentSection from '../hooks/useCurrentSection';
 
-const PHOTOS_PER_PAGE = 2;
+const PHOTOS_PER_PAGE = 12;
 
 function LoadingState() {
   return (
@@ -87,6 +87,14 @@ function LoadMore({
   );
 }
 
+const dedup = (arr: PhotoResponse[]) => {
+  const map = new Map();
+  for (const o of arr) {
+    if (!map.has(o.id)) map.set(o.id, o);
+  }
+  return [...map.values()];
+};
+
 function RenderPhotos({
   isLoading,
   isFetchingNextPage,
@@ -96,7 +104,7 @@ function RenderPhotos({
   fetchNextPage,
 }: UseInfiniteQueryResult<InfiniteData<PhotosResponse, unknown>, Error>) {
   const photos = useMemo(
-    () => data?.pages.flatMap((page) => page.photos) ?? [],
+    () => dedup(data?.pages.flatMap((page) => page.photos) ?? []),
     [data],
   );
 
@@ -138,7 +146,7 @@ export default function GallerySection() {
         `/api/photos?eventTag=${encodeURIComponent(title)}&limit=${PHOTOS_PER_PAGE}&offset=${pageParam}`,
       ).then((res) => res.json()),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) =>
+    getNextPageParam: (lastPage, _, lastPageParam) =>
       lastPage.hasMore ? lastPage.photos.length + lastPageParam : null,
   });
 
