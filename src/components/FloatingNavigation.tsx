@@ -3,10 +3,9 @@ import useValidateAccess from '../hooks/useValidateAccess';
 import { EVENTS } from '../constants';
 import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
 import { useAppState } from '../hooks/useContext';
-import { NavLink, useNavigate } from 'react-router';
+import { NavLink } from 'react-router';
 
 export default function FloatingNavigation() {
-  const navigate = useNavigate();
   const { htmlElementRefMap } = useAppState();
   const ref = useRegisterHtmlElementRef('floating-nav');
   const validateAccess = useValidateAccess();

@@ -33,7 +33,13 @@ const webpSupported = supportsWebP();
 export async function resizeImage(
   file: File,
   statusCallback?: (status: string) => void,
-): Promise<{ blob: Blob; format: string; extension: string }> {
+): Promise<{
+  blob: Blob;
+  format: string;
+  extension: string;
+  width: number;
+  height: number;
+}> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -103,7 +109,7 @@ export async function resizeImage(
         canvas.toBlob(
           (blob) =>
             blob
-              ? resolve({ blob, format, extension })
+              ? resolve({ blob, format, extension, width, height })
               : reject(new Error('Failed to convert')),
           format,
           0.8,

@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS photos (
   timestamp TEXT NOT NULL,
   taken_at TEXT,
   is_approved INTEGER DEFAULT 0,
-  token TEXT
+  token TEXT,
+  width INTEGER,
+  height INTEGER
 );
 
 -- Create index for faster queries by event_tag
@@ -36,3 +38,6 @@ CREATE INDEX IF NOT EXISTS idx_object_key ON photos(object_key);
 -- UPDATE photos SET is_approved = 1 WHERE is_approved IS NULL;
 -- Migration: Add token column to existing table (run manually if needed)
 -- ALTER TABLE photos ADD COLUMN token TEXT;
+-- Migration: Add width/height columns to existing table (run manually if needed)
+-- ALTER TABLE photos ADD COLUMN width INTEGER;
+-- ALTER TABLE photos ADD COLUMN height INTEGER;

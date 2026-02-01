@@ -129,6 +129,14 @@ export default function PhotoCard(photo: PhotoResponse & { deletedAt?: Date }) {
             src={photo.url}
             alt={`Wish from ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}`}
             loading="lazy"
+            width={photo.width}
+            height={photo.height}
+            style={{
+              aspectRatio:
+                photo.width && photo.height
+                  ? `${photo.width} / ${photo.height}`
+                  : undefined,
+            }}
           />
           {isPending ? (
             <div

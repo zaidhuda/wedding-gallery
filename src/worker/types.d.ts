@@ -8,6 +8,8 @@ export type PhotoEntity = {
   taken_at: string;
   is_approved: 0 | 1;
   token?: string;
+  width: number;
+  height: number;
 };
 
 export type PhotoResponse = {
@@ -20,6 +22,8 @@ export type PhotoResponse = {
   takenAt: string;
   isApproved: 0 | 1;
   token?: string;
+  width: number;
+  height: number;
   url: string;
 };
 

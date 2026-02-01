@@ -80,11 +80,14 @@ export default function UploadFormModal() {
       const takenAt = await extractPhotoTimestamp(file);
 
       // Resize and compress with status updates
-      const { blob, format, extension } = await resizeImage(file, (status) => {
-        if (submitBtnRef.current) {
-          submitBtnRef.current.textContent = status;
-        }
-      });
+      const { blob, format, extension, width, height } = await resizeImage(
+        file,
+        (status) => {
+          if (submitBtnRef.current) {
+            submitBtnRef.current.textContent = status;
+          }
+        },
+      );
 
       if (submitBtnRef.current) {
         submitBtnRef.current.textContent = 'Sharing...';
@@ -98,6 +101,8 @@ export default function UploadFormModal() {
       formData.append('pass', currentPassword);
       formData.append('format', format);
       formData.append('takenAt', takenAt);
+      formData.append('width', width.toString());
+      formData.append('height', height.toString());
 
       const response = await fetch('/api/upload', {
         method: 'POST',

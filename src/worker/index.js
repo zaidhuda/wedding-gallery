@@ -121,6 +121,8 @@ var mapToPhotoObject = function (p) { return ({
     takenAt: p.taken_at,
     isApproved: p.is_approved,
     token: p.token,
+    width: p.width,
+    height: p.height,
     url: "".concat(PHOTO_BASE_URL, "/").concat(p.object_key),
 }); };
 var getEditWindowStatus = function (timestamp) {
@@ -353,7 +355,7 @@ var processBackgroundModeration = function (photoId, imageBlob, env) { return __
 }); };
 // ===== HANDLERS =====
 var handleUpload = function (request, env, ctx, corsHeaders) { return __awaiter(void 0, void 0, void 0, function () {
-    var formData, uploadPassword, allowedTypes, validEventTags, image, name_1, message, eventTag, format, takenAtParam, validationError, extension, objectKey, imageArrayBuffer, imageBlob, textResult, isApproved, editToken, timestamp, takenAt, dbResult, photoId, photoObject, error_4;
+    var formData, uploadPassword, allowedTypes, validEventTags, image, name_1, message, eventTag, format, takenAtParam, validationError, extension, objectKey, imageArrayBuffer, imageBlob, width, height, textResult, isApproved, editToken, timestamp, takenAt, dbResult, photoId, photoObject, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, request.formData()];
@@ -397,6 +399,8 @@ var handleUpload = function (request, env, ctx, corsHeaders) { return __awaiter(
             case 3:
                 imageArrayBuffer = _a.sent();
                 imageBlob = new Blob([imageArrayBuffer], { type: format });
+                width = parseInt(formData.get('width') || '0');
+                height = parseInt(formData.get('height') || '0');
                 return [4 /*yield*/, moderateTextWithAI(name_1, message, env)];
             case 4:
                 textResult = _a.sent();
@@ -412,8 +416,8 @@ var handleUpload = function (request, env, ctx, corsHeaders) { return __awaiter(
                     })];
             case 5:
                 _a.sent();
-                return [4 /*yield*/, env.DB.prepare('INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-                        .bind(objectKey, name_1, message, eventTag, timestamp, takenAt, isApproved, editToken)
+                return [4 /*yield*/, env.DB.prepare('INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+                        .bind(objectKey, name_1, message, eventTag, timestamp, takenAt, isApproved, editToken, width, height)
                         .run()];
             case 6:
                 dbResult = _a.sent();
@@ -430,6 +434,8 @@ var handleUpload = function (request, env, ctx, corsHeaders) { return __awaiter(
                     takenAt: takenAt,
                     isApproved: isApproved,
                     token: editToken,
+                    width: width,
+                    height: height,
                     url: "".concat(PHOTO_BASE_URL, "/").concat(objectKey),
                 };
                 return [2 /*return*/, jsonResponse({ photo: photoObject }, 200, corsHeaders)];
@@ -756,7 +762,6 @@ var handleServeImage = function (path, env, corsHeaders) { return __awaiter(void
                 return [4 /*yield*/, env.PHOTOS_BUCKET.get(objectKey)];
             case 1:
                 object = _a.sent();
-                console.log(objectKey, object);
                 if (!object)
                     return [2 /*return*/, new Response('Not Found', { status: 404, headers: corsHeaders })];
                 headers = new Headers(corsHeaders);

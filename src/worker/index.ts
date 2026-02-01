@@ -75,6 +75,8 @@ const mapToPhotoObject = (p: PhotoEntity) => ({
   takenAt: p.taken_at,
   isApproved: p.is_approved,
   token: p.token,
+  width: p.width,
+  height: p.height,
   url: `${PHOTO_BASE_URL}/${p.object_key}`,
 });
 
@@ -378,6 +380,9 @@ const handleUpload = async (
     const imageArrayBuffer = await image.arrayBuffer();
     const imageBlob = new Blob([imageArrayBuffer], { type: format });
 
+    const width = parseInt((formData.get('width') as string) || '0');
+    const height = parseInt((formData.get('height') as string) || '0');
+
     const textResult = await moderateTextWithAI(name, message, env);
     if (textResult.status !== 'safe') {
       return errorResponse(
@@ -398,7 +403,7 @@ const handleUpload = async (
     });
 
     const dbResult = await env.DB.prepare(
-      'INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     )
       .bind(
         objectKey,
@@ -409,6 +414,8 @@ const handleUpload = async (
         takenAt,
         isApproved,
         editToken,
+        width,
+        height,
       )
       .run();
 
@@ -427,6 +434,8 @@ const handleUpload = async (
       takenAt,
       isApproved,
       token: editToken,
+      width,
+      height,
       url: `${PHOTO_BASE_URL}/${objectKey}`,
     };
 
