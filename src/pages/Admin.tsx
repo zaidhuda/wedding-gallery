@@ -169,14 +169,14 @@ export default function Admin() {
       return div.innerHTML;
     }
 
-    async function approvePhoto(id: number) {
-      await performAction('approve', [id]);
-    }
+    // async function approvePhoto(id: number) {
+    //   await performAction('approve', [id]);
+    // }
 
-    async function deletePhoto(id: number) {
-      if (!confirm('Delete this photo permanently?')) return;
-      await performAction('delete', [id]);
-    }
+    // async function deletePhoto(id: number) {
+    //   if (!confirm('Delete this photo permanently?')) return;
+    //   await performAction('delete', [id]);
+    // }
 
     async function performAction(action: string, ids: number[]) {
       const card =
