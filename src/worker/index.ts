@@ -791,7 +791,6 @@ const handleServeImage = async (
   try {
     const objectKey = path.replace('/api/images/', '');
     const object = await env.PHOTOS_BUCKET.get(objectKey);
-    console.log(objectKey, object);
     if (!object)
       return new Response('Not Found', { status: 404, headers: corsHeaders });
 
