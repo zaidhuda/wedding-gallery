@@ -40,7 +40,10 @@ export default function PhotoCard(photo: PhotoResponse & { deletedAt?: Date }) {
   const { removePhotoEntry } = useManagePhotoEntry();
 
   const canEdit = useMemo(() => {
-    return hasEditToken(photo.token);
+    return (
+      hasEditToken(photo.token) &&
+      new Date(photo.timestamp).getTime() + 1000 * 60 * 60 > Date.now()
+    );
   }, [hasEditToken, photo.token]);
 
   const filmTime = useMemo(

@@ -3,7 +3,6 @@ import { useAppState } from '../hooks/useContext';
 import FormModal from './FormModal';
 import BaseForm, { type PhotoFormValues } from './BaseForm';
 import { useForm } from 'react-hook-form';
-import useEditTokens from '../hooks/useHasEditToken';
 import useNewPhotoId from '../hooks/useNewPhotoId';
 import useFormModal from '../hooks/useFormModal';
 import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
@@ -14,7 +13,6 @@ export default function EditFormModal() {
   const editBtnRef = useRef<HTMLButtonElement>(null);
   const deleteBtnRef = useRef<HTMLButtonElement>(null);
   const { selectedPhoto } = useAppState();
-  const { hasEditToken } = useEditTokens();
   const { setNewPhoto } = useNewPhotoId();
   const { closeModal } = useFormModal('editModal');
   const { editPhotoEntry, removePhotoEntry } = useManagePhotoEntry();
@@ -29,10 +27,6 @@ export default function EditFormModal() {
     mutationFn: async (data: PhotoFormValues) => {
       if (!selectedPhoto) {
         throw new Error('No photo selected');
-      }
-
-      if (!hasEditToken(selectedPhoto.token)) {
-        throw new Error('Edit token not found');
       }
 
       if (
@@ -96,10 +90,6 @@ export default function EditFormModal() {
     mutationFn: async () => {
       if (!selectedPhoto) {
         throw new Error('No photo selected');
-      }
-
-      if (!hasEditToken(selectedPhoto.token)) {
-        throw new Error('Edit token not found');
       }
 
       const response = await fetch('/api/delete', {
