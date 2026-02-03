@@ -11,6 +11,7 @@ import useEditTokens from '../hooks/useHasEditToken';
 import useFormModal from '../hooks/useFormModal';
 import { type UseMutationResult } from '@tanstack/react-query';
 import useNewPhotoId from '../hooks/useNewPhotoId';
+import useVerifyAdmin from '../hooks/useVerifyAdmin';
 
 function formatTimeStamp(isoString: string) {
   if (!isoString) return null;
@@ -43,7 +44,7 @@ export default function PhotoCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const entranceObserver = useRef<IntersectionObserver>(null);
   const { selectPhoto: setSelectedPhoto } = useAppActions();
-  const { isAdmin } = useAppState();
+  const isAdmin = useVerifyAdmin();
   const { hasEditToken } = useEditTokens();
   const { openModal } = useFormModal('editModal');
   const { isNewPhoto, setNewPhoto } = useNewPhotoId();
@@ -140,6 +141,7 @@ export default function PhotoCard({
           ) : null}
           {isAdmin ? (
             <button
+              disabled={unapproveMutation.isPending}
               onClick={handleUnapproveClick}
               className="unapprove-btn"
               title="Remove from guestbook"

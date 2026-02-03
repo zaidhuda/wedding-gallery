@@ -18,7 +18,6 @@ export type HtmlElementRefKey =
 type HtmlElementRefMap = Partial<Record<HtmlElementRefKey, HTMLElement | null>>;
 
 type AppState = {
-  isAdmin: boolean;
   htmlElementRefMap: React.RefObject<
     Partial<Record<HtmlElementRefKey, HTMLElement | null>>
   >;
@@ -26,7 +25,6 @@ type AppState = {
 };
 
 type AppActions = {
-  setIsAdmin: (isAdmin: boolean) => void;
   registerHtmlElementRef: (
     name: HtmlElementRefKey,
     ref: HTMLElement | null,
@@ -42,7 +40,6 @@ export function AppContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [isAdmin, setIsAdmin] = useState(false);
   const htmlElementRefMap = useRef<HtmlElementRefMap>({});
   const [selectedPhoto, selectPhoto] = useState<PhotoResponse | null>(null);
 
@@ -55,16 +52,15 @@ export function AppContextProvider({
   );
 
   const states = useMemo(
-    () => ({ isAdmin, htmlElementRefMap, selectedPhoto }),
-    [isAdmin, htmlElementRefMap, selectedPhoto],
+    () => ({ htmlElementRefMap, selectedPhoto }),
+    [htmlElementRefMap, selectedPhoto],
   );
   const actions = useMemo(
     () => ({
-      setIsAdmin,
       registerHtmlElementRef,
       selectPhoto,
     }),
-    [setIsAdmin, registerHtmlElementRef, selectPhoto],
+    [registerHtmlElementRef, selectPhoto],
   );
 
   return (

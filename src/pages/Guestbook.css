@@ -442,14 +442,8 @@ body.theme-tandang .photo-message {
 }
 
 /* ===== ADMIN UNAPPROVE BUTTON ===== */
-/* Hidden by default for guests */
 .unapprove-btn {
-    display: none !important;
-}
-
-/* Show button for admins - always visible */
-.is-admin .unapprove-btn {
-    display: flex !important;
+    display: flex;
     position: absolute;
     top: 8px;
     right: 8px;
@@ -467,7 +461,7 @@ body.theme-tandang .photo-message {
     transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.is-admin .unapprove-btn:hover {
+.unapprove-btn:hover {
     transform: scale(1.1);
     background: rgba(185, 28, 28, 1);
 }

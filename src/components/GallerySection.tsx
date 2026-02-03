@@ -13,6 +13,7 @@ import {
 } from '@tanstack/react-query';
 import useCurrentSection from '../hooks/useCurrentSection';
 import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
+import useVerifyAdmin from '../hooks/useVerifyAdmin';
 
 const PHOTOS_PER_PAGE = 12;
 
@@ -152,7 +153,8 @@ export default function GallerySection() {
   const sectionRef = useRegisterHtmlElementRef('gallery');
   const { name, section, gallery, title, label, date } = useCurrentSection();
   const { section: sectionName } = useParams();
-  const { htmlElementRefMap, isAdmin } = useAppState();
+  const isAdmin = useVerifyAdmin();
+  const { htmlElementRefMap } = useAppState();
   const { removePhotoEntry } = useManagePhotoEntry();
 
   const query = useInfiniteQuery({
