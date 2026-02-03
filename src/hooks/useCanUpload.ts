@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 
 const CUT_OFF_DATE =
-  (import.meta.env.VITE_UPLOAD_CUT_OFF_DATE as string | undefined) ??
+  (import.meta.env.VITE_UPLOAD_CUT_OFF_DATE as string | undefined) ||
   "2026-02-28";
 
 export default function useCanUpload() {
