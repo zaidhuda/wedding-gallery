@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { AppContextProvider } from '../hooks/useContext';
-import useTheme from '../hooks/useTheme';
-import HeroSection from '../components/HeroSection';
-import FloatingNavigation from '../components/FloatingNavigation';
-import './Guestbook.css';
+import { AppContextProvider } from '../../hooks/useContext';
+import useTheme from '../../hooks/useTheme';
+import HeroSection from './HeroSection';
+import FloatingNavigation from './FloatingNavigation';
+import './index.css';
 
-const MainContent = lazy(() => import('../components/MainContent'));
+const MainContent = lazy(() => import('./MainContent'));
 
 export default function Guestbook() {
   useTheme();

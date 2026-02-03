@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import useValidateAccess from '../hooks/useValidateAccess';
-import { EVENTS } from '../constants';
-import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
-import { useAppState } from '../hooks/useContext';
+import useValidateAccess from '../../hooks/useValidateAccess';
+import { EVENTS } from '../../constants';
+import useRegisterHtmlElementRef from '../../hooks/useRegisterHtmlElementRef';
+import { useAppState } from '../../hooks/useContext';
 import { NavLink } from 'react-router';
 
 export default function FloatingNavigation() {

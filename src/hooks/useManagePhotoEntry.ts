@@ -2,7 +2,7 @@ import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useCallback, useRef } from 'react';
 import type { PhotoResponse, PhotosResponse } from '../worker/types';
 import type { EventTitle } from '../constants';
-import type { PhotoFormValues } from '../components/BaseForm';
+import type { PhotoFormValues } from '../components/Guestbook/BaseForm';
 
 export default function useManagePhotoEntry() {
   const invalidatePhotosRef = useRef<NodeJS.Timeout>(undefined);

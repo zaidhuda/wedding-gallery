@@ -1,4 +1,4 @@
-import type { PhotoResponse } from '../worker/types';
+import type { PhotoResponse } from '../../worker/types';
 import {
   useCallback,
   useEffect,
@@ -6,12 +6,12 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { useAppActions, useAppState } from '../hooks/useContext';
-import useEditTokens from '../hooks/useHasEditToken';
-import useFormModal from '../hooks/useFormModal';
+import { useAppActions } from '../../hooks/useContext';
+import useEditTokens from '../../hooks/useHasEditToken';
+import useFormModal from '../../hooks/useFormModal';
 import { type UseMutationResult } from '@tanstack/react-query';
-import useNewPhotoId from '../hooks/useNewPhotoId';
-import useVerifyAdmin from '../hooks/useVerifyAdmin';
+import useNewPhotoId from '../../hooks/useNewPhotoId';
+import useVerifyAdmin from '../../hooks/useVerifyAdmin';
 
 function formatTimeStamp(isoString: string) {
   if (!isoString) return null;

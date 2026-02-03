@@ -1,27 +1,27 @@
 import FormModal from './FormModal';
-import useFormModal from '../hooks/useFormModal';
-import { useAppState } from '../hooks/useContext';
+import useFormModal from '../../hooks/useFormModal';
+import { useAppState } from '../../hooks/useContext';
 import { useCallback, useRef, useState } from 'react';
-import useQueryParams from '../hooks/useQueryParam';
-import type { PhotoResponse } from '../worker/types';
+import useQueryParams from '../../hooks/useQueryParam';
+import type { PhotoResponse } from '../../worker/types';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import type { PhotoFormValues } from './BaseForm';
 import BaseForm from './BaseForm';
-import { STORED_PASSWORD } from '../hooks/useLocalStorage';
-import useNewPhotoId from '../hooks/useNewPhotoId';
+import { STORED_PASSWORD } from '../../hooks/useLocalStorage';
+import useNewPhotoId from '../../hooks/useNewPhotoId';
 import {
   extractPhotoTimestamp,
   generateUUID,
   getEventTag,
   resizeImage,
   storeAndGetName,
-} from '../utils';
-import useEditTokens from '../hooks/useHasEditToken';
-import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
-import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
-import useCurrentSection from '../hooks/useCurrentSection';
-import { EVENT_MAP } from '../constants';
+} from '../../utils';
+import useEditTokens from '../../hooks/useHasEditToken';
+import useManagePhotoEntry from '../../hooks/useManagePhotoEntry';
+import useRegisterHtmlElementRef from '../../hooks/useRegisterHtmlElementRef';
+import useCurrentSection from '../../hooks/useCurrentSection';
+import { EVENT_MAP } from '../../constants';
 import { useNavigate } from 'react-router';
 
 const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD as string;

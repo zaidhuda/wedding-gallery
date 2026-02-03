@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import type { EventTitle } from '../constants';
+import type { EventTitle } from '../../constants';
 
 export type PhotoFormValues = {
   file?: File;

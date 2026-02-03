@@ -1,9 +1,9 @@
 import PhotoCard from './PhotoCard';
-import type { PhotoResponse, PhotosResponse } from '../worker/types';
+import type { PhotoResponse, PhotosResponse } from '../../worker/types';
 import { useCallback, useEffect, useMemo } from 'react';
-import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
+import useRegisterHtmlElementRef from '../../hooks/useRegisterHtmlElementRef';
 import { useParams } from 'react-router';
-import { useAppState } from '../hooks/useContext';
+import { useAppState } from '../../hooks/useContext';
 import {
   useInfiniteQuery,
   useMutation,
@@ -11,9 +11,9 @@ import {
   type UseInfiniteQueryResult,
   type UseMutationResult,
 } from '@tanstack/react-query';
-import useCurrentSection from '../hooks/useCurrentSection';
-import useManagePhotoEntry from '../hooks/useManagePhotoEntry';
-import useVerifyAdmin from '../hooks/useVerifyAdmin';
+import useCurrentSection from '../../hooks/useCurrentSection';
+import useManagePhotoEntry from '../../hooks/useManagePhotoEntry';
+import useVerifyAdmin from '../../hooks/useVerifyAdmin';
 
 const PHOTOS_PER_PAGE = 12;
 

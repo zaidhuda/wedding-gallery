@@ -1,7 +1,7 @@
 import { useCallback, type ReactNode } from 'react';
-import useRegisterHtmlElementRef from '../hooks/useRegisterHtmlElementRef';
-import useFormModal from '../hooks/useFormModal';
-import useCurrentSection from '../hooks/useCurrentSection';
+import useRegisterHtmlElementRef from '../../hooks/useRegisterHtmlElementRef';
+import useFormModal from '../../hooks/useFormModal';
+import useCurrentSection from '../../hooks/useCurrentSection';
 
 type Props = {
   children: ReactNode;
