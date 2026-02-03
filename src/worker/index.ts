@@ -102,7 +102,7 @@ const extractJsonObject = (text: string) => {
 
 const parseSafeUnsafeFallback = (
   textRaw: string | Ai_Cf_Meta_Llama_3_2_11B_Vision_Instruct_Output,
-) => {
+): { result: "safe" | "unsafe" | "unsure"; reason: string } | null => {
   if (!textRaw) return null;
   const raw = textRaw.toString();
   const t = (raw || "").trim();
@@ -121,7 +121,7 @@ const parseSafeUnsafeFallback = (
 const parseAIModerationResponse = (
   aiRaw: string | Ai_Cf_Meta_Llama_3_2_11B_Vision_Instruct_Output,
   defaultReasonPrefix: string,
-) => {
+): { status: "safe" | "unsafe" | "unsure"; reason: string } => {
   let parsed = null;
 
   if (typeof aiRaw === "object" && aiRaw !== null) {
@@ -188,7 +188,11 @@ const parseAIModerationResponse = (
   };
 };
 
-const moderateTextWithAI = async (name: string, message: string, env: Env) => {
+const moderateTextWithAI = async (
+  name: string,
+  message: string,
+  env: Env,
+): Promise<{ status: "safe" | "unsafe" | "unsure"; reason: string }> => {
   try {
     const hasUserText =
       (name?.trim() && name !== "Anonymous") || message?.trim();
@@ -238,7 +242,10 @@ const moderateTextWithAI = async (name: string, message: string, env: Env) => {
   }
 };
 
-const moderateImageWithAI = async (imageBlob: Blob, env: Env) => {
+const moderateImageWithAI = async (
+  imageBlob: Blob,
+  env: Env,
+): Promise<{ status: "safe" | "unsafe" | "unsure"; reason: string }> => {
   try {
     if (!env.AI) {
       console.log("AI binding not available, requires manual review");
@@ -386,7 +393,7 @@ const handleUpload = async (
     const height = parseInt((formData.get("height") as string) || "0", 10);
 
     const textResult = await moderateTextWithAI(name, message, env);
-    if (textResult.status !== "safe") {
+    if (textResult.status === "unsafe") {
       return errorResponse(
         "This message can't be posted as it is. Please revise and try again.",
         400,
@@ -423,8 +430,10 @@ const handleUpload = async (
 
     const photoId = dbResult.meta.last_row_id;
 
-    // Background image moderation
-    ctx.waitUntil(processBackgroundModeration(photoId, imageBlob, env));
+    if (textResult.status === "safe") {
+      // Background image moderation
+      ctx.waitUntil(processBackgroundModeration(photoId, imageBlob, env));
+    }
 
     const photoObject: PhotoResponse = {
       id: photoId,
