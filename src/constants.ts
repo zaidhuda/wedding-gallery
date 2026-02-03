@@ -1,3 +1,12 @@
+export const HERO_CONTENT = {
+  prelude: "A Celebration of Love",
+  title1: "Zaid",
+  title2: "Munawwarah",
+  titleConnector: "&",
+  date: "February 2026",
+  scrollIndicator: "Guestbook",
+} as const;
+
 export const EVENTS = [
   {
     name: "ijab",

@@ -10,7 +10,6 @@ import {
 import type { PhotoResponse } from "../worker/types";
 
 export type HtmlElementRefKey =
-  | "hero"
   | "floating-nav"
   | "gallery"
   | "file-input"
