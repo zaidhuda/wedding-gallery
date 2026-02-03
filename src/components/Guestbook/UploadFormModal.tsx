@@ -1,49 +1,49 @@
-import FormModal from './FormModal';
-import useFormModal from '../../hooks/useFormModal';
-import { useAppState } from '../../hooks/useContext';
-import { useCallback, useRef, useState } from 'react';
-import useQueryParams from '../../hooks/useQueryParam';
-import type { PhotoResponse } from '../../worker/types';
-import { useMutation } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import type { PhotoFormValues } from './BaseForm';
-import BaseForm from './BaseForm';
-import { STORED_PASSWORD } from '../../hooks/useLocalStorage';
-import useNewPhotoId from '../../hooks/useNewPhotoId';
+import { useMutation } from "@tanstack/react-query";
+import { useCallback, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
+import { EVENT_MAP, type EventTitle } from "../../constants";
+import { useAppState } from "../../hooks/useContext";
+import useCurrentSection from "../../hooks/useCurrentSection";
+import useFormModal from "../../hooks/useFormModal";
+import useEditTokens from "../../hooks/useHasEditToken";
+import { STORED_PASSWORD } from "../../hooks/useLocalStorage";
+import useManagePhotoEntry from "../../hooks/useManagePhotoEntry";
+import useNewPhotoId from "../../hooks/useNewPhotoId";
+import useQueryParams from "../../hooks/useQueryParam";
+import useRegisterHtmlElementRef from "../../hooks/useRegisterHtmlElementRef";
 import {
   extractPhotoTimestamp,
   generateUUID,
   getEventTag,
   resizeImage,
   storeAndGetName,
-} from '../../utils';
-import useEditTokens from '../../hooks/useHasEditToken';
-import useManagePhotoEntry from '../../hooks/useManagePhotoEntry';
-import useRegisterHtmlElementRef from '../../hooks/useRegisterHtmlElementRef';
-import useCurrentSection from '../../hooks/useCurrentSection';
-import { EVENT_MAP } from '../../constants';
-import { useNavigate } from 'react-router';
+} from "../../utils";
+import type { PhotoResponse } from "../../worker/types";
+import type { PhotoFormValues } from "./BaseForm";
+import BaseForm from "./BaseForm";
+import FormModal from "./FormModal";
 
 const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD as string;
 
 export default function UploadFormModal() {
   const navigate = useNavigate();
   const { title: currentEventTag } = useCurrentSection();
-  const fileRef = useRegisterHtmlElementRef('file-input');
+  const fileRef = useRegisterHtmlElementRef("file-input");
   const invalidatePhotosRef = useRef<NodeJS.Timeout>(undefined);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
   const [image, setImage] = useState<string | null>(null);
   const { htmlElementRefMap } = useAppState();
-  const { openModal, closeModal } = useFormModal('uploadModal');
-  const { mode } = useQueryParams(['mode']);
+  const { openModal, closeModal } = useFormModal("uploadModal");
+  const { mode } = useQueryParams(["mode"]);
   const { setNewPhoto } = useNewPhotoId();
   const { addEditToken } = useEditTokens();
   const { addPhotoEntry } = useManagePhotoEntry();
 
   const form = useForm<PhotoFormValues>({
     defaultValues: {
-      name: storeAndGetName() || '',
-      message: '',
+      name: storeAndGetName() || "",
+      message: "",
       eventTag: currentEventTag,
     },
   });
@@ -56,15 +56,15 @@ export default function UploadFormModal() {
       const eventTag = data.eventTag;
 
       if (!file) {
-        throw new Error('Please select a photo');
+        throw new Error("Please select a photo");
       }
       if (!eventTag) {
-        throw new Error('No event selected');
+        throw new Error("No event selected");
       }
 
       if (submitBtnRef.current) {
         submitBtnRef.current.disabled = true;
-        submitBtnRef.current.textContent = 'Reading photo data...';
+        submitBtnRef.current.textContent = "Reading photo data...";
       }
 
       // Get password from localStorage (already validated before reaching here)
@@ -90,38 +90,38 @@ export default function UploadFormModal() {
       );
 
       if (submitBtnRef.current) {
-        submitBtnRef.current.textContent = 'Sharing...';
+        submitBtnRef.current.textContent = "Sharing...";
       }
 
       const formData = new FormData();
-      formData.append('image', blob, `${generateUUID()}${extension}`);
-      formData.append('name', name || 'Anonymous');
-      formData.append('message', message || '');
-      formData.append('eventTag', eventTag);
-      formData.append('pass', currentPassword);
-      formData.append('format', format);
-      formData.append('takenAt', takenAt);
-      formData.append('width', width.toString());
-      formData.append('height', height.toString());
+      formData.append("image", blob, `${generateUUID()}${extension}`);
+      formData.append("name", name || "Anonymous");
+      formData.append("message", message || "");
+      formData.append("eventTag", eventTag);
+      formData.append("pass", currentPassword);
+      formData.append("format", format);
+      formData.append("takenAt", takenAt);
+      formData.append("width", width.toString());
+      formData.append("height", height.toString());
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
+      const response = await fetch("/api/upload", {
+        method: "POST",
         body: formData,
       });
       const result = await response
         .json()
-        .catch(() => ({ error: 'Upload failed' }));
+        .catch(() => ({ error: "Upload failed" }));
 
       if (!response.ok) {
-        throw new Error(result.error || 'Upload failed');
+        throw new Error(result.error || "Upload failed");
       }
 
       return result.photo as PhotoResponse;
     },
     onSuccess: async (photo: PhotoResponse) => {
       form.reset({
-        name: storeAndGetName(photo.name) || '',
-        message: '',
+        name: storeAndGetName(photo.name) || "",
+        message: "",
         eventTag: currentEventTag,
       });
       if (photo.token) addEditToken(photo.token);
@@ -132,14 +132,16 @@ export default function UploadFormModal() {
 
       addPhotoEntry(photo);
     },
-    onError: (error: any) => {
-      console.error('Upload error:', error);
-      alert(`Unable to share:\n\n${error.message}`);
+    onError: (error: unknown) => {
+      console.error("Upload error:", error);
+      alert(
+        `Unable to share:\n\n${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     },
     onSettled: () => {
       if (submitBtnRef.current) {
         submitBtnRef.current.disabled = false;
-        submitBtnRef.current.textContent = 'Post to Guestbook';
+        submitBtnRef.current.textContent = "Post to Guestbook";
       }
     },
   });
@@ -150,72 +152,69 @@ export default function UploadFormModal() {
       if (!file) return;
 
       const eventTag = await getEventTag(file, mode, currentEventTag);
-      const config = EVENT_MAP[eventTag!];
+      const config = EVENT_MAP[eventTag as EventTitle];
       if (!eventTag || !config) return;
 
       await navigate(`/${config.name}`);
       setImage(URL.createObjectURL(file));
       openModal(eventTag);
 
-      form.setValue('eventTag', eventTag);
-      form.setValue('file', file);
+      form.setValue("eventTag", eventTag);
+      form.setValue("file", file);
     },
-    [currentEventTag, openModal, setImage],
+    [currentEventTag, openModal, form.setValue, mode, navigate],
   );
 
   const handleClose = useCallback(() => {
     closeModal();
     form.reset();
-  }, []);
+  }, [closeModal, form.reset]);
 
   const handleUploadZoneClick = useCallback(() => {
-    htmlElementRefMap.current['file-input']?.click();
-  }, []);
+    htmlElementRefMap.current["file-input"]?.click();
+  }, [htmlElementRefMap.current["file-input"]?.click]);
 
   return (
-    <>
-      <FormModal type="upload" onClose={handleClose}>
-        <BaseForm
-          form={form}
-          PhotoElement={() => (
-            <div
-              className="upload-zone"
-              id="uploadZone"
-              role="button"
-              tabIndex={0}
-              aria-label="Select photo to upload"
-              onClick={handleUploadZoneClick}
-            >
-              <input
-                {...form.register('file')}
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="sr-only"
-                aria-label="Photo file input"
-                onChange={handleFileChange}
-              />
-              {image ? (
-                <div className="upload-preview">
-                  <img src={image} alt="Preview" />
-                </div>
-              ) : undefined}
-            </div>
-          )}
-          onSubmit={mutation.mutateAsync}
-        >
+    <FormModal type="upload" onClose={handleClose}>
+      <BaseForm
+        form={form}
+        PhotoElement={() => (
           <button
-            ref={submitBtnRef}
-            type="submit"
-            className="submit-btn"
-            id="submitBtnRef.current"
-            aria-label="Submit photo and share wish"
-            disabled={mutation.isPending}
+            type="button"
+            className="upload-zone"
+            id="uploadZone"
+            tabIndex={0}
+            onClick={handleUploadZoneClick}
           >
-            Post to Guestbook
+            <input
+              {...form.register("file")}
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              aria-label="Photo file input"
+              onChange={handleFileChange}
+            />
+            {image ? (
+              <div className="upload-preview">
+                <img src={image} alt="Preview" />
+              </div>
+            ) : undefined}
           </button>
-        </BaseForm>
-      </FormModal>
-    </>
+        )}
+        onSubmit={mutation.mutateAsync}
+      >
+        <button
+          ref={submitBtnRef}
+          type="submit"
+          className="submit-btn"
+          id="submitBtnRef.current"
+          aria-label="Submit photo and share wish"
+          disabled={mutation.isPending}
+        >
+          Post to Guestbook
+        </button>
+      </BaseForm>
+    </FormModal>
   );
 }

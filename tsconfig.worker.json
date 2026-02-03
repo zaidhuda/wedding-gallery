@@ -3,8 +3,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": [
-    "worker-configuration.d.ts",
-    "src/worker/**/*.ts"
-  ]
+  "include": ["worker-configuration.d.ts", "src/worker/**/*.ts"]
 }

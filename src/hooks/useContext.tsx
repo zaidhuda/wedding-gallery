@@ -1,20 +1,21 @@
-import React, {
+import type React from "react";
+import {
   createContext,
   useCallback,
   useContext,
   useMemo,
   useRef,
   useState,
-} from 'react';
-import type { PhotoResponse } from '../worker/types';
+} from "react";
+import type { PhotoResponse } from "../worker/types";
 
 export type HtmlElementRefKey =
-  | 'hero'
-  | 'floating-nav'
-  | 'gallery'
-  | 'file-input'
-  | 'uploadModal'
-  | 'editModal';
+  | "hero"
+  | "floating-nav"
+  | "gallery"
+  | "file-input"
+  | "uploadModal"
+  | "editModal";
 type HtmlElementRefMap = Partial<Record<HtmlElementRefKey, HTMLElement | null>>;
 
 type AppState = {
@@ -53,14 +54,14 @@ export function AppContextProvider({
 
   const states = useMemo(
     () => ({ htmlElementRefMap, selectedPhoto }),
-    [htmlElementRefMap, selectedPhoto],
+    [selectedPhoto],
   );
   const actions = useMemo(
     () => ({
       registerHtmlElementRef,
       selectPhoto,
     }),
-    [registerHtmlElementRef, selectPhoto],
+    [registerHtmlElementRef],
   );
 
   return (
@@ -75,13 +76,13 @@ export function AppContextProvider({
 export function useAppActions() {
   const ctx = useContext(AppActionsContext);
   if (!ctx)
-    throw new Error('useAppActions must be used within AppContextProvider');
+    throw new Error("useAppActions must be used within AppContextProvider");
   return ctx;
 }
 
 export function useAppState() {
   const ctx = useContext(AppStateContext);
   if (!ctx)
-    throw new Error('useAppState must be used within AppContextProvider');
+    throw new Error("useAppState must be used within AppContextProvider");
   return ctx;
 }

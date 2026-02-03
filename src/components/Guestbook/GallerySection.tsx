@@ -1,19 +1,19 @@
-import PhotoCard from './PhotoCard';
-import type { PhotoResponse, PhotosResponse } from '../../worker/types';
-import { useCallback, useEffect, useMemo } from 'react';
-import useRegisterHtmlElementRef from '../../hooks/useRegisterHtmlElementRef';
-import { useParams } from 'react-router';
-import { useAppState } from '../../hooks/useContext';
 import {
-  useInfiniteQuery,
-  useMutation,
   type InfiniteData,
   type UseInfiniteQueryResult,
   type UseMutationResult,
-} from '@tanstack/react-query';
-import useCurrentSection from '../../hooks/useCurrentSection';
-import useManagePhotoEntry from '../../hooks/useManagePhotoEntry';
-import useVerifyAdmin from '../../hooks/useVerifyAdmin';
+  useInfiniteQuery,
+  useMutation,
+} from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo } from "react";
+import { useParams } from "react-router";
+import { useAppState } from "../../hooks/useContext";
+import useCurrentSection from "../../hooks/useCurrentSection";
+import useManagePhotoEntry from "../../hooks/useManagePhotoEntry";
+import useRegisterHtmlElementRef from "../../hooks/useRegisterHtmlElementRef";
+import useVerifyAdmin from "../../hooks/useVerifyAdmin";
+import type { PhotoResponse, PhotosResponse } from "../../worker/types";
+import PhotoCard from "./PhotoCard";
 
 const PHOTOS_PER_PAGE = 12;
 
@@ -21,7 +21,7 @@ function LoadingState() {
   return (
     <div className="loading-state">
       <div className="loading-spinner"></div>
-      <p style={{ opacity: 0.4, fontSize: '0.85rem' }}>Loading wishes...</p>
+      <p style={{ opacity: 0.4, fontSize: "0.85rem" }}>Loading wishes...</p>
     </div>
   );
 }
@@ -48,7 +48,7 @@ function ErrorState() {
 
 function EmptyState() {
   return (
-    <div className="empty-state" role="status" aria-label="No wishes yet">
+    <div className="empty-state">
       <svg
         className="empty-state-icon"
         viewBox="0 0 24 24"
@@ -86,7 +86,9 @@ function LoadMore({
 
   return (
     <div className="load-more">
-      <button onClick={handleNextClick}>Load more</button>
+      <button type="button" onClick={handleNextClick}>
+        Load more
+      </button>
     </div>
   );
 }
@@ -110,7 +112,7 @@ function RenderPhotos({
 }: UseInfiniteQueryResult<InfiniteData<PhotosResponse, unknown>, Error> & {
   unapproveMutation: UseMutationResult<
     PhotoResponse | undefined,
-    any,
+    unknown,
     PhotoResponse,
     unknown
   >;
@@ -136,7 +138,7 @@ function RenderPhotos({
       {photos.map((photo) => (
         <PhotoCard
           key={photo.id}
-          {...photo}
+          photo={photo}
           unapproveMutation={unapproveMutation}
         />
       ))}
@@ -150,7 +152,7 @@ function RenderPhotos({
 }
 
 export default function GallerySection() {
-  const sectionRef = useRegisterHtmlElementRef('gallery');
+  const sectionRef = useRegisterHtmlElementRef("gallery");
   const { name, section, gallery, title, label, date } = useCurrentSection();
   const { section: sectionName } = useParams();
   const isAdmin = useVerifyAdmin();
@@ -158,7 +160,7 @@ export default function GallerySection() {
   const { removePhotoEntry } = useManagePhotoEntry();
 
   const query = useInfiniteQuery({
-    queryKey: ['photos', title],
+    queryKey: ["photos", title],
     queryFn: ({ pageParam }): Promise<PhotosResponse> =>
       fetch(
         `/api/photos?eventTag=${encodeURIComponent(title)}&limit=${PHOTOS_PER_PAGE}&offset=${pageParam}`,
@@ -171,10 +173,10 @@ export default function GallerySection() {
   const unapproveMutation = useMutation({
     mutationFn: async (photo: PhotoResponse) => {
       if (isAdmin) {
-        await fetch('/api/admin/unapprove', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+        await fetch("/api/admin/unapprove", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ id: photo.id }),
         });
 
@@ -187,52 +189,44 @@ export default function GallerySection() {
         console.log(`Photo ${photo.id} unapproved`);
       }
     },
-    onError: (error: any) => {
-      console.error('Failed to unapprove photo', error);
-      alert(`Failed to unapprove photo:\n\n${error.message}`);
+    onError: (error: unknown) => {
+      console.error("Failed to unapprove photo", error);
+      alert(
+        `Failed to unapprove photo:\n\n${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     },
   });
 
   useEffect(() => {
     if (sectionName) {
-      htmlElementRefMap.current['gallery']?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
+      htmlElementRefMap.current.gallery?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
-  }, [sectionName]);
+  }, [sectionName, htmlElementRefMap.current.gallery?.scrollIntoView]);
 
   return (
-    <>
-      <section
-        ref={sectionRef}
-        className={`gallery-section section-${name}`}
-        id={section}
-        data-theme={name}
-        data-event={title}
-        role="region"
-        aria-labelledby="section-night-title"
-      >
-        <div className="section-header">
-          <p className="section-label">{label}</p>
-          <h2 className="section-title" id="section-night-title">
-            {title}
-          </h2>
-          <p className="section-date" aria-label={`Event date: ${date}`}>
-            {date}
-          </p>
+    <section
+      ref={sectionRef}
+      className={`gallery-section section-${name}`}
+      id={section}
+      data-theme={name}
+      data-event={title}
+      aria-labelledby="section-night-title"
+    >
+      <div className="section-header">
+        <p className="section-label">{label}</p>
+        <h2 className="section-title" id="section-night-title">
+          {title}
+        </h2>
+        <p className="section-date">{date}</p>
+      </div>
+      <div className="masonry-container">
+        <div className="masonry-grid" id={gallery}>
+          <RenderPhotos unapproveMutation={unapproveMutation} {...query} />
         </div>
-        <div className="masonry-container">
-          <div
-            className="masonry-grid"
-            id={gallery}
-            role="list"
-            aria-label={`${name} ceremony wishes`}
-          >
-            <RenderPhotos unapproveMutation={unapproveMutation} {...query} />
-          </div>
-        </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }

@@ -3,7 +3,7 @@ export type PhotoEntity = {
   object_key: string;
   name: string;
   message?: string;
-  event_tag: 'Ijab & Qabul' | 'Sanding' | 'Tandang';
+  event_tag: "Ijab & Qabul" | "Sanding" | "Tandang";
   timestamp: string;
   taken_at: string;
   is_approved: 0 | 1;
@@ -17,7 +17,7 @@ export type PhotoResponse = {
   objectKey: string;
   name: string;
   message?: string;
-  eventTag: PhotoEntity['event_tag'];
+  eventTag: PhotoEntity["event_tag"];
   timestamp: string;
   takenAt: string;
   isApproved: 0 | 1;
@@ -35,4 +35,4 @@ export type PhotosResponse = {
   offset: number;
 };
 
-export type CorsHeaders = Record<string, any>;
+export type CorsHeaders = Record<string, string>;

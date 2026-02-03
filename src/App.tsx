@@ -1,10 +1,10 @@
-import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router';
+import { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router";
 
-const Admin = lazy(() => import('./components/Admin'));
-const Guestbook = lazy(() => import('./components/Guestbook'));
+const Admin = lazy(() => import("./components/Admin"));
+const Guestbook = lazy(() => import("./components/Guestbook"));
 const GallerySection = lazy(
-  () => import('./components/Guestbook/GallerySection'),
+  () => import("./components/Guestbook/GallerySection"),
 );
 
 function App() {

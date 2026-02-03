@@ -1,10 +1,7 @@
 {
   "files": [],
   "compilerOptions": {
-    "types": [
-      "./worker-configuration.d.ts",
-      "node"
-    ]
+    "types": ["./worker-configuration.d.ts", "node"]
   },
   "references": [
     {
@@ -16,5 +13,5 @@
     {
       "path": "./tsconfig.worker.json"
     }
-  ],
+  ]
 }

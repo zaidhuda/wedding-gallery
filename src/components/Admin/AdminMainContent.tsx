@@ -1,7 +1,7 @@
-import type { UseQueryResult } from '@tanstack/react-query';
-import type { PhotoResponse } from '../../worker/types';
-import { useCallback } from 'react';
-import AdminPhotoCard from './AdminPhotoCard';
+import type { UseQueryResult } from "@tanstack/react-query";
+import { useCallback } from "react";
+import type { PhotoResponse } from "../../worker/types";
+import AdminPhotoCard from "./AdminPhotoCard";
 
 export default function AdminMainContent({
   query,
@@ -18,14 +18,15 @@ export default function AdminMainContent({
 
   if (query.isFetching) {
     return (
-      <div
-        id="loadingState"
-        className="text-center py-20"
-        role="status"
-        aria-live="polite"
-      >
+      <div id="loadingState" className="text-center py-20" aria-live="polite">
         <div className="inline-flex items-center gap-3 text-zinc-400">
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <svg
+            className="w-5 h-5 animate-spin"
+            fill="none"
+            viewBox="0 0 24 24"
+            role="image"
+            aria-label="Loading pending photos..."
+          >
             <circle
               className="opacity-25"
               cx="12"
@@ -46,7 +47,7 @@ export default function AdminMainContent({
     );
   }
 
-  if (query.error?.message === 'Unauthorized') {
+  if (query.error?.message === "Unauthorized") {
     return (
       <div id="authError" className="text-center py-20" role="alert">
         <div className="inline-flex flex-col items-center gap-4">
@@ -55,6 +56,8 @@ export default function AdminMainContent({
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            role="image"
+            aria-label="Authentication required"
           >
             <path
               stroke-linecap="round"
@@ -70,6 +73,7 @@ export default function AdminMainContent({
             signed in through your organization's identity provider.
           </p>
           <button
+            type="button"
             onClick={refetch}
             className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
             aria-label="Retry authentication"
@@ -87,6 +91,7 @@ export default function AdminMainContent({
         <div className="text-red-400" role="alert">
           Failed to load photos.
           <button
+            type="button"
             onClick={refetch}
             className="underline"
             aria-label="Retry loading photos"
@@ -100,13 +105,15 @@ export default function AdminMainContent({
 
   if (photosCount < 1) {
     return (
-      <div id="emptyState" className="text-center py-20" role="status">
+      <div id="emptyState" className="text-center py-20">
         <div className="inline-flex flex-col items-center gap-4">
           <svg
             className="w-16 h-16 text-zinc-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            role="image"
+            aria-label="No photos pending approval"
           >
             <path
               stroke-linecap="round"
@@ -126,8 +133,6 @@ export default function AdminMainContent({
     <div
       id="photoGrid"
       className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
-      role="list"
-      aria-label="Pending photos for approval"
     >
       {photos.map((photo) => (
         <AdminPhotoCard

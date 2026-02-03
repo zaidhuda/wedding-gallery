@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 export default function useQueryParams(names: string[]) {
   return useMemo(() => {
@@ -10,5 +10,5 @@ export default function useQueryParams(names: string[]) {
       },
       {} as Record<string, string | null>,
     );
-  }, [window.location.search]);
+  }, [names.reduce]);
 }

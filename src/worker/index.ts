@@ -1,9 +1,9 @@
-import { env } from 'cloudflare:workers';
-import { Buffer } from 'buffer';
-import type { CorsHeaders, PhotoEntity, PhotoResponse } from './types';
+import { env } from "cloudflare:workers";
+import { Buffer } from "node:buffer";
+import type { CorsHeaders, PhotoEntity, PhotoResponse } from "./types";
 
 const ENVIRONMENT = env.ENVIRONMENT;
-const IS_DEVELOPMENT = ENVIRONMENT === 'development';
+const IS_DEVELOPMENT = ENVIRONMENT === "development";
 const PHOTO_BASE_URL = env.PHOTO_BASE_URL;
 const GUEST_PASSWORD = env.GUEST_PASSWORD;
 const MAX_PHOTO_SIZE = env.MAX_PHOTO_SIZE;
@@ -23,18 +23,18 @@ const normalizeOrigin = (value?: string | null) => {
 
 const isAccessAuthenticated = (request: Request) => {
   if (IS_DEVELOPMENT) return true;
-  const jwt = request.headers.get('Cf-Access-Jwt-Assertion');
-  const email = request.headers.get('Cf-Access-Authenticated-User-Email');
+  const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
+  const email = request.headers.get("Cf-Access-Authenticated-User-Email");
   return !!(jwt && email);
 };
 
 const getAccessEmail = (request: Request) => {
-  if (IS_DEVELOPMENT) return 'dev@localhost';
-  return request.headers.get('Cf-Access-Authenticated-User-Email') || 'unknown';
+  if (IS_DEVELOPMENT) return "dev@localhost";
+  return request.headers.get("Cf-Access-Authenticated-User-Email") || "unknown";
 };
 
 const jsonResponse = (
-  data: Record<string, any>,
+  data: Record<string, unknown>,
   status = 200,
   corsHeaders = {},
 ) => {
@@ -42,7 +42,7 @@ const jsonResponse = (
     status,
     headers: {
       ...corsHeaders,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 };
@@ -59,9 +59,9 @@ const errorResponse = (
 };
 
 const validateUserInput = (name: string, message: string) => {
-  if (name && name.length > 50) return 'Name is too long (max 50 characters)';
+  if (name && name.length > 50) return "Name is too long (max 50 characters)";
   if (message && message.length > 500)
-    return 'Message is too long (max 500 characters)';
+    return "Message is too long (max 500 characters)";
   return null;
 };
 
@@ -91,10 +91,10 @@ const getEditWindowStatus = (timestamp: string) => {
 
 const extractJsonObject = (text: string) => {
   if (!text) return null;
-  if (typeof text === 'object') return JSON.stringify(text);
+  if (typeof text === "object") return JSON.stringify(text);
   const raw = text.toString();
-  const start = raw.indexOf('{');
-  const end = raw.lastIndexOf('}');
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
   if (start === -1 || end === -1 || end <= start) return null;
   const candidate = raw.slice(start, end + 1);
   return candidate;
@@ -105,16 +105,16 @@ const parseSafeUnsafeFallback = (
 ) => {
   if (!textRaw) return null;
   const raw = textRaw.toString();
-  const t = (raw || '').trim();
+  const t = (raw || "").trim();
   if (!t) return null;
 
   const firstToken = t.split(/\s+/)[0].toUpperCase();
-  if (firstToken === 'SAFE')
-    return { result: 'safe', reason: 'ai_approved_fallback' };
-  if (firstToken === 'UNSAFE')
-    return { result: 'unsafe', reason: 'ai_flagged_fallback' };
-  if (firstToken === 'UNSURE')
-    return { result: 'unsure', reason: 'ai_unsure_fallback' };
+  if (firstToken === "SAFE")
+    return { result: "safe", reason: "ai_approved_fallback" };
+  if (firstToken === "UNSAFE")
+    return { result: "unsafe", reason: "ai_flagged_fallback" };
+  if (firstToken === "UNSURE")
+    return { result: "unsure", reason: "ai_unsure_fallback" };
   return null;
 };
 
@@ -124,55 +124,55 @@ const parseAIModerationResponse = (
 ) => {
   let parsed = null;
 
-  if (typeof aiRaw === 'object' && aiRaw !== null) {
+  if (typeof aiRaw === "object" && aiRaw !== null) {
     // Some Cloudflare AI models return the message object or just the response text
     const extracted = aiRaw.response || aiRaw;
 
-    if (typeof extracted === 'string') {
+    if (typeof extracted === "string") {
       const candidate = extractJsonObject(extracted);
       if (candidate) {
         try {
           parsed = JSON.parse(candidate);
-        } catch (e) {}
+        } catch (_e) {}
       }
-    } else if (typeof extracted === 'object') {
+    } else if (typeof extracted === "object") {
       parsed = extracted;
     }
   } else {
-    const raw = (aiRaw || '').toString();
+    const raw = (aiRaw || "").toString();
     const candidate = extractJsonObject(raw);
     if (candidate) {
       try {
         parsed = JSON.parse(candidate);
       } catch (e) {
-        console.error('Failed to parse AI JSON:', e);
+        console.error("Failed to parse AI JSON:", e);
       }
     }
   }
 
-  if (parsed && typeof parsed === 'object') {
-    if (parsed.result === 'safe' || parsed.safe === true) {
+  if (parsed && typeof parsed === "object") {
+    if (parsed.result === "safe" || parsed.safe === true) {
       return {
-        status: 'safe',
+        status: "safe",
         reason: parsed.reason || `${defaultReasonPrefix}_approved`,
       };
-    } else if (parsed.result === 'unsafe' || parsed.safe === false) {
+    } else if (parsed.result === "unsafe" || parsed.safe === false) {
       return {
-        status: 'unsafe',
+        status: "unsafe",
         reason: parsed.reason || `${defaultReasonPrefix}_flagged`,
       };
-    } else if (parsed.result === 'unsure') {
+    } else if (parsed.result === "unsure") {
       return {
-        status: 'unsure',
+        status: "unsure",
         reason: parsed.reason || `${defaultReasonPrefix}_unsure`,
       };
     }
   }
 
   const fallbackSource =
-    typeof aiRaw === 'object' && aiRaw !== null
-      ? (aiRaw.response ?? '')
-      : aiRaw || '';
+    typeof aiRaw === "object" && aiRaw !== null
+      ? (aiRaw.response ?? "")
+      : aiRaw || "";
 
   const fallback = parseSafeUnsafeFallback(fallbackSource);
   if (fallback) {
@@ -183,7 +183,7 @@ const parseAIModerationResponse = (
   }
 
   return {
-    status: 'unsure',
+    status: "unsure",
     reason: `${defaultReasonPrefix}_needs_review`,
   };
 };
@@ -191,19 +191,18 @@ const parseAIModerationResponse = (
 const moderateTextWithAI = async (name: string, message: string, env: Env) => {
   try {
     const hasUserText =
-      (name && name.trim() && name !== 'Anonymous') ||
-      (message && message.trim());
+      (name?.trim() && name !== "Anonymous") || message?.trim();
     if (!hasUserText) {
-      return { status: 'safe', reason: 'no_text' };
+      return { status: "safe", reason: "no_text" };
     }
 
     if (!env.AI) {
-      console.log('AI binding not available, requires manual review');
-      return { status: 'unsure', reason: 'ai_unavailable' };
+      console.log("AI binding not available, requires manual review");
+      return { status: "unsure", reason: "ai_unavailable" };
     }
 
-    const safeName = (name || 'Anonymous').trim().slice(0, 50);
-    const safeMsg = (message || '').trim().slice(0, 500);
+    const safeName = (name || "Anonymous").trim().slice(0, 50);
+    const safeMsg = (message || "").trim().slice(0, 500);
 
     const textToAnalyze =
       `Guestbook entry:\n` +
@@ -212,29 +211,29 @@ const moderateTextWithAI = async (name: string, message: string, env: Env) => {
 
     const payload = {
       messages: [
-        { role: 'system', content: TEXT_SYSTEM_PROMPT },
-        { role: 'user', content: textToAnalyze },
+        { role: "system", content: TEXT_SYSTEM_PROMPT },
+        { role: "user", content: textToAnalyze },
       ],
       temperature: 0,
       top_p: 1,
       max_tokens: 40,
-      stop: ['\n\n', '```'],
+      stop: ["\n\n", "```"],
     };
 
     const response = await env.AI.run(
-      '@cf/meta/llama-3.2-3b-instruct',
+      "@cf/meta/llama-3.2-3b-instruct",
       payload,
     );
 
-    const aiText = (response && response.response) || '';
-    console.log('AI text moderation raw:', aiText);
+    const aiText = response?.response || "";
+    console.log("AI text moderation raw:", aiText);
 
-    return parseAIModerationResponse(aiText, 'ai_text');
+    return parseAIModerationResponse(aiText, "ai_text");
   } catch (error) {
-    console.error('AI text moderation error:', error);
+    console.error("AI text moderation error:", error);
     return {
-      status: 'unsure',
-      reason: 'ai_error_review',
+      status: "unsure",
+      reason: "ai_error_review",
     };
   }
 };
@@ -242,28 +241,28 @@ const moderateTextWithAI = async (name: string, message: string, env: Env) => {
 const moderateImageWithAI = async (imageBlob: Blob, env: Env) => {
   try {
     if (!env.AI) {
-      console.log('AI binding not available, requires manual review');
-      return { status: 'unsure', reason: 'ai_unavailable' };
+      console.log("AI binding not available, requires manual review");
+      return { status: "unsure", reason: "ai_unavailable" };
     }
 
     const buf = await imageBlob.arrayBuffer();
-    const b64 = Buffer.from(buf).toString('base64');
-    const mime = imageBlob.type || 'image/jpeg';
+    const b64 = Buffer.from(buf).toString("base64");
+    const mime = imageBlob.type || "image/jpeg";
     const dataUrl = `data:${mime};base64,${b64}`;
 
     const response = await env.AI.run(
-      '@cf/meta/llama-3.2-11b-vision-instruct',
+      "@cf/meta/llama-3.2-11b-vision-instruct",
       {
         messages: [
-          { role: 'system', content: IMAGE_SYSTEM_PROMPT },
+          { role: "system", content: IMAGE_SYSTEM_PROMPT },
           {
-            role: 'user',
+            role: "user",
             content: [
               {
-                type: 'text',
-                text: 'Classify this image for guestbook safety.',
+                type: "text",
+                text: "Classify this image for guestbook safety.",
               },
-              { type: 'image_url', image_url: { url: dataUrl } },
+              { type: "image_url", image_url: { url: dataUrl } },
             ],
           },
         ],
@@ -273,15 +272,15 @@ const moderateImageWithAI = async (imageBlob: Blob, env: Env) => {
       },
     );
 
-    const aiRaw = (response && response.response) || response;
-    console.log('AI image moderation raw:', aiRaw);
+    const aiRaw = response?.response || response;
+    console.log("AI image moderation raw:", aiRaw);
 
-    return parseAIModerationResponse(aiRaw, 'ai_image');
+    return parseAIModerationResponse(aiRaw, "ai_image");
   } catch (error) {
-    console.error('AI image moderation error:', error);
+    console.error("AI image moderation error:", error);
     return {
-      status: 'unsure',
-      reason: 'ai_error_review',
+      status: "unsure",
+      reason: "ai_error_review",
     };
   }
 };
@@ -293,8 +292,8 @@ const processBackgroundModeration = async (
 ) => {
   try {
     const imageResult = await moderateImageWithAI(imageBlob, env);
-    if (imageResult.status === 'safe') {
-      await env.DB.prepare('UPDATE photos SET is_approved = 1 WHERE id = ?')
+    if (imageResult.status === "safe") {
+      await env.DB.prepare("UPDATE photos SET is_approved = 1 WHERE id = ?")
         .bind(photoId)
         .run();
       console.log(`Photo ${photoId} auto-approved by AI.`);
@@ -317,28 +316,28 @@ const handleUpload = async (
   corsHeaders: CorsHeaders,
 ) => {
   const formData = await request.formData();
-  const uploadPassword = formData.get('pass') as string;
+  const uploadPassword = formData.get("pass") as string;
 
   if (
     !uploadPassword ||
     uploadPassword.toLowerCase() !== GUEST_PASSWORD.toLowerCase()
   ) {
-    return errorResponse('Invalid or missing password', 401, corsHeaders);
+    return errorResponse("Invalid or missing password", 401, corsHeaders);
   }
 
   try {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'] as const;
-    const validEventTags = ['Ijab & Qabul', 'Sanding', 'Tandang'] as const;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"] as const;
+    const validEventTags = ["Ijab & Qabul", "Sanding", "Tandang"] as const;
 
-    const image = formData.get('image') as File;
-    const name = ((formData.get('name') as string) || '').trim() || 'Anonymous';
-    const message = ((formData.get('message') as string) || '').trim();
+    const image = formData.get("image") as File;
+    const name = ((formData.get("name") as string) || "").trim() || "Anonymous";
+    const message = ((formData.get("message") as string) || "").trim();
     const eventTag = formData.get(
-      'eventTag',
+      "eventTag",
     ) as (typeof validEventTags)[number];
     const format =
-      (formData.get('format') as (typeof allowedTypes)[number]) || 'image/jpeg';
-    const takenAtParam = formData.get('takenAt') as string;
+      (formData.get("format") as (typeof allowedTypes)[number]) || "image/jpeg";
+    const takenAtParam = formData.get("takenAt") as string;
 
     const validationError = validateUserInput(name, message);
     if (validationError)
@@ -346,7 +345,7 @@ const handleUpload = async (
 
     if (!image || !eventTag) {
       return errorResponse(
-        'Missing required fields: image and eventTag',
+        "Missing required fields: image and eventTag",
         400,
         corsHeaders,
       );
@@ -354,10 +353,13 @@ const handleUpload = async (
 
     if (
       !allowedTypes.includes(format) ||
-      (image.type && !allowedTypes.includes(image.type as any))
+      (image.type &&
+        !allowedTypes.includes(
+          image.type as "image/jpeg" | "image/png" | "image/webp",
+        ))
     ) {
       return errorResponse(
-        'Invalid file type. Only JPG, PNG, and WebP are allowed.',
+        "Invalid file type. Only JPG, PNG, and WebP are allowed.",
         400,
         corsHeaders,
       );
@@ -372,24 +374,24 @@ const handleUpload = async (
     }
 
     if (!validEventTags.includes(eventTag)) {
-      return errorResponse('Invalid eventTag', 400, corsHeaders);
+      return errorResponse("Invalid eventTag", 400, corsHeaders);
     }
 
-    const extension = format === 'image/webp' ? '.webp' : '.jpg';
+    const extension = format === "image/webp" ? ".webp" : ".jpg";
     const objectKey = `photos/${crypto.randomUUID()}${extension}`;
     const imageArrayBuffer = await image.arrayBuffer();
     const imageBlob = new Blob([imageArrayBuffer], { type: format });
 
-    const width = parseInt((formData.get('width') as string) || '0');
-    const height = parseInt((formData.get('height') as string) || '0');
+    const width = parseInt((formData.get("width") as string) || "0", 10);
+    const height = parseInt((formData.get("height") as string) || "0", 10);
 
     const textResult = await moderateTextWithAI(name, message, env);
-    if (textResult.status !== 'safe') {
+    if (textResult.status !== "safe") {
       return errorResponse(
         "This message can't be posted as it is. Please revise and try again.",
         400,
         corsHeaders,
-        'TEXT_MODERATION_FAILED',
+        "TEXT_MODERATION_FAILED",
       );
     }
 
@@ -403,7 +405,7 @@ const handleUpload = async (
     });
 
     const dbResult = await env.DB.prepare(
-      'INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      "INSERT INTO photos (object_key, name, message, event_tag, timestamp, taken_at, is_approved, token, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
       .bind(
         objectKey,
@@ -441,8 +443,8 @@ const handleUpload = async (
 
     return jsonResponse({ photo: photoObject }, 200, corsHeaders);
   } catch (error) {
-    console.error('Upload error:', error);
-    return errorResponse('Upload failed', 500, corsHeaders);
+    console.error("Upload error:", error);
+    return errorResponse("Upload failed", 500, corsHeaders);
   }
 };
 
@@ -459,12 +461,12 @@ const handleEdit = async (
       message?: string;
     }>();
     const { id, token } = body;
-    const name = (body.name || '').trim() || 'Anonymous';
-    const message = (body.message || '').trim();
+    const name = (body.name || "").trim() || "Anonymous";
+    const message = (body.message || "").trim();
 
     if (!id || !token)
       return errorResponse(
-        'Missing required fields: id, token',
+        "Missing required fields: id, token",
         400,
         corsHeaders,
       );
@@ -474,44 +476,44 @@ const handleEdit = async (
       return errorResponse(validationError, 400, corsHeaders);
 
     const photo = await env.DB.prepare(
-      'SELECT id, timestamp FROM photos WHERE id = ? AND token = ?',
+      "SELECT id, timestamp FROM photos WHERE id = ? AND token = ?",
     )
       .bind(id, token)
       .first<{ id: number; timestamp: string }>();
 
     if (!photo)
       return errorResponse(
-        'Invalid token or photo not found',
+        "Invalid token or photo not found",
         403,
         corsHeaders,
       );
 
     if (!getEditWindowStatus(photo.timestamp)) {
       return errorResponse(
-        'Edit window expired. Photos can only be edited within 1 hour of upload.',
+        "Edit window expired. Photos can only be edited within 1 hour of upload.",
         403,
         corsHeaders,
       );
     }
 
     const textModeration = await moderateTextWithAI(name, message, env);
-    if (textModeration.status !== 'safe') {
+    if (textModeration.status !== "safe") {
       return errorResponse(
         "This message can't be posted as it is. Please revise and try again.",
         400,
         corsHeaders,
-        'TEXT_MODERATION_FAILED',
+        "TEXT_MODERATION_FAILED",
       );
     }
 
-    await env.DB.prepare('UPDATE photos SET name = ?, message = ? WHERE id = ?')
+    await env.DB.prepare("UPDATE photos SET name = ?, message = ? WHERE id = ?")
       .bind(name, message, id)
       .run();
 
     return jsonResponse({ success: true }, 200, corsHeaders);
   } catch (error) {
-    console.error('Edit error:', error);
-    return errorResponse('Edit failed', 500, corsHeaders);
+    console.error("Edit error:", error);
+    return errorResponse("Edit failed", 500, corsHeaders);
   }
 };
 
@@ -527,13 +529,13 @@ const handleDelete = async (
     }>();
     if (!id || !token)
       return errorResponse(
-        'Missing required fields: id, token',
+        "Missing required fields: id, token",
         400,
         corsHeaders,
       );
 
     const photo = await env.DB.prepare(
-      'SELECT id, object_key, timestamp FROM photos WHERE id = ? AND token = ?',
+      "SELECT id, object_key, timestamp FROM photos WHERE id = ? AND token = ?",
     )
       .bind(id, token)
       .first<{
@@ -544,14 +546,14 @@ const handleDelete = async (
 
     if (!photo)
       return errorResponse(
-        'Invalid token or photo not found',
+        "Invalid token or photo not found",
         403,
         corsHeaders,
       );
 
     if (!getEditWindowStatus(photo.timestamp)) {
       return errorResponse(
-        'Delete window expired. Photos can only be deleted within 1 hour of upload.',
+        "Delete window expired. Photos can only be deleted within 1 hour of upload.",
         403,
         corsHeaders,
       );
@@ -561,15 +563,15 @@ const handleDelete = async (
       try {
         await env.PHOTOS_BUCKET.delete(photo.object_key);
       } catch (e) {
-        console.error('R2 delete error:', e);
+        console.error("R2 delete error:", e);
       }
     }
 
-    await env.DB.prepare('DELETE FROM photos WHERE id = ?').bind(id).run();
+    await env.DB.prepare("DELETE FROM photos WHERE id = ?").bind(id).run();
     return jsonResponse({ success: true }, 200, corsHeaders);
   } catch (error) {
-    console.error('Delete error:', error);
-    return errorResponse('Delete failed', 500, corsHeaders);
+    console.error("Delete error:", error);
+    return errorResponse("Delete failed", 500, corsHeaders);
   }
 };
 
@@ -579,24 +581,24 @@ const handleGetPhotos = async (
   corsHeaders: CorsHeaders,
 ) => {
   try {
-    const eventTag = url.searchParams.get('eventTag');
-    const limit = parseInt(url.searchParams.get('limit') ?? '') || 12;
-    const offset = parseInt(url.searchParams.get('offset') ?? '') || 0;
-    const sinceId = parseInt(url.searchParams.get('since_id') ?? '');
-    const checkIds = url.searchParams.get('check_ids');
+    const eventTag = url.searchParams.get("eventTag");
+    const limit = parseInt(url.searchParams.get("limit") ?? "", 10) || 12;
+    const offset = parseInt(url.searchParams.get("offset") ?? "", 10) || 0;
+    const sinceId = parseInt(url.searchParams.get("since_id") ?? "", 10);
+    const checkIds = url.searchParams.get("check_ids");
 
-    let query: string | undefined = undefined,
-      countQuery: string | undefined = undefined,
-      params: (string | number)[] | undefined = undefined;
+    let query: string | undefined,
+      countQuery: string | undefined,
+      params: (string | number)[] | undefined;
     let checkedPhotos: ReturnType<typeof mapToPhotoObject>[] = [];
 
     if (checkIds) {
       const ids = checkIds
-        .split(',')
-        .map((id) => parseInt(id))
-        .filter((id) => !isNaN(id));
+        .split(",")
+        .map((id) => parseInt(id, 10))
+        .filter((id) => !Number.isNaN(id));
       if (ids.length > 0) {
-        const placeholders = ids.map(() => '?').join(',');
+        const placeholders = ids.map(() => "?").join(",");
         const checkQuery = `SELECT * FROM photos WHERE id IN (${placeholders})`;
         const checkResult = await env.DB.prepare(checkQuery)
           .bind(...ids)
@@ -607,21 +609,21 @@ const handleGetPhotos = async (
 
     if (sinceId) {
       query = eventTag
-        ? 'SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? AND id > ? ORDER BY id DESC LIMIT 50'
-        : 'SELECT * FROM photos WHERE is_approved = 1 AND id > ? ORDER BY id DESC LIMIT 50';
+        ? "SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? AND id > ? ORDER BY id DESC LIMIT 50"
+        : "SELECT * FROM photos WHERE is_approved = 1 AND id > ? ORDER BY id DESC LIMIT 50";
       params = eventTag ? [eventTag, sinceId] : [sinceId];
     } else {
       if (eventTag) {
         query =
-          'SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
+          "SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?";
         countQuery =
-          'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1 AND event_tag = ?';
+          "SELECT COUNT(*) as total FROM photos WHERE is_approved = 1 AND event_tag = ?";
         params = [eventTag, limit + 1, offset];
       } else {
         query =
-          'SELECT * FROM photos WHERE is_approved = 1 ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?';
+          "SELECT * FROM photos WHERE is_approved = 1 ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?";
         countQuery =
-          'SELECT COUNT(*) as total FROM photos WHERE is_approved = 1';
+          "SELECT COUNT(*) as total FROM photos WHERE is_approved = 1";
         params = [limit + 1, offset];
       }
     }
@@ -662,8 +664,8 @@ const handleGetPhotos = async (
       corsHeaders,
     );
   } catch (error) {
-    console.error('Fetch photos error:', error);
-    return errorResponse('Failed to fetch photos', 500, corsHeaders);
+    console.error("Fetch photos error:", error);
+    return errorResponse("Failed to fetch photos", 500, corsHeaders);
   }
 };
 
@@ -674,16 +676,16 @@ const handleAdminPending = async (
 ) => {
   try {
     if (!isAccessAuthenticated(request))
-      return errorResponse('Unauthorized', 401, corsHeaders);
+      return errorResponse("Unauthorized", 401, corsHeaders);
     const adminEmail = getAccessEmail(request);
     const result = await env.DB.prepare(
-      'SELECT * FROM photos WHERE is_approved = 0 ORDER BY timestamp DESC',
+      "SELECT * FROM photos WHERE is_approved = 0 ORDER BY timestamp DESC",
     ).all<PhotoEntity>();
     const photos = (result.results || []).map(mapToPhotoObject);
     return jsonResponse({ photos, admin: adminEmail }, 200, corsHeaders);
   } catch (error) {
-    console.error('Fetch pending error:', error);
-    return errorResponse('Failed to fetch pending photos', 500, corsHeaders);
+    console.error("Fetch pending error:", error);
+    return errorResponse("Failed to fetch pending photos", 500, corsHeaders);
   }
 };
 
@@ -694,7 +696,7 @@ const handleAdminAction = async (
 ) => {
   try {
     if (!isAccessAuthenticated(request))
-      return errorResponse('Unauthorized', 401, corsHeaders);
+      return errorResponse("Unauthorized", 401, corsHeaders);
     const { imageID, action, ids } = await request.json<{
       imageID: number;
       action: string;
@@ -703,22 +705,22 @@ const handleAdminAction = async (
     const targetIds = ids || (imageID ? [imageID] : []);
 
     if (targetIds.length === 0)
-      return errorResponse('Missing imageID or ids', 400, corsHeaders);
+      return errorResponse("Missing imageID or ids", 400, corsHeaders);
 
-    const placeholders = targetIds.map(() => '?').join(',');
+    const placeholders = targetIds.map(() => "?").join(",");
 
-    if (action === 'approve') {
+    if (action === "approve") {
       await env.DB.prepare(
         `UPDATE photos SET is_approved = 1 WHERE id IN (${placeholders})`,
       )
         .bind(...targetIds)
         .run();
       return jsonResponse(
-        { action: 'approved', count: targetIds.length },
+        { action: "approved", count: targetIds.length },
         200,
         corsHeaders,
       );
-    } else if (action === 'delete') {
+    } else if (action === "delete") {
       const photosRes = await env.DB.prepare(
         `SELECT id, object_key FROM photos WHERE id IN (${placeholders})`,
       )
@@ -733,7 +735,7 @@ const handleAdminAction = async (
           try {
             await env.PHOTOS_BUCKET.delete(photo.object_key);
           } catch (e) {
-            console.error('R2 delete error:', e);
+            console.error("R2 delete error:", e);
           }
         }
       }
@@ -742,7 +744,7 @@ const handleAdminAction = async (
         .bind(...targetIds)
         .run();
       return jsonResponse(
-        { action: 'deleted', count: targetIds.length },
+        { action: "deleted", count: targetIds.length },
         200,
         corsHeaders,
       );
@@ -753,8 +755,8 @@ const handleAdminAction = async (
       corsHeaders,
     );
   } catch (error) {
-    console.error('Admin action error:', error);
-    return errorResponse('Action failed', 500, corsHeaders);
+    console.error("Admin action error:", error);
+    return errorResponse("Action failed", 500, corsHeaders);
   }
 };
 
@@ -765,17 +767,17 @@ const handleAdminUnapprove = async (
 ) => {
   try {
     if (!isAccessAuthenticated(request))
-      return errorResponse('Unauthorized', 401, corsHeaders);
+      return errorResponse("Unauthorized", 401, corsHeaders);
     const { id } = await request.json<{ id: number }>();
-    if (!id) return errorResponse('Missing photo id', 400, corsHeaders);
+    if (!id) return errorResponse("Missing photo id", 400, corsHeaders);
 
-    await env.DB.prepare('UPDATE photos SET is_approved = 0 WHERE id = ?')
+    await env.DB.prepare("UPDATE photos SET is_approved = 0 WHERE id = ?")
       .bind(id)
       .run();
-    return jsonResponse({ action: 'unapproved', id }, 200, corsHeaders);
+    return jsonResponse({ action: "unapproved", id }, 200, corsHeaders);
   } catch (error) {
-    console.error('Unapprove error:', error);
-    return errorResponse('Unapprove failed', 500, corsHeaders);
+    console.error("Unapprove error:", error);
+    return errorResponse("Unapprove failed", 500, corsHeaders);
   }
 };
 
@@ -798,19 +800,19 @@ const handleServeImage = async (
   corsHeaders: CorsHeaders,
 ) => {
   try {
-    const objectKey = path.replace('/api/images/', '');
+    const objectKey = path.replace("/api/images/", "");
     const object = await env.PHOTOS_BUCKET.get(objectKey);
     if (!object)
-      return new Response('Not Found', { status: 404, headers: corsHeaders });
+      return new Response("Not Found", { status: 404, headers: corsHeaders });
 
     const headers = new Headers(corsHeaders);
     object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
-    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    headers.set("etag", object.httpEtag);
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
     return new Response(object.body, { headers });
   } catch (error) {
-    console.error('Image serve error:', error);
-    return new Response('Error serving image', {
+    console.error("Image serve error:", error);
+    return new Response("Error serving image", {
       status: 500,
       headers: corsHeaders,
     });
@@ -823,31 +825,31 @@ export default {
     const path = url.pathname;
     const method = request.method;
     const selfOrigin = url.origin;
-    const origin = request.headers.get('Origin');
-    const secFetchSite = request.headers.get('Sec-Fetch-Site');
+    const origin = request.headers.get("Origin");
+    const secFetchSite = request.headers.get("Sec-Fetch-Site");
 
     const requestOrigin = normalizeOrigin(origin);
     const isSameOriginByOrigin = requestOrigin && requestOrigin === selfOrigin;
-    const isSameOriginByFetchMeta = secFetchSite === 'same-origin';
+    const isSameOriginByFetchMeta = secFetchSite === "same-origin";
 
     if (!isSameOriginByOrigin && !isSameOriginByFetchMeta && !IS_DEVELOPMENT) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'null',
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "null",
         },
       });
     }
 
     const corsHeaders: CorsHeaders = {
-      'Access-Control-Allow-Origin': requestOrigin || selfOrigin,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Credentials': 'true',
+      "Access-Control-Allow-Origin": requestOrigin || selfOrigin,
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Credentials": "true",
     };
 
-    if (method === 'OPTIONS') {
+    if (method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders });
     }
 
@@ -856,29 +858,29 @@ export default {
     }
 
     // Routing
-    if (path === '/api/upload' && method === 'POST')
+    if (path === "/api/upload" && method === "POST")
       return handleUpload(request, env, ctx, corsHeaders);
-    if (path === '/api/edit' && method === 'POST')
+    if (path === "/api/edit" && method === "POST")
       return handleEdit(request, env, corsHeaders);
-    if (path === '/api/delete' && method === 'POST')
+    if (path === "/api/delete" && method === "POST")
       return handleDelete(request, env, corsHeaders);
-    if (path === '/api/photos' && method === 'GET')
+    if (path === "/api/photos" && method === "GET")
       return handleGetPhotos(url, env, corsHeaders);
 
     // Admin routes
-    if (path === '/api/admin/pending' && method === 'GET')
+    if (path === "/api/admin/pending" && method === "GET")
       return handleAdminPending(request, env, corsHeaders);
-    if (path === '/api/admin/action' && method === 'POST')
+    if (path === "/api/admin/action" && method === "POST")
       return handleAdminAction(request, env, corsHeaders);
-    if (path === '/api/admin/verify' && method === 'GET')
+    if (path === "/api/admin/verify" && method === "GET")
       return handleAdminVerify(request, corsHeaders);
-    if (path === '/api/admin/unapprove' && method === 'POST')
+    if (path === "/api/admin/unapprove" && method === "POST")
       return handleAdminUnapprove(request, env, corsHeaders);
 
     // Dev only: Serve images from R2
-    if (IS_DEVELOPMENT && path.startsWith('/api/images/'))
+    if (IS_DEVELOPMENT && path.startsWith("/api/images/"))
       return handleServeImage(path, env, corsHeaders);
 
-    return new Response('Not Found', { status: 404, headers: corsHeaders });
+    return new Response("Not Found", { status: 404, headers: corsHeaders });
   },
 };

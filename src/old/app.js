@@ -1,15 +1,15 @@
 // ===== CONFIGURATION =====
-const GUEST_PASSWORD = 'ZM2026';
-const STORAGE_KEY = 'wedding_gallery_access';
-const NAME_STORAGE_KEY = 'wedding_gallery_name';
-const EDIT_TOKENS_KEY = 'wedding_gallery_edit_tokens';
+const GUEST_PASSWORD = "ZM2026";
+const STORAGE_KEY = "wedding_gallery_access";
+const NAME_STORAGE_KEY = "wedding_gallery_name";
+const EDIT_TOKENS_KEY = "wedding_gallery_edit_tokens";
 
 // Admin state - will be set after verification
 let isAdmin = false;
 
 // Check URL param first, then localStorage
 const urlParams = new URLSearchParams(window.location.search);
-const urlPassword = urlParams.get('pass');
+const urlPassword = urlParams.get("pass");
 const storedPassword = localStorage.getItem(STORAGE_KEY);
 const hasValidPassword =
   urlPassword?.toLowerCase() === GUEST_PASSWORD.toLowerCase() ||
@@ -22,52 +22,52 @@ if (urlPassword?.toLowerCase() === GUEST_PASSWORD.toLowerCase()) {
 
 // Remove pass query param from URL without reloading
 if (urlPassword) {
-  urlParams.delete('pass');
+  urlParams.delete("pass");
   const newUrl = urlParams.toString()
     ? `${window.location.pathname}?${urlParams.toString()}`
     : window.location.pathname;
-  window.history.replaceState({}, '', newUrl);
+  window.history.replaceState({}, "", newUrl);
 }
 
 // ===== EXPIRATION & TEST MODE =====
 // After March 1, 2026: Gallery becomes static (no uploads)
-const isExpired = new Date() > new Date('2026-03-01');
+const isExpired = new Date() > new Date("2026-03-01");
 // Test mode bypasses date validation for production testing
-const isTestMode = urlParams.get('mode') === 'test';
+const isTestMode = urlParams.get("mode") === "test";
 
 // Wedding event dates for smart-sort (February 2026)
 const WEDDING_DATES = {
-  7: 'Ijab & Qabul', // Night
-  8: 'Sanding', // Grandeur
-  14: 'Tandang', // Journey
+  7: "Ijab & Qabul", // Night
+  8: "Sanding", // Grandeur
+  14: "Tandang", // Journey
 };
 
 const PHOTOS_PER_PAGE = 12;
 
 const EVENT_CONFIG = {
-  'Ijab & Qabul': {
-    theme: 'ijab',
-    section: 'section-night',
-    gallery: 'gallery-ijab',
-    label: 'Ijab & Qabul',
+  "Ijab & Qabul": {
+    theme: "ijab",
+    section: "section-night",
+    gallery: "gallery-ijab",
+    label: "Ijab & Qabul",
   },
   Sanding: {
-    theme: 'sanding',
-    section: 'section-grandeur',
-    gallery: 'gallery-sanding',
-    label: 'Sanding',
+    theme: "sanding",
+    section: "section-grandeur",
+    gallery: "gallery-sanding",
+    label: "Sanding",
   },
   Tandang: {
-    theme: 'tandang',
-    section: 'section-journey',
-    gallery: 'gallery-tandang',
-    label: 'Tandang',
+    theme: "tandang",
+    section: "section-journey",
+    gallery: "gallery-tandang",
+    label: "Tandang",
   },
 };
 
 // Pagination state for each gallery
 const galleryState = {
-  'Ijab & Qabul': { offset: 0, hasMore: true, loading: false },
+  "Ijab & Qabul": { offset: 0, hasMore: true, loading: false },
   Sanding: { offset: 0, hasMore: true, loading: false },
   Tandang: { offset: 0, hasMore: true, loading: false },
 };
@@ -80,26 +80,26 @@ let globalMaxPhotoId = 0;
 function applyTheme(theme) {
   // Remove existing theme classes but preserve other classes (like is-admin)
   document.body.classList.remove(
-    'theme-ijab',
-    'theme-sanding',
-    'theme-tandang',
+    "theme-ijab",
+    "theme-sanding",
+    "theme-tandang",
   );
   document.body.classList.add(`theme-${theme}`);
 }
 
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
 // Check if browser supports WebP encoding
 function supportsWebP() {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = 1;
   canvas.height = 1;
-  return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+  return canvas.toDataURL("image/webp").indexOf("data:image/webp") === 0;
 }
 
 // Cache the result since it won't change during session
@@ -109,22 +109,22 @@ const webpSupported = supportsWebP();
 // Check if current user is authenticated via Cloudflare Access
 async function verifyAdminAccess() {
   try {
-    const response = await fetch('/api/admin/verify', {
-      credentials: 'include', // Include Cloudflare Access cookies
+    const response = await fetch("/api/admin/verify", {
+      credentials: "include", // Include Cloudflare Access cookies
     });
 
     if (response.ok) {
       const data = await response.json();
       if (data.authenticated) {
         isAdmin = true;
-        document.body.classList.add('is-admin');
+        document.body.classList.add("is-admin");
         console.log(`Admin mode enabled: ${data.email}`);
         return true;
       }
     }
   } catch (error) {
     // Silently fail - user is not admin
-    console.log('Admin verification failed (not authenticated)');
+    console.log("Admin verification failed (not authenticated)");
   }
   return false;
 }
@@ -134,10 +134,10 @@ async function unapprovePhoto(photoId) {
   if (!isAdmin) return;
 
   try {
-    const response = await fetch('/api/admin/unapprove', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+    const response = await fetch("/api/admin/unapprove", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ id: photoId }),
     });
 
@@ -147,17 +147,17 @@ async function unapprovePhoto(photoId) {
         `.photo-card[data-photo-id="${photoId}"]`,
       );
       if (card) {
-        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.9)';
+        card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+        card.style.opacity = "0";
+        card.style.transform = "scale(0.9)";
         setTimeout(() => card.remove(), 300);
       }
       console.log(`Photo ${photoId} unapproved`);
     } else {
-      console.error('Failed to unapprove photo');
+      console.error("Failed to unapprove photo");
     }
   } catch (error) {
-    console.error('Unapprove error:', error);
+    console.error("Unapprove error:", error);
   }
 }
 
@@ -169,39 +169,39 @@ window.unapprovePhoto = unapprovePhoto;
 async function extractPhotoTimestamp(file) {
   try {
     // Priority 1: Try to get EXIF DateTimeOriginal
-    if (typeof ExifReader !== 'undefined') {
+    if (typeof ExifReader !== "undefined") {
       const arrayBuffer = await file.arrayBuffer();
       const tags = ExifReader.load(arrayBuffer);
 
       if (tags.DateTimeOriginal && tags.DateTimeOriginal.description) {
         // EXIF format: "2026:02:07 14:42:30" → parse to ISO
         const exifDate = tags.DateTimeOriginal.description;
-        const [datePart, timePart] = exifDate.split(' ');
-        const [year, month, day] = datePart.split(':');
+        const [datePart, timePart] = exifDate.split(" ");
+        const [year, month, day] = datePart.split(":");
         const isoString = `${year}-${month}-${day}T${timePart}`;
         const parsed = new Date(isoString);
 
         if (!isNaN(parsed.getTime())) {
-          console.log('Using EXIF DateTimeOriginal:', isoString);
+          console.log("Using EXIF DateTimeOriginal:", isoString);
           return parsed.toISOString();
         }
       }
     }
   } catch (e) {
-    console.warn('EXIF extraction failed:', e);
+    console.warn("EXIF extraction failed:", e);
   }
 
   // Priority 2: File's lastModified date
   if (file.lastModified) {
     const lastModified = new Date(file.lastModified);
     if (!isNaN(lastModified.getTime())) {
-      console.log('Using file lastModified:', lastModified.toISOString());
+      console.log("Using file lastModified:", lastModified.toISOString());
       return lastModified.toISOString();
     }
   }
 
   // Priority 3: Current timestamp (absolute fallback)
-  console.log('Using current timestamp as fallback');
+  console.log("Using current timestamp as fallback");
   return new Date().toISOString();
 }
 
@@ -223,11 +223,11 @@ function validatePhotoDate(takenAtISO) {
 
 // ===== MODERATION REJECTION NOTIFICATION =====
 function showModerationRejection(message) {
-  const overlay = document.createElement('div');
-  overlay.className = 'rejection-overlay';
-  overlay.setAttribute('role', 'alertdialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'rejection-title');
+  const overlay = document.createElement("div");
+  overlay.className = "rejection-overlay";
+  overlay.setAttribute("role", "alertdialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-labelledby", "rejection-title");
   overlay.innerHTML = `
         <div class="rejection-popup">
             <div class="rejection-icon" style="color: #dc2626;">
@@ -247,17 +247,17 @@ function showModerationRejection(message) {
     `;
 
   document.body.appendChild(overlay);
-  requestAnimationFrame(() => overlay.classList.add('visible'));
+  requestAnimationFrame(() => overlay.classList.add("visible"));
 
   const closePopup = () => {
-    overlay.classList.remove('visible');
+    overlay.classList.remove("visible");
     setTimeout(() => overlay.remove(), 300);
   };
 
   overlay
-    .querySelector('.rejection-close')
-    .addEventListener('click', closePopup);
-  overlay.addEventListener('click', (e) => {
+    .querySelector(".rejection-close")
+    .addEventListener("click", closePopup);
+  overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closePopup();
   });
 }
@@ -265,11 +265,11 @@ function showModerationRejection(message) {
 // ===== REJECTION POPUP =====
 function showRejectionPopup() {
   // Create overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'rejection-overlay';
-  overlay.setAttribute('role', 'alertdialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'date-rejection-title');
+  const overlay = document.createElement("div");
+  overlay.className = "rejection-overlay";
+  overlay.setAttribute("role", "alertdialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-labelledby", "date-rejection-title");
   overlay.innerHTML = `
         <div class="rejection-popup">
             <div class="rejection-icon">
@@ -290,18 +290,18 @@ function showRejectionPopup() {
   document.body.appendChild(overlay);
 
   // Animate in
-  requestAnimationFrame(() => overlay.classList.add('visible'));
+  requestAnimationFrame(() => overlay.classList.add("visible"));
 
   // Close handlers
   const closePopup = () => {
-    overlay.classList.remove('visible');
+    overlay.classList.remove("visible");
     setTimeout(() => overlay.remove(), 300);
   };
 
   overlay
-    .querySelector('.rejection-close')
-    .addEventListener('click', closePopup);
-  overlay.addEventListener('click', (e) => {
+    .querySelector(".rejection-close")
+    .addEventListener("click", closePopup);
+  overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closePopup();
   });
 }
@@ -309,11 +309,11 @@ function showRejectionPopup() {
 // ===== TEST MODE EVENT SELECTOR =====
 function showTestModeSelector() {
   return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'test-selector-overlay';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-labelledby', 'test-selector-title');
+    const overlay = document.createElement("div");
+    overlay.className = "test-selector-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "test-selector-title");
     overlay.innerHTML = `
             <div class="test-selector-popup">
                 <div class="test-selector-header">
@@ -342,16 +342,16 @@ function showTestModeSelector() {
         `;
 
     document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('visible'));
+    requestAnimationFrame(() => overlay.classList.add("visible"));
 
     const closePopup = (result) => {
-      overlay.classList.remove('visible');
+      overlay.classList.remove("visible");
       setTimeout(() => overlay.remove(), 300);
       resolve(result);
     };
 
-    overlay.querySelectorAll('.test-option').forEach((btn) => {
-      btn.addEventListener('click', () => {
+    overlay.querySelectorAll(".test-option").forEach((btn) => {
+      btn.addEventListener("click", () => {
         closePopup({
           eventTag: btn.dataset.event,
           label: btn.dataset.label,
@@ -360,9 +360,9 @@ function showTestModeSelector() {
     });
 
     overlay
-      .querySelector('.test-cancel')
-      .addEventListener('click', () => closePopup(null));
-    overlay.addEventListener('click', (e) => {
+      .querySelector(".test-cancel")
+      .addEventListener("click", () => closePopup(null));
+    overlay.addEventListener("click", (e) => {
       if (e.target === overlay) closePopup(null);
     });
   });
@@ -394,7 +394,7 @@ async function resizeImage(file, statusCallback = null) {
         if (width < 200 || height < 200) {
           reject(
             new Error(
-              'This photo is too small. Please pick a higher quality image (at least 200px).',
+              "This photo is too small. Please pick a higher quality image (at least 200px).",
             ),
           );
           return;
@@ -405,27 +405,27 @@ async function resizeImage(file, statusCallback = null) {
         if (ratio > 4 || ratio < 0.25) {
           reject(
             new Error(
-              'This photo has an extreme aspect ratio. Please pick a standard photo.',
+              "This photo has an extreme aspect ratio. Please pick a standard photo.",
             ),
           );
           return;
         }
 
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
 
         // Determine format based on browser support
-        const format = webpSupported ? 'image/webp' : 'image/jpeg';
-        const extension = webpSupported ? '.webp' : '.jpg';
+        const format = webpSupported ? "image/webp" : "image/jpeg";
+        const extension = webpSupported ? ".webp" : ".jpg";
 
         // Show status for WebP conversion (can take a moment for large images)
         if (statusCallback) {
           statusCallback(
             webpSupported
-              ? 'Preparing your digital wish...'
-              : 'Optimizing your photo...',
+              ? "Preparing your digital wish..."
+              : "Optimizing your photo...",
           );
         }
 
@@ -433,7 +433,7 @@ async function resizeImage(file, statusCallback = null) {
           (blob) =>
             blob
               ? resolve({ blob, format, extension })
-              : reject(new Error('Failed to convert')),
+              : reject(new Error("Failed to convert")),
           format,
           0.8,
         );
@@ -468,9 +468,9 @@ async function loadPhotosForEvent(eventTag, append = false) {
         `;
   } else {
     // Remove the "Load More" card before fetching
-    const loadMoreCard = gallery.querySelector('.load-more-card');
+    const loadMoreCard = gallery.querySelector(".load-more-card");
     if (loadMoreCard) {
-      loadMoreCard.classList.add('loading');
+      loadMoreCard.classList.add("loading");
     }
   }
 
@@ -523,7 +523,7 @@ function getOptimizedImageUrl(url) {
   if (!url) return url;
   // For Cloudflare Image Resizing: format=auto serves WebP/AVIF based on browser support
   // Only apply to production URLs (not localhost)
-  const separator = url.includes('?') ? '&' : '?';
+  const separator = url.includes("?") ? "&" : "?";
   return `${url}${separator}format=auto`;
 }
 
@@ -534,9 +534,9 @@ function formatFilmTimestamp(isoString) {
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return null;
 
-    return date.toLocaleTimeString('en-MS', {
-      hour: 'numeric',
-      minute: '2-digit',
+    return date.toLocaleTimeString("en-MS", {
+      hour: "numeric",
+      minute: "2-digit",
       hour12: true,
     });
   } catch {
@@ -546,43 +546,43 @@ function formatFilmTimestamp(isoString) {
 
 function createPhotoCard(photo, eventTag = null) {
   const hasCaption = photo.name || photo.message;
-  const card = document.createElement('div');
-  card.className = `photo-card${hasCaption ? '' : ' no-caption'}`;
-  card.setAttribute('data-photo-id', photo.id);
+  const card = document.createElement("div");
+  card.className = `photo-card${hasCaption ? "" : " no-caption"}`;
+  card.setAttribute("data-photo-id", photo.id);
 
   const optimizedUrl = getOptimizedImageUrl(photo.url);
   const filmTime = formatFilmTimestamp(photo.takenAt);
 
   // Check if user has edit token for this photo
-  const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+  const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || "{}");
   const hasEditToken = editTokens[photo.id] !== undefined;
 
   const isPending = photo.isApproved === 0;
 
   card.innerHTML = `
         <div class="photo-item" role="listitem">
-            <img src="${optimizedUrl}" alt="Wish from ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}" loading="lazy">
-            ${isPending ? `<div class="reviewing-badge" aria-label="This photo is currently being reviewed">Reviewing photo...</div>` : ''}
-            ${isAdmin ? `<button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from guestbook" aria-label="Remove wish by ${photo.name || 'Guest'} from guestbook">✕</button>` : ''}
-            ${hasEditToken ? `<button class="edit-btn" data-photo-id="${photo.id}" data-photo-url="${optimizedUrl}" data-photo-name="${(photo.name || '').replace(/"/g, '&quot;')}" data-photo-message="${(photo.message || '').replace(/"/g, '&quot;')}" data-event-tag="${eventTag || photo.eventTag || ''}" title="Edit your submission" aria-label="Edit your photo submission">Edit</button>` : ''}
+            <img src="${optimizedUrl}" alt="Wish from ${photo.name || "Guest"}${photo.message ? ": " + photo.message : ""}" loading="lazy">
+            ${isPending ? `<div class="reviewing-badge" aria-label="This photo is currently being reviewed">Reviewing photo...</div>` : ""}
+            ${isAdmin ? `<button onclick="unapprovePhoto(${photo.id})" class="unapprove-btn" title="Remove from guestbook" aria-label="Remove wish by ${photo.name || "Guest"} from guestbook">✕</button>` : ""}
+            ${hasEditToken ? `<button class="edit-btn" data-photo-id="${photo.id}" data-photo-url="${optimizedUrl}" data-photo-name="${(photo.name || "").replace(/"/g, "&quot;")}" data-photo-message="${(photo.message || "").replace(/"/g, "&quot;")}" data-event-tag="${eventTag || photo.eventTag || ""}" title="Edit your submission" aria-label="Edit your photo submission">Edit</button>` : ""}
         </div>
         <div class="photo-caption">
-            ${filmTime ? `<span class="film-stamp" aria-label="Photo taken at ${filmTime}">${filmTime}</span>` : ''}
+            ${filmTime ? `<span class="film-stamp" aria-label="Photo taken at ${filmTime}">${filmTime}</span>` : ""}
             <p class="photo-name">${photo.name}</p>
-            <p class="photo-message">${photo.message ? `“${photo.message}”` : ''}</p>
+            <p class="photo-message">${photo.message ? `“${photo.message}”` : ""}</p>
         </div>
     `;
 
   // Add click handler for edit button if it exists
   if (hasEditToken) {
-    const editBtn = card.querySelector('.edit-btn');
+    const editBtn = card.querySelector(".edit-btn");
     if (editBtn) {
-      editBtn.addEventListener('click', () => {
+      editBtn.addEventListener("click", () => {
         const photoId = parseInt(editBtn.dataset.photoId);
-        const photoUrl = editBtn.dataset.photoUrl || '';
-        const photoName = editBtn.dataset.photoName || '';
-        const photoMessage = editBtn.dataset.photoMessage || '';
-        const eventTag = editBtn.dataset.eventTag || '';
+        const photoUrl = editBtn.dataset.photoUrl || "";
+        const photoName = editBtn.dataset.photoName || "";
+        const photoMessage = editBtn.dataset.photoMessage || "";
+        const eventTag = editBtn.dataset.eventTag || "";
         openEditModal(photoId, photoUrl, photoName, photoMessage, eventTag);
       });
     }
@@ -592,12 +592,12 @@ function createPhotoCard(photo, eventTag = null) {
 }
 
 function createLoadMoreCard(eventTag) {
-  const card = document.createElement('div');
-  card.className = 'photo-card load-more-card visible';
+  const card = document.createElement("div");
+  card.className = "photo-card load-more-card visible";
   card.dataset.eventTag = eventTag;
-  card.setAttribute('role', 'button');
-  card.setAttribute('tabindex', '0');
-  card.setAttribute('aria-label', 'Load more wishes');
+  card.setAttribute("role", "button");
+  card.setAttribute("tabindex", "0");
+  card.setAttribute("aria-label", "Load more wishes");
 
   card.innerHTML = `
         <div class="load-more-content">
@@ -614,14 +614,14 @@ function createLoadMoreCard(eventTag) {
     `;
 
   const handleActivation = () => {
-    if (!card.classList.contains('loading')) {
+    if (!card.classList.contains("loading")) {
       loadPhotosForEvent(eventTag, true);
     }
   };
 
-  card.addEventListener('click', handleActivation);
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+  card.addEventListener("click", handleActivation);
+  card.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       handleActivation();
     }
@@ -646,7 +646,7 @@ function renderPhotos(photos, gallery, eventTag, hasMore) {
     return;
   }
 
-  gallery.innerHTML = '';
+  gallery.innerHTML = "";
 
   photos.forEach((photo) => {
     gallery.appendChild(createPhotoCard(photo, eventTag));
@@ -663,7 +663,7 @@ function renderPhotos(photos, gallery, eventTag, hasMore) {
 
 function appendPhotos(photos, gallery, eventTag, hasMore) {
   // Remove existing "Load More" card
-  const existingLoadMore = gallery.querySelector('.load-more-card');
+  const existingLoadMore = gallery.querySelector(".load-more-card");
   if (existingLoadMore) {
     existingLoadMore.remove();
   }
@@ -693,14 +693,14 @@ function appendPhotos(photos, gallery, eventTag, hasMore) {
 // ===== PHOTO ENTRANCE ANIMATION =====
 function setupPhotoEntranceObserver(gallery, specificCards = null) {
   const photoCards =
-    specificCards || gallery.querySelectorAll('.photo-card:not(.visible)');
+    specificCards || gallery.querySelectorAll(".photo-card:not(.visible)");
 
   const entranceObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           // Add visible class for fade-in + slide-up
-          entry.target.classList.add('visible');
+          entry.target.classList.add("visible");
           // Stop observing once visible
           entranceObserver.unobserve(entry.target);
         }
@@ -708,7 +708,7 @@ function setupPhotoEntranceObserver(gallery, specificCards = null) {
     },
     {
       threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px', // Trigger slightly before fully in view
+      rootMargin: "0px 0px -50px 0px", // Trigger slightly before fully in view
     },
   );
 
@@ -717,11 +717,11 @@ function setupPhotoEntranceObserver(gallery, specificCards = null) {
 
 // ===== LOCATION VERIFICATION =====
 const VENUE_LOCATIONS = [
-  { lat: 2.454981839192229, lng: 102.06060997931948, name: 'Venue 1' },
-  { lat: 1.4819313372117824, lng: 103.93764464383543, name: 'Venue 2' },
+  { lat: 2.454981839192229, lng: 102.06060997931948, name: "Venue 1" },
+  { lat: 1.4819313372117824, lng: 103.93764464383543, name: "Venue 2" },
 ];
 const VENUE_RADIUS_KM = 2;
-const LOCATION_VERIFIED_KEY = 'wedding_gallery_location_verified';
+const LOCATION_VERIFIED_KEY = "wedding_gallery_location_verified";
 
 // Calculate distance between two coordinates using Haversine formula
 function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -753,9 +753,9 @@ function isNearVenue(userLat, userLng) {
 // Show location permission explanation using native confirm
 function showLocationPrompt() {
   return confirm(
-    'Are you at the celebration?\n\n' +
-      'Share your location to skip the password.\n' +
-      '(Or click Cancel to enter password instead)',
+    "Are you at the celebration?\n\n" +
+      "Share your location to skip the password.\n" +
+      "(Or click Cancel to enter password instead)",
   );
 }
 
@@ -763,8 +763,8 @@ function showLocationPrompt() {
 async function verifyLocation() {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      console.log('Geolocation not supported');
-      resolve({ success: false, reason: 'unsupported' });
+      console.log("Geolocation not supported");
+      resolve({ success: false, reason: "unsupported" });
       return;
     }
 
@@ -775,17 +775,17 @@ async function verifyLocation() {
 
         if (nearVenue) {
           // Store verification in localStorage
-          localStorage.setItem(LOCATION_VERIFIED_KEY, 'true');
-          console.log('Location verified: within venue range');
-          resolve({ success: true, reason: 'at_venue' });
+          localStorage.setItem(LOCATION_VERIFIED_KEY, "true");
+          console.log("Location verified: within venue range");
+          resolve({ success: true, reason: "at_venue" });
         } else {
-          console.log('Location verified: outside venue range');
-          resolve({ success: false, reason: 'too_far' });
+          console.log("Location verified: outside venue range");
+          resolve({ success: false, reason: "too_far" });
         }
       },
       (error) => {
-        console.log('Location permission denied or error:', error.message);
-        resolve({ success: false, reason: 'denied' });
+        console.log("Location permission denied or error:", error.message);
+        resolve({ success: false, reason: "denied" });
       },
       {
         enableHighAccuracy: true,
@@ -798,7 +798,7 @@ async function verifyLocation() {
 
 // Show password prompt using native browser prompt
 function showPasswordPrompt(
-  message = 'Enter the password (check the QR code at your table):',
+  message = "Enter the password (check the QR code at your table):",
 ) {
   return prompt(message);
 }
@@ -813,7 +813,7 @@ async function validateAccess() {
 
   // Check if location was previously verified
   const locationVerified = localStorage.getItem(LOCATION_VERIFIED_KEY);
-  if (locationVerified === 'true') {
+  if (locationVerified === "true") {
     // Ensure password is stored for upload functionality
     if (!localStorage.getItem(STORAGE_KEY)) {
       localStorage.setItem(STORAGE_KEY, GUEST_PASSWORD);
@@ -824,7 +824,7 @@ async function validateAccess() {
   // Show location permission prompt
   const userWantsLocation = await showLocationPrompt();
 
-  let passwordMessage = 'Enter the password (check the QR code at your table):';
+  let passwordMessage = "Enter the password (check the QR code at your table):";
 
   if (userWantsLocation) {
     // Try location verification
@@ -835,9 +835,9 @@ async function validateAccess() {
       return true;
     }
     // If user is too far from venue, customize the prompt message
-    if (result.reason === 'too_far') {
+    if (result.reason === "too_far") {
       passwordMessage =
-        'Not at the venue?\n\nEnter the password (check the QR code at your table):';
+        "Not at the venue?\n\nEnter the password (check the QR code at your table):";
     }
   }
 
@@ -857,7 +857,7 @@ async function validateAccess() {
     // Invalid password - clear from localStorage and show error
     localStorage.removeItem(STORAGE_KEY);
     alert(
-      'Invalid password. Please check the QR code at your table for the correct password.',
+      "Invalid password. Please check the QR code at your table for the correct password.",
     );
     return false;
   }
@@ -865,12 +865,12 @@ async function validateAccess() {
 
 // ===== UPLOAD FUNCTIONALITY =====
 async function uploadPhoto(file, name, message, eventTag) {
-  const uploadBtn = document.getElementById('uploadBtn');
+  const uploadBtn = document.getElementById("uploadBtn");
   const originalText = uploadBtn.textContent;
 
   try {
     uploadBtn.disabled = true;
-    uploadBtn.textContent = 'Reading photo data...';
+    uploadBtn.textContent = "Reading photo data...";
 
     // Save the name to localStorage for future uploads
     if (name) {
@@ -894,32 +894,32 @@ async function uploadPhoto(file, name, message, eventTag) {
       uploadBtn.textContent = status;
     });
 
-    uploadBtn.textContent = 'Sharing...';
+    uploadBtn.textContent = "Sharing...";
 
     const formData = new FormData();
-    formData.append('image', blob, `${generateUUID()}${extension}`);
-    formData.append('name', name || 'Anonymous');
-    formData.append('message', message || '');
-    formData.append('eventTag', eventTag);
-    formData.append('pass', currentPassword);
-    formData.append('format', format); // Send format to worker
-    formData.append('takenAt', takenAt); // Send original photo timestamp
+    formData.append("image", blob, `${generateUUID()}${extension}`);
+    formData.append("name", name || "Anonymous");
+    formData.append("message", message || "");
+    formData.append("eventTag", eventTag);
+    formData.append("pass", currentPassword);
+    formData.append("format", format); // Send format to worker
+    formData.append("takenAt", takenAt); // Send original photo timestamp
 
-    const response = await fetch('/api/upload', {
-      method: 'POST',
+    const response = await fetch("/api/upload", {
+      method: "POST",
       body: formData,
     });
     const result = await response
       .json()
-      .catch(() => ({ error: 'Upload failed' }));
+      .catch(() => ({ error: "Upload failed" }));
 
     if (!response.ok) {
       // Check if it's a text moderation rejection (400 with specific code)
-      if (response.status === 400 && result.code === 'TEXT_MODERATION_FAILED') {
+      if (response.status === 400 && result.code === "TEXT_MODERATION_FAILED") {
         showModerationRejection(result.error);
         return;
       }
-      throw new Error(result.error || 'Upload failed');
+      throw new Error(result.error || "Upload failed");
     }
 
     const { photo } = result;
@@ -927,7 +927,7 @@ async function uploadPhoto(file, name, message, eventTag) {
     // Save edit token to localStorage if we got one
     if (photo.id && photo.token) {
       const editTokens = JSON.parse(
-        localStorage.getItem(EDIT_TOKENS_KEY) || '{}',
+        localStorage.getItem(EDIT_TOKENS_KEY) || "{}",
       );
       editTokens[photo.id] = photo.token;
       localStorage.setItem(EDIT_TOKENS_KEY, JSON.stringify(editTokens));
@@ -935,10 +935,10 @@ async function uploadPhoto(file, name, message, eventTag) {
 
     closeModal();
     // Reset form but keep the name field
-    const savedName = document.getElementById('photoName').value;
-    document.getElementById('photoForm').reset();
-    document.getElementById('photoName').value = savedName;
-    document.getElementById('uploadPreview').innerHTML = `
+    const savedName = document.getElementById("photoName").value;
+    document.getElementById("photoForm").reset();
+    document.getElementById("photoName").value = savedName;
+    document.getElementById("uploadPreview").innerHTML = `
             <svg class="upload-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -954,16 +954,16 @@ async function uploadPhoto(file, name, message, eventTag) {
         // If it's a new upload and we're on the first page, prepend it
         // Or just refresh if it's easier, but prepending is smoother
         const newCard = createPhotoCard(photo, eventTag);
-        newCard.classList.add('visible', 'new-entry-highlight');
+        newCard.classList.add("visible", "new-entry-highlight");
         gallery.prepend(newCard);
-        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        newCard.scrollIntoView({ behavior: "smooth", block: "center" });
 
-        const emptyState = gallery.querySelector('.empty-state');
+        const emptyState = gallery.querySelector(".empty-state");
         if (emptyState) emptyState.remove();
       }
     }
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
     alert(`Unable to share: ${error.message}`);
   } finally {
     uploadBtn.disabled = false;
@@ -975,43 +975,43 @@ async function uploadPhoto(file, name, message, eventTag) {
 let currentEditPhotoId = null;
 
 async function editPhoto(photoId, name, message) {
-  const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+  const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || "{}");
   const token = editTokens[photoId];
 
   if (!token) {
-    alert('Edit token not found. This photo can no longer be edited.');
+    alert("Edit token not found. This photo can no longer be edited.");
     return;
   }
 
-  const editBtn = document.getElementById('editSubmitBtn');
+  const editBtn = document.getElementById("editSubmitBtn");
   const originalText = editBtn.textContent;
 
   try {
     editBtn.disabled = true;
-    editBtn.textContent = 'Saving...';
+    editBtn.textContent = "Saving...";
 
-    const response = await fetch('/api/edit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: photoId,
         token: token,
-        name: name.trim() || 'Anonymous',
-        message: (message || '').trim(),
+        name: name.trim() || "Anonymous",
+        message: (message || "").trim(),
       }),
     });
 
     const result = await response
       .json()
-      .catch(() => ({ error: 'Edit failed' }));
+      .catch(() => ({ error: "Edit failed" }));
 
     if (!response.ok) {
       // Check if it's a text moderation rejection (400 with specific code)
-      if (response.status === 400 && result.code === 'TEXT_MODERATION_FAILED') {
+      if (response.status === 400 && result.code === "TEXT_MODERATION_FAILED") {
         showModerationRejection(result.error);
         return;
       }
-      throw new Error(result.error || 'Edit failed');
+      throw new Error(result.error || "Edit failed");
     }
 
     closeEditModal();
@@ -1021,16 +1021,16 @@ async function editPhoto(photoId, name, message) {
         `.photo-card[data-photo-id="${photoId}"]`,
       );
       if (updatedCard) {
-        updatedCard.classList.add('new-entry-highlight');
-        const photoName = updatedCard.querySelector('.photo-name');
-        const photoMessage = updatedCard.querySelector('.photo-message');
-        const editBtn = updatedCard.querySelector('.edit-btn');
+        updatedCard.classList.add("new-entry-highlight");
+        const photoName = updatedCard.querySelector(".photo-name");
+        const photoMessage = updatedCard.querySelector(".photo-message");
+        const editBtn = updatedCard.querySelector(".edit-btn");
 
         if (photoName) {
           photoName.innerText = name;
         }
         if (photoMessage) {
-          photoMessage.innerText = message ? `“${message}”` : '';
+          photoMessage.innerText = message ? `“${message}”` : "";
         }
         if (editBtn) {
           editBtn.dataset.photoName = name;
@@ -1039,7 +1039,7 @@ async function editPhoto(photoId, name, message) {
       }
     }, 100);
   } catch (error) {
-    console.error('Edit error:', error);
+    console.error("Edit error:", error);
     alert(`Unable to edit: ${error.message}`);
   } finally {
     editBtn.disabled = false;
@@ -1050,30 +1050,30 @@ async function editPhoto(photoId, name, message) {
 async function deletePhoto(photoId) {
   if (
     !confirm(
-      'Are you sure you want to delete this photo? This cannot be undone.',
+      "Are you sure you want to delete this photo? This cannot be undone.",
     )
   ) {
     return;
   }
 
-  const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+  const editTokens = JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || "{}");
   const token = editTokens[photoId];
 
   if (!token) {
-    alert('Edit token not found. This photo can no longer be deleted.');
+    alert("Edit token not found. This photo can no longer be deleted.");
     return;
   }
 
-  const deleteBtn = document.getElementById('editDeleteBtn');
+  const deleteBtn = document.getElementById("editDeleteBtn");
   const originalText = deleteBtn.textContent;
 
   try {
     deleteBtn.disabled = true;
-    deleteBtn.textContent = 'Deleting...';
+    deleteBtn.textContent = "Deleting...";
 
-    const response = await fetch('/api/delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: photoId,
         token: token,
@@ -1082,10 +1082,10 @@ async function deletePhoto(photoId) {
 
     const result = await response
       .json()
-      .catch(() => ({ error: 'Delete failed' }));
+      .catch(() => ({ error: "Delete failed" }));
 
     if (!response.ok) {
-      throw new Error(result.error || 'Delete failed');
+      throw new Error(result.error || "Delete failed");
     }
 
     // Remove token from localStorage
@@ -1099,13 +1099,13 @@ async function deletePhoto(photoId) {
       `.photo-card[data-photo-id="${photoId}"]`,
     );
     if (card) {
-      card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-      card.style.opacity = '0';
-      card.style.transform = 'scale(0.9)';
+      card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+      card.style.opacity = "0";
+      card.style.transform = "scale(0.9)";
       setTimeout(() => card.remove(), 300);
     }
   } catch (error) {
-    console.error('Delete error:', error);
+    console.error("Delete error:", error);
     alert(`Unable to delete: ${error.message}`);
   } finally {
     deleteBtn.disabled = false;
@@ -1117,13 +1117,13 @@ function openEditModal(photoId, photoUrl, name, message, eventTag) {
   currentEditPhotoId = photoId;
   currentEditEventTag = eventTag;
 
-  const modal = document.getElementById('editModal');
+  const modal = document.getElementById("editModal");
 
   // Apply theme class based on photo's event
   modal.classList.remove(
-    'modal-theme-ijab',
-    'modal-theme-sanding',
-    'modal-theme-tandang',
+    "modal-theme-ijab",
+    "modal-theme-sanding",
+    "modal-theme-tandang",
   );
   const config = EVENT_CONFIG[eventTag];
   if (config) {
@@ -1131,7 +1131,7 @@ function openEditModal(photoId, photoUrl, name, message, eventTag) {
   }
 
   // Show photo preview
-  const previewContainer = document.getElementById('editPreview');
+  const previewContainer = document.getElementById("editPreview");
   if (previewContainer && photoUrl) {
     previewContainer.innerHTML = `
             <div class="upload-preview">
@@ -1141,24 +1141,24 @@ function openEditModal(photoId, photoUrl, name, message, eventTag) {
   }
 
   // Pre-fill form fields
-  document.getElementById('editPhotoName').value = name || '';
-  document.getElementById('editPhotoMessage').value = message || '';
-  document.getElementById('editEventIndicator').textContent =
-    config?.label || eventTag || '';
+  document.getElementById("editPhotoName").value = name || "";
+  document.getElementById("editPhotoMessage").value = message || "";
+  document.getElementById("editEventIndicator").textContent =
+    config?.label || eventTag || "";
 
-  modal.classList.add('visible');
-  document.body.style.overflow = 'hidden';
+  modal.classList.add("visible");
+  document.body.style.overflow = "hidden";
 }
 
 function closeEditModal() {
-  const modal = document.getElementById('editModal');
-  modal.classList.remove('visible');
+  const modal = document.getElementById("editModal");
+  modal.classList.remove("visible");
   modal.classList.remove(
-    'modal-theme-ijab',
-    'modal-theme-sanding',
-    'modal-theme-tandang',
+    "modal-theme-ijab",
+    "modal-theme-sanding",
+    "modal-theme-tandang",
   );
-  document.body.style.overflow = '';
+  document.body.style.overflow = "";
   currentEditPhotoId = null;
   currentEditEventTag = null;
 }
@@ -1174,49 +1174,49 @@ function openModal(eventTag) {
   if (!config) return;
 
   currentEventTag = eventTag;
-  const modal = document.getElementById('uploadModal');
+  const modal = document.getElementById("uploadModal");
 
   // Apply theme class based on photo's event
   modal.classList.remove(
-    'modal-theme-ijab',
-    'modal-theme-sanding',
-    'modal-theme-tandang',
+    "modal-theme-ijab",
+    "modal-theme-sanding",
+    "modal-theme-tandang",
   );
   modal.classList.add(`modal-theme-${config.theme}`);
 
-  document.getElementById('hiddenEventTag').value = eventTag;
-  document.getElementById('eventIndicator').textContent = config.label;
+  document.getElementById("hiddenEventTag").value = eventTag;
+  document.getElementById("eventIndicator").textContent = config.label;
 
   // Pre-fill the name field with saved value from localStorage
   const savedName = localStorage.getItem(NAME_STORAGE_KEY);
   if (savedName) {
-    document.getElementById('photoName').value = savedName;
+    document.getElementById("photoName").value = savedName;
   }
 
-  modal.classList.add('visible');
-  document.body.style.overflow = 'hidden';
+  modal.classList.add("visible");
+  document.body.style.overflow = "hidden";
 }
 
 function closeModal() {
-  const modal = document.getElementById('uploadModal');
-  modal.classList.remove('visible');
+  const modal = document.getElementById("uploadModal");
+  modal.classList.remove("visible");
   modal.classList.remove(
-    'modal-theme-ijab',
-    'modal-theme-sanding',
-    'modal-theme-tandang',
+    "modal-theme-ijab",
+    "modal-theme-sanding",
+    "modal-theme-tandang",
   );
-  document.body.style.overflow = '';
-  document.getElementById('hiddenFileInput').value = '';
+  document.body.style.overflow = "";
+  document.getElementById("hiddenFileInput").value = "";
   selectedFile = null;
 }
 
 // ===== SCROLL & NAVIGATION =====
 function setupScrollObserver() {
-  const sections = document.querySelectorAll('.gallery-section');
-  const sectionTitles = document.querySelectorAll('.section-title');
-  const navItems = document.querySelectorAll('.nav-item');
-  const navbar = document.querySelector('.floating-nav');
-  const hero = document.querySelector('.hero');
+  const sections = document.querySelectorAll(".gallery-section");
+  const sectionTitles = document.querySelectorAll(".section-title");
+  const navItems = document.querySelectorAll(".nav-item");
+  const navbar = document.querySelector(".floating-nav");
+  const hero = document.querySelector(".hero");
 
   let ticking = false;
   let observer;
@@ -1228,7 +1228,7 @@ function setupScrollObserver() {
     let bestPosition = -Infinity;
 
     sectionTitles.forEach((title) => {
-      const section = title.closest('.gallery-section');
+      const section = title.closest(".gallery-section");
       const rect = title.getBoundingClientRect();
 
       // Title is "active" if it has scrolled past or is near the top of viewport
@@ -1250,7 +1250,7 @@ function setupScrollObserver() {
     // If no title in trigger zone, find the one most recently scrolled past
     if (!activeSection) {
       sectionTitles.forEach((title) => {
-        const section = title.closest('.gallery-section');
+        const section = title.closest(".gallery-section");
         const rect = title.getBoundingClientRect();
 
         // Pick the title that's above viewport but closest to it
@@ -1275,7 +1275,7 @@ function setupScrollObserver() {
         currentEventTag = event;
 
         navItems.forEach((item) => {
-          item.classList.toggle('active', item.dataset.event === event);
+          item.classList.toggle("active", item.dataset.event === event);
         });
       }
     }
@@ -1290,7 +1290,7 @@ function setupScrollObserver() {
     }
   }
 
-  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
 
   // Initial check on load
   updateActiveSection();
@@ -1303,7 +1303,7 @@ function setupScrollObserver() {
 
     observer = new IntersectionObserver(
       ([entry]) => {
-        navbar.classList.toggle('floating-nav-hidden', entry.isIntersecting);
+        navbar.classList.toggle("floating-nav-hidden", entry.isIntersecting);
       },
       { threshold },
     );
@@ -1312,14 +1312,14 @@ function setupScrollObserver() {
   }
 
   observeHeroScroll();
-  window.addEventListener('resize', observeHeroScroll);
+  window.addEventListener("resize", observeHeroScroll);
 }
 
 // ===== SETUP UPLOAD BUTTON =====
 function setupUploadButton() {
-  const uploadCta = document.getElementById('uploadCta');
-  const hiddenFileInput = document.getElementById('hiddenFileInput');
-  const uploadModal = document.getElementById('uploadModal');
+  const uploadCta = document.getElementById("uploadCta");
+  const hiddenFileInput = document.getElementById("hiddenFileInput");
+  const uploadModal = document.getElementById("uploadModal");
 
   // If expired (after March 1, 2026), completely remove upload UI from DOM
   if (isExpired) {
@@ -1328,17 +1328,17 @@ function setupUploadButton() {
     if (uploadModal) uploadModal.remove();
 
     // Add class to body for CSS adjustments
-    document.body.classList.add('gallery-only');
+    document.body.classList.add("gallery-only");
     return;
   }
 
   // Always show upload button (not expired)
   // Date validation happens when file is selected (unless mode=test to bypass)
-  uploadCta.classList.remove('hidden');
+  uploadCta.classList.remove("hidden");
 }
 
 // ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   // Check admin status (non-blocking)
   verifyAdminAccess();
 
@@ -1357,24 +1357,24 @@ document.addEventListener('DOMContentLoaded', () => {
   setupUploadButton();
 
   // Navigation clicks
-  document.querySelectorAll('.nav-item').forEach((item) => {
-    item.addEventListener('click', () => {
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", () => {
       const sectionId = item.dataset.section;
-      document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+      document.getElementById(sectionId).scrollIntoView({ behavior: "smooth" });
     });
   });
 
   // Upload CTA click - validate access (location or password) first
-  document.getElementById('uploadCta').addEventListener('click', async () => {
+  document.getElementById("uploadCta").addEventListener("click", async () => {
     if (await validateAccess()) {
-      document.getElementById('hiddenFileInput').click();
+      document.getElementById("hiddenFileInput").click();
     }
   });
 
   // Hidden file input change - Smart-Sort Logic
   document
-    .getElementById('hiddenFileInput')
-    .addEventListener('change', async (e) => {
+    .getElementById("hiddenFileInput")
+    .addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
@@ -1387,7 +1387,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selection = await showTestModeSelector();
         if (!selection) {
           // User cancelled
-          e.target.value = '';
+          e.target.value = "";
           return;
         }
         eventTag = selection.eventTag;
@@ -1398,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!validation.valid) {
           // Photo is not from wedding dates - show rejection popup
           showRejectionPopup();
-          e.target.value = '';
+          e.target.value = "";
           return;
         }
 
@@ -1411,7 +1411,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show preview (uncropped)
       const reader = new FileReader();
       reader.onload = (evt) => {
-        document.getElementById('uploadPreview').innerHTML = `
+        document.getElementById("uploadPreview").innerHTML = `
                 <div class="upload-preview">
                     <img src="${evt.target.result}" alt="Preview">
                 </div>
@@ -1422,23 +1422,23 @@ document.addEventListener('DOMContentLoaded', () => {
       // Set file to form input and track it
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
-      document.getElementById('photoFile').files = dataTransfer.files;
+      document.getElementById("photoFile").files = dataTransfer.files;
       selectedFile = file;
     });
 
   // Upload zone click
-  document.getElementById('uploadZone').addEventListener('click', () => {
-    document.getElementById('photoFile').click();
+  document.getElementById("uploadZone").addEventListener("click", () => {
+    document.getElementById("photoFile").click();
   });
 
   // Photo file change in modal
-  document.getElementById('photoFile').addEventListener('change', (e) => {
+  document.getElementById("photoFile").addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file) {
       selectedFile = file;
       const reader = new FileReader();
       reader.onload = (evt) => {
-        document.getElementById('uploadPreview').innerHTML = `
+        document.getElementById("uploadPreview").innerHTML = `
                     <div class="upload-preview">
                         <img src="${evt.target.result}" alt="Preview">
                     </div>
@@ -1452,19 +1452,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Form submission
-  document.getElementById('photoForm').addEventListener('submit', async (e) => {
+  document.getElementById("photoForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const file = selectedFile || document.getElementById('photoFile').files[0];
-    const name = document.getElementById('photoName').value.trim();
-    const message = document.getElementById('photoMessage').value.trim();
-    const eventTag = document.getElementById('hiddenEventTag').value;
+    const file = selectedFile || document.getElementById("photoFile").files[0];
+    const name = document.getElementById("photoName").value.trim();
+    const message = document.getElementById("photoMessage").value.trim();
+    const eventTag = document.getElementById("hiddenEventTag").value;
 
     if (!file) {
-      alert('Please select a photo');
+      alert("Please select a photo");
       return;
     }
     if (!eventTag) {
-      alert('Event not selected');
+      alert("Event not selected");
       return;
     }
 
@@ -1473,26 +1473,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Modal close handlers
   document
-    .getElementById('modalBackdrop')
-    .addEventListener('click', closeModal);
-  document.getElementById('modalClose').addEventListener('click', closeModal);
+    .getElementById("modalBackdrop")
+    .addEventListener("click", closeModal);
+  document.getElementById("modalClose").addEventListener("click", closeModal);
 
   // Edit modal handlers
   document
-    .getElementById('editModalBackdrop')
-    .addEventListener('click', closeEditModal);
+    .getElementById("editModalBackdrop")
+    .addEventListener("click", closeEditModal);
   document
-    .getElementById('editModalClose')
-    .addEventListener('click', closeEditModal);
+    .getElementById("editModalClose")
+    .addEventListener("click", closeEditModal);
 
   // Edit form submission
-  document.getElementById('editForm').addEventListener('submit', async (e) => {
+  document.getElementById("editForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name = document.getElementById('editPhotoName').value.trim();
-    const message = document.getElementById('editPhotoMessage').value.trim();
+    const name = document.getElementById("editPhotoName").value.trim();
+    const message = document.getElementById("editPhotoMessage").value.trim();
 
     if (!name) {
-      alert('Please enter your name');
+      alert("Please enter your name");
       return;
     }
 
@@ -1503,8 +1503,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Edit form delete button
   document
-    .getElementById('editDeleteBtn')
-    .addEventListener('click', async () => {
+    .getElementById("editDeleteBtn")
+    .addEventListener("click", async () => {
       if (currentEditPhotoId) {
         await deletePhoto(currentEditPhotoId);
       }
@@ -1520,7 +1520,7 @@ function startPolling() {
   pollInterval = setInterval(pollForNewPhotos, 12000);
 
   // Handle visibility change to save resources
-  document.addEventListener('visibilitychange', () => {
+  document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       clearInterval(pollInterval);
     } else {
@@ -1534,13 +1534,13 @@ async function pollForNewPhotos() {
   if (document.hidden) return;
 
   try {
-    const pendingIds = Array.from(document.querySelectorAll('.reviewing-badge'))
-      .map((badge) => badge.closest('.photo-card')?.dataset.photoId)
+    const pendingIds = Array.from(document.querySelectorAll(".reviewing-badge"))
+      .map((badge) => badge.closest(".photo-card")?.dataset.photoId)
       .filter((id) => id);
 
     let url = `/api/photos?since_id=${globalMaxPhotoId}`;
     if (pendingIds.length > 0) {
-      url += `&check_ids=${pendingIds.join(',')}`;
+      url += `&check_ids=${pendingIds.join(",")}`;
     }
 
     const response = await fetch(url);
@@ -1570,26 +1570,26 @@ async function pollForNewPhotos() {
 
       if (existingCard) {
         if (photo.isApproved === 1) {
-          const badge = existingCard.querySelector('.reviewing-badge');
+          const badge = existingCard.querySelector(".reviewing-badge");
           if (badge) {
             badge.remove();
-            existingCard.classList.add('new-entry-highlight');
+            existingCard.classList.add("new-entry-highlight");
           }
         }
         return;
       }
 
       const card = createPhotoCard(photo, photo.eventTag);
-      card.classList.add('new-entry-highlight');
-      card.classList.add('visible');
+      card.classList.add("new-entry-highlight");
+      card.classList.add("visible");
 
       gallery.prepend(card);
 
       // If empty state exists, remove it
-      const emptyState = gallery.querySelector('.empty-state');
+      const emptyState = gallery.querySelector(".empty-state");
       if (emptyState) emptyState.remove();
     });
   } catch (e) {
-    console.warn('Polling failed', e);
+    console.warn("Polling failed", e);
   }
 }

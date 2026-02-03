@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import { useParams } from 'react-router';
-import { EVENTS } from '../constants';
+import { useMemo } from "react";
+import { useParams } from "react-router";
+import { EVENTS } from "../constants";
 
 const EVENT_MAP = Object.fromEntries(
   EVENTS.map((event) => [event.name, event]),

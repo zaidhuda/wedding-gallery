@@ -3,7 +3,7 @@
 // Runtime types generated with workerd@1.20251210.0 2026-01-01 nodejs_compat
 declare namespace Cloudflare {
   interface GlobalProps {
-    mainModule: typeof import('./src/worker/index');
+    mainModule: typeof import("./src/worker/index");
   }
   interface Env {
     MAX_PHOTO_SIZE: 12;
@@ -24,17 +24,18 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
     : string;
 };
 declare namespace NodeJS {
-  interface ProcessEnv extends StringifyValues<
-    Pick<
-      Cloudflare.Env,
-      | 'MAX_PHOTO_SIZE'
-      | 'TEXT_SYSTEM_PROMPT'
-      | 'IMAGE_SYSTEM_PROMPT'
-      | 'GUEST_PASSWORD'
-      | 'ENVIRONMENT'
-      | 'PHOTO_BASE_URL'
-    >
-  > {}
+  interface ProcessEnv
+    extends StringifyValues<
+      Pick<
+        Cloudflare.Env,
+        | "MAX_PHOTO_SIZE"
+        | "TEXT_SYSTEM_PROMPT"
+        | "IMAGE_SYSTEM_PROMPT"
+        | "GUEST_PASSWORD"
+        | "ENVIRONMENT"
+        | "PHOTO_BASE_URL"
+      >
+    > {}
 }
 
 // Begin runtime types
@@ -125,7 +126,7 @@ declare abstract class WorkerGlobalScope extends EventTarget<WorkerGlobalScopeEv
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/console)
  */
 interface Console {
-  'assert'(condition?: boolean, ...data: any[]): void;
+  assert(condition?: boolean, ...data: any[]): void;
   /**
    * The **`console.clear()`** static method clears the console if possible.
    *
@@ -258,13 +259,13 @@ declare namespace WebAssembly {
     constructor(message?: string);
   }
   type ValueType =
-    | 'anyfunc'
-    | 'externref'
-    | 'f32'
-    | 'f64'
-    | 'i32'
-    | 'i64'
-    | 'v128';
+    | "anyfunc"
+    | "externref"
+    | "f32"
+    | "f64"
+    | "i32"
+    | "i64"
+    | "v128";
   interface GlobalDescriptor {
     value: ValueType;
     mutable?: boolean;
@@ -293,7 +294,7 @@ declare namespace WebAssembly {
     readonly buffer: ArrayBuffer;
     grow(delta: number): number;
   }
-  type ImportExportKind = 'function' | 'global' | 'memory' | 'table';
+  type ImportExportKind = "function" | "global" | "memory" | "table";
   interface ModuleExportDescriptor {
     kind: ImportExportKind;
     name: string;
@@ -308,7 +309,7 @@ declare namespace WebAssembly {
     static exports(module: Module): ModuleExportDescriptor[];
     static imports(module: Module): ModuleImportDescriptor[];
   }
-  type TableKind = 'anyfunc' | 'externref';
+  type TableKind = "anyfunc" | "externref";
   interface TableDescriptor {
     element: TableKind;
     initial: number;
@@ -513,7 +514,7 @@ declare const performance: Performance;
 declare const Cloudflare: Cloudflare;
 declare const origin: string;
 declare const navigator: Navigator;
-interface TestController {}
+type TestController = {};
 interface ExecutionContext<Props = unknown> {
   waitUntil(promise: Promise<any>): void;
   passThroughOnException(): void;
@@ -605,7 +606,7 @@ type DurableObjectStub<
   T extends Rpc.DurableObjectBranded | undefined = undefined,
 > = Fetcher<
   T,
-  'alarm' | 'webSocketMessage' | 'webSocketClose' | 'webSocketError'
+  "alarm" | "webSocketMessage" | "webSocketClose" | "webSocketError"
 > & {
   readonly id: DurableObjectId;
   readonly name?: string;
@@ -635,26 +636,26 @@ declare abstract class DurableObjectNamespace<
     jurisdiction: DurableObjectJurisdiction,
   ): DurableObjectNamespace<T>;
 }
-type DurableObjectJurisdiction = 'eu' | 'fedramp' | 'fedramp-high';
+type DurableObjectJurisdiction = "eu" | "fedramp" | "fedramp-high";
 interface DurableObjectNamespaceNewUniqueIdOptions {
   jurisdiction?: DurableObjectJurisdiction;
 }
 type DurableObjectLocationHint =
-  | 'wnam'
-  | 'enam'
-  | 'sam'
-  | 'weur'
-  | 'eeur'
-  | 'apac'
-  | 'oc'
-  | 'afr'
-  | 'me';
+  | "wnam"
+  | "enam"
+  | "sam"
+  | "weur"
+  | "eeur"
+  | "apac"
+  | "oc"
+  | "afr"
+  | "me";
 interface DurableObjectNamespaceGetDurableObjectOptions {
   locationHint?: DurableObjectLocationHint;
 }
-interface DurableObjectClass<
+type DurableObjectClass<
   _T extends Rpc.DurableObjectBranded | undefined = undefined,
-> {}
+> = {};
 interface DurableObjectState<Props = unknown> {
   waitUntil(promise: Promise<any>): void;
   readonly exports: Cloudflare.Exports;
@@ -2027,7 +2028,7 @@ interface Response extends Body {
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Response/type)
    */
-  type: 'default' | 'error';
+  type: "default" | "error";
 }
 interface ResponseInit {
   status?: number;
@@ -2035,7 +2036,7 @@ interface ResponseInit {
   headers?: HeadersInit;
   cf?: any;
   webSocket?: WebSocket | null;
-  encodeBody?: 'automatic' | 'manual';
+  encodeBody?: "automatic" | "manual";
 }
 type RequestInfo<CfHostMetadata = unknown, Cf = CfProperties<CfHostMetadata>> =
   | Request<CfHostMetadata, Cf>
@@ -2057,10 +2058,8 @@ declare var Request: {
  *
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Request)
  */
-interface Request<
-  CfHostMetadata = unknown,
-  Cf = CfProperties<CfHostMetadata>,
-> extends Body {
+interface Request<CfHostMetadata = unknown, Cf = CfProperties<CfHostMetadata>>
+  extends Body {
   /**
    * The **`clone()`** method of the Request interface creates a copy of the current `Request` object.
    *
@@ -2116,7 +2115,7 @@ interface Request<
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/cache)
    */
-  cache?: 'no-store' | 'no-cache';
+  cache?: "no-store" | "no-cache";
 }
 interface RequestInit<Cf = CfProperties> {
   /* A string to set request's method. */
@@ -2130,20 +2129,24 @@ interface RequestInit<Cf = CfProperties> {
   fetcher?: Fetcher | null;
   cf?: Cf;
   /* A string indicating how the request will interact with the browser's cache to set request's cache. */
-  cache?: 'no-store' | 'no-cache';
+  cache?: "no-store" | "no-cache";
   /* A cryptographic hash of the resource to be fetched by request. Sets request's integrity. */
   integrity?: string;
   /* An AbortSignal to set request's signal. */
   signal?: AbortSignal | null;
-  encodeResponseBody?: 'automatic' | 'manual';
+  encodeResponseBody?: "automatic" | "manual";
 }
 type Service<
   T extends
-    | (new (...args: any[]) => Rpc.WorkerEntrypointBranded)
+    | (new (
+        ...args: any[]
+      ) => Rpc.WorkerEntrypointBranded)
     | Rpc.WorkerEntrypointBranded
     | ExportedHandler<any, any, any>
     | undefined = undefined,
-> = T extends new (...args: any[]) => Rpc.WorkerEntrypointBranded
+> = T extends new (
+  ...args: any[]
+) => Rpc.WorkerEntrypointBranded
   ? Fetcher<InstanceType<T>>
   : T extends Rpc.WorkerEntrypointBranded
     ? Fetcher<T>
@@ -2154,7 +2157,7 @@ type Fetcher<
   T extends Rpc.EntrypointBranded | undefined = undefined,
   Reserved extends string = never,
 > = (T extends Rpc.EntrypointBranded
-  ? Rpc.Provider<T, Reserved | 'fetch' | 'connect'>
+  ? Rpc.Provider<T, Reserved | "fetch" | "connect">
   : unknown) & {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
   connect(address: SocketAddress | string, options?: SocketOptions): Socket;
@@ -2181,33 +2184,33 @@ interface KVNamespace<Key extends string = string> {
     key: Key,
     options?: Partial<KVNamespaceGetOptions<undefined>>,
   ): Promise<string | null>;
-  get(key: Key, type: 'text'): Promise<string | null>;
+  get(key: Key, type: "text"): Promise<string | null>;
   get<ExpectedValue = unknown>(
     key: Key,
-    type: 'json',
+    type: "json",
   ): Promise<ExpectedValue | null>;
-  get(key: Key, type: 'arrayBuffer'): Promise<ArrayBuffer | null>;
-  get(key: Key, type: 'stream'): Promise<ReadableStream | null>;
+  get(key: Key, type: "arrayBuffer"): Promise<ArrayBuffer | null>;
+  get(key: Key, type: "stream"): Promise<ReadableStream | null>;
   get(
     key: Key,
-    options?: KVNamespaceGetOptions<'text'>,
+    options?: KVNamespaceGetOptions<"text">,
   ): Promise<string | null>;
   get<ExpectedValue = unknown>(
     key: Key,
-    options?: KVNamespaceGetOptions<'json'>,
+    options?: KVNamespaceGetOptions<"json">,
   ): Promise<ExpectedValue | null>;
   get(
     key: Key,
-    options?: KVNamespaceGetOptions<'arrayBuffer'>,
+    options?: KVNamespaceGetOptions<"arrayBuffer">,
   ): Promise<ArrayBuffer | null>;
   get(
     key: Key,
-    options?: KVNamespaceGetOptions<'stream'>,
+    options?: KVNamespaceGetOptions<"stream">,
   ): Promise<ReadableStream | null>;
-  get(key: Array<Key>, type: 'text'): Promise<Map<string, string | null>>;
+  get(key: Array<Key>, type: "text"): Promise<Map<string, string | null>>;
   get<ExpectedValue = unknown>(
     key: Array<Key>,
-    type: 'json',
+    type: "json",
   ): Promise<Map<string, ExpectedValue | null>>;
   get(
     key: Array<Key>,
@@ -2215,11 +2218,11 @@ interface KVNamespace<Key extends string = string> {
   ): Promise<Map<string, string | null>>;
   get(
     key: Array<Key>,
-    options?: KVNamespaceGetOptions<'text'>,
+    options?: KVNamespaceGetOptions<"text">,
   ): Promise<Map<string, string | null>>;
   get<ExpectedValue = unknown>(
     key: Array<Key>,
-    options?: KVNamespaceGetOptions<'json'>,
+    options?: KVNamespaceGetOptions<"json">,
   ): Promise<Map<string, ExpectedValue | null>>;
   list<Metadata = unknown>(
     options?: KVNamespaceListOptions,
@@ -2235,43 +2238,43 @@ interface KVNamespace<Key extends string = string> {
   ): Promise<KVNamespaceGetWithMetadataResult<string, Metadata>>;
   getWithMetadata<Metadata = unknown>(
     key: Key,
-    type: 'text',
+    type: "text",
   ): Promise<KVNamespaceGetWithMetadataResult<string, Metadata>>;
   getWithMetadata<ExpectedValue = unknown, Metadata = unknown>(
     key: Key,
-    type: 'json',
+    type: "json",
   ): Promise<KVNamespaceGetWithMetadataResult<ExpectedValue, Metadata>>;
   getWithMetadata<Metadata = unknown>(
     key: Key,
-    type: 'arrayBuffer',
+    type: "arrayBuffer",
   ): Promise<KVNamespaceGetWithMetadataResult<ArrayBuffer, Metadata>>;
   getWithMetadata<Metadata = unknown>(
     key: Key,
-    type: 'stream',
+    type: "stream",
   ): Promise<KVNamespaceGetWithMetadataResult<ReadableStream, Metadata>>;
   getWithMetadata<Metadata = unknown>(
     key: Key,
-    options: KVNamespaceGetOptions<'text'>,
+    options: KVNamespaceGetOptions<"text">,
   ): Promise<KVNamespaceGetWithMetadataResult<string, Metadata>>;
   getWithMetadata<ExpectedValue = unknown, Metadata = unknown>(
     key: Key,
-    options: KVNamespaceGetOptions<'json'>,
+    options: KVNamespaceGetOptions<"json">,
   ): Promise<KVNamespaceGetWithMetadataResult<ExpectedValue, Metadata>>;
   getWithMetadata<Metadata = unknown>(
     key: Key,
-    options: KVNamespaceGetOptions<'arrayBuffer'>,
+    options: KVNamespaceGetOptions<"arrayBuffer">,
   ): Promise<KVNamespaceGetWithMetadataResult<ArrayBuffer, Metadata>>;
   getWithMetadata<Metadata = unknown>(
     key: Key,
-    options: KVNamespaceGetOptions<'stream'>,
+    options: KVNamespaceGetOptions<"stream">,
   ): Promise<KVNamespaceGetWithMetadataResult<ReadableStream, Metadata>>;
   getWithMetadata<Metadata = unknown>(
     key: Array<Key>,
-    type: 'text',
+    type: "text",
   ): Promise<Map<string, KVNamespaceGetWithMetadataResult<string, Metadata>>>;
   getWithMetadata<ExpectedValue = unknown, Metadata = unknown>(
     key: Array<Key>,
-    type: 'json',
+    type: "json",
   ): Promise<
     Map<string, KVNamespaceGetWithMetadataResult<ExpectedValue, Metadata>>
   >;
@@ -2281,11 +2284,11 @@ interface KVNamespace<Key extends string = string> {
   ): Promise<Map<string, KVNamespaceGetWithMetadataResult<string, Metadata>>>;
   getWithMetadata<Metadata = unknown>(
     key: Array<Key>,
-    options?: KVNamespaceGetOptions<'text'>,
+    options?: KVNamespaceGetOptions<"text">,
   ): Promise<Map<string, KVNamespaceGetWithMetadataResult<string, Metadata>>>;
   getWithMetadata<ExpectedValue = unknown, Metadata = unknown>(
     key: Array<Key>,
-    options?: KVNamespaceGetOptions<'json'>,
+    options?: KVNamespaceGetOptions<"json">,
   ): Promise<
     Map<string, KVNamespaceGetWithMetadataResult<ExpectedValue, Metadata>>
   >;
@@ -2310,7 +2313,7 @@ interface KVNamespaceGetWithMetadataResult<Value, Metadata> {
   metadata: Metadata | null;
   cacheStatus: string | null;
 }
-type QueueContentType = 'text' | 'bytes' | 'json' | 'v8';
+type QueueContentType = "text" | "bytes" | "json" | "v8";
 interface Queue<Body = unknown> {
   send(message: Body, options?: QueueSendOptions): Promise<void>;
   sendBatch(
@@ -2366,7 +2369,7 @@ interface R2ListOptions {
   cursor?: string;
   delimiter?: string;
   startAfter?: string;
-  include?: ('httpMetadata' | 'customMetadata')[];
+  include?: ("httpMetadata" | "customMetadata")[];
 }
 declare abstract class R2Bucket {
   head(key: string): Promise<R2Object | null>;
@@ -2553,14 +2556,14 @@ interface UnderlyingSink<W = any> {
   close?: () => void | Promise<void>;
 }
 interface UnderlyingByteSource {
-  type: 'bytes';
+  type: "bytes";
   autoAllocateChunkSize?: number;
   start?: (controller: ReadableByteStreamController) => void | Promise<void>;
   pull?: (controller: ReadableByteStreamController) => void | Promise<void>;
   cancel?: (reason: any) => void | Promise<void>;
 }
 interface UnderlyingSource<R = any> {
-  type?: '' | undefined;
+  type?: "" | undefined;
   start?: (
     controller: ReadableStreamDefaultController<R>,
   ) => void | Promise<void>;
@@ -2752,7 +2755,7 @@ interface ReadableStreamGetReaderOptions {
    *
    * This call behaves the same way as the no-argument variant, except that it only works on readable byte streams, i.e. streams which were constructed specifically with the ability to handle "bring your own buffer" reading. The returned BYOB reader provides the ability to directly read individual chunks from the stream via its read() method, into developer-supplied buffers, allowing more precise control over allocation.
    */
-  mode: 'byob';
+  mode: "byob";
 }
 /**
  * The **`ReadableStreamBYOBRequest`** interface of the Streams API represents a 'pull request' for data from an underlying source that will made as a zero-copy transfer to a consumer (bypassing the stream's internal queues).
@@ -3043,7 +3046,7 @@ declare class CompressionStream extends TransformStream<
   ArrayBuffer | ArrayBufferView,
   Uint8Array
 > {
-  constructor(format: 'gzip' | 'deflate' | 'deflate-raw');
+  constructor(format: "gzip" | "deflate" | "deflate-raw");
 }
 /**
  * The **`DecompressionStream`** interface of the Compression Streams API is an API for decompressing a stream of data.
@@ -3054,7 +3057,7 @@ declare class DecompressionStream extends TransformStream<
   ArrayBuffer | ArrayBufferView,
   Uint8Array
 > {
-  constructor(format: 'gzip' | 'deflate' | 'deflate-raw');
+  constructor(format: "gzip" | "deflate" | "deflate-raw");
 }
 /**
  * The **`TextEncoderStream`** interface of the Encoding API converts a stream of strings into bytes in the UTF-8 encoding.
@@ -3088,7 +3091,9 @@ interface TextDecoderStreamTextDecoderStreamInit {
  *
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/ByteLengthQueuingStrategy)
  */
-declare class ByteLengthQueuingStrategy implements QueuingStrategy<ArrayBufferView> {
+declare class ByteLengthQueuingStrategy
+  implements QueuingStrategy<ArrayBufferView>
+{
   constructor(init: QueuingStrategyInit);
   /**
    * The read-only **`ByteLengthQueuingStrategy.highWaterMark`** property returns the total number of bytes that can be contained in the internal queue before backpressure is applied.
@@ -3165,7 +3170,7 @@ interface TraceItem {
 interface TraceItemAlarmEventInfo {
   readonly scheduledTime: Date;
 }
-interface TraceItemCustomEventInfo {}
+type TraceItemCustomEventInfo = {};
 interface TraceItemScheduledEventInfo {
   readonly scheduledTime: number;
   readonly cron: string;
@@ -3683,7 +3688,7 @@ interface Socket {
   get closed(): Promise<void>;
   get opened(): Promise<SocketInfo>;
   get upgraded(): boolean;
-  get secureTransport(): 'on' | 'off' | 'starttls';
+  get secureTransport(): "on" | "off" | "starttls";
   close(): Promise<void>;
   startTls(options?: TlsOptions): Socket;
 }
@@ -3825,12 +3830,18 @@ interface MessagePortPostMessageOptions {
 }
 type LoopbackForExport<
   T extends
-    | (new (...args: any[]) => Rpc.EntrypointBranded)
+    | (new (
+        ...args: any[]
+      ) => Rpc.EntrypointBranded)
     | ExportedHandler<any, any, any>
     | undefined = undefined,
-> = T extends new (...args: any[]) => Rpc.WorkerEntrypointBranded
+> = T extends new (
+  ...args: any[]
+) => Rpc.WorkerEntrypointBranded
   ? LoopbackServiceStub<InstanceType<T>>
-  : T extends new (...args: any[]) => Rpc.DurableObjectBranded
+  : T extends new (
+        ...args: any[]
+      ) => Rpc.DurableObjectBranded
     ? LoopbackDurableObjectClass<InstanceType<T>>
     : T extends ExportedHandler<any, any, any>
       ? LoopbackServiceStub<undefined>
@@ -4045,10 +4056,10 @@ declare abstract class BaseAiTextEmbeddings {
 }
 type RoleScopedChatInput = {
   role:
-    | 'user'
-    | 'assistant'
-    | 'system'
-    | 'tool'
+    | "user"
+    | "assistant"
+    | "system"
+    | "tool"
     | (string & NonNullable<unknown>);
   content: string;
   name?: string;
@@ -4057,7 +4068,7 @@ type AiTextGenerationToolLegacyInput = {
   name: string;
   description: string;
   parameters?: {
-    type: 'object' | (string & NonNullable<unknown>);
+    type: "object" | (string & NonNullable<unknown>);
     properties: {
       [key: string]: {
         type: string;
@@ -4068,12 +4079,12 @@ type AiTextGenerationToolLegacyInput = {
   };
 };
 type AiTextGenerationToolInput = {
-  type: 'function' | (string & NonNullable<unknown>);
+  type: "function" | (string & NonNullable<unknown>);
   function: {
     name: string;
     description: string;
     parameters?: {
-      type: 'object' | (string & NonNullable<unknown>);
+      type: "object" | (string & NonNullable<unknown>);
       properties: {
         [key: string]: {
           type: string;
@@ -4118,7 +4129,7 @@ type AiTextGenerationToolLegacyOutput = {
 };
 type AiTextGenerationToolOutput = {
   id: string;
-  type: 'function';
+  type: "function";
   function: {
     name: string;
     arguments: string;
@@ -4204,7 +4215,7 @@ type ResponsesInput = {
   prompt_cache_key?: string;
   reasoning?: Reasoning | null;
   safety_identifier?: string;
-  service_tier?: 'auto' | 'default' | 'flex' | 'scale' | 'priority' | null;
+  service_tier?: "auto" | "default" | "flex" | "scale" | "priority" | null;
   stream?: boolean | null;
   stream_options?: StreamOptions | null;
   temperature?: number | null;
@@ -4212,7 +4223,7 @@ type ResponsesInput = {
   tool_choice?: ToolChoiceOptions | ToolChoiceFunction;
   tools?: Array<Tool>;
   top_p?: number | null;
-  truncation?: 'auto' | 'disabled' | null;
+  truncation?: "auto" | "disabled" | null;
 };
 type ResponsesOutput = {
   id?: string;
@@ -4221,7 +4232,7 @@ type ResponsesOutput = {
   error?: ResponseError | null;
   incomplete_details?: ResponseIncompleteDetails | null;
   instructions?: string | Array<ResponseInputItem> | null;
-  object?: 'response';
+  object?: "response";
   output?: Array<ResponseOutputItem>;
   parallel_tool_calls?: boolean;
   temperature?: number | null;
@@ -4233,16 +4244,16 @@ type ResponsesOutput = {
   prompt?: ResponsePrompt | null;
   reasoning?: Reasoning | null;
   safety_identifier?: string;
-  service_tier?: 'auto' | 'default' | 'flex' | 'scale' | 'priority' | null;
+  service_tier?: "auto" | "default" | "flex" | "scale" | "priority" | null;
   status?: ResponseStatus;
   text?: ResponseTextConfig;
-  truncation?: 'auto' | 'disabled' | null;
+  truncation?: "auto" | "disabled" | null;
   usage?: ResponseUsage;
 };
 type EasyInputMessage = {
   content: string | ResponseInputMessageContentList;
-  role: 'user' | 'assistant' | 'system' | 'developer';
-  type?: 'message';
+  role: "user" | "assistant" | "system" | "developer";
+  type?: "message";
 };
 type ResponsesFunctionTool = {
   name: string;
@@ -4250,11 +4261,11 @@ type ResponsesFunctionTool = {
     [key: string]: unknown;
   } | null;
   strict: boolean | null;
-  type: 'function';
+  type: "function";
   description?: string | null;
 };
 type ResponseIncompleteDetails = {
-  reason?: 'max_output_tokens' | 'content_filter';
+  reason?: "max_output_tokens" | "content_filter";
 };
 type ResponsePrompt = {
   id: string;
@@ -4265,8 +4276,8 @@ type ResponsePrompt = {
 };
 type Reasoning = {
   effort?: ReasoningEffort | null;
-  generate_summary?: 'auto' | 'concise' | 'detailed' | null;
-  summary?: 'auto' | 'concise' | 'detailed' | null;
+  generate_summary?: "auto" | "concise" | "detailed" | null;
+  summary?: "auto" | "concise" | "detailed" | null;
 };
 type ResponseContent =
   | ResponseInputText
@@ -4276,7 +4287,7 @@ type ResponseContent =
   | ResponseContentReasoningText;
 type ResponseContentReasoningText = {
   text: string;
-  type: 'reasoning_text';
+  type: "reasoning_text";
 };
 type ResponseConversationParam = {
   id: string;
@@ -4284,34 +4295,34 @@ type ResponseConversationParam = {
 type ResponseCreatedEvent = {
   response: Response;
   sequence_number: number;
-  type: 'response.created';
+  type: "response.created";
 };
 type ResponseCustomToolCallOutput = {
   call_id: string;
   output: string | Array<ResponseInputText | ResponseInputImage>;
-  type: 'custom_tool_call_output';
+  type: "custom_tool_call_output";
   id?: string;
 };
 type ResponseError = {
   code:
-    | 'server_error'
-    | 'rate_limit_exceeded'
-    | 'invalid_prompt'
-    | 'vector_store_timeout'
-    | 'invalid_image'
-    | 'invalid_image_format'
-    | 'invalid_base64_image'
-    | 'invalid_image_url'
-    | 'image_too_large'
-    | 'image_too_small'
-    | 'image_parse_error'
-    | 'image_content_policy_violation'
-    | 'invalid_image_mode'
-    | 'image_file_too_large'
-    | 'unsupported_image_media_type'
-    | 'empty_image_file'
-    | 'failed_to_download_image'
-    | 'image_file_not_found';
+    | "server_error"
+    | "rate_limit_exceeded"
+    | "invalid_prompt"
+    | "vector_store_timeout"
+    | "invalid_image"
+    | "invalid_image_format"
+    | "invalid_base64_image"
+    | "invalid_image_url"
+    | "image_too_large"
+    | "image_too_small"
+    | "image_parse_error"
+    | "image_content_policy_violation"
+    | "invalid_image_mode"
+    | "image_file_too_large"
+    | "unsupported_image_media_type"
+    | "empty_image_file"
+    | "failed_to_download_image"
+    | "image_file_not_found";
   message: string;
 };
 type ResponseErrorEvent = {
@@ -4319,18 +4330,18 @@ type ResponseErrorEvent = {
   message: string;
   param: string | null;
   sequence_number: number;
-  type: 'error';
+  type: "error";
 };
 type ResponseFailedEvent = {
   response: Response;
   sequence_number: number;
-  type: 'response.failed';
+  type: "response.failed";
 };
 type ResponseFormatText = {
-  type: 'text';
+  type: "text";
 };
 type ResponseFormatJSONObject = {
-  type: 'json_object';
+  type: "json_object";
 };
 type ResponseFormatTextConfig =
   | ResponseFormatText
@@ -4341,7 +4352,7 @@ type ResponseFormatTextJSONSchemaConfig = {
   schema: {
     [key: string]: unknown;
   };
-  type: 'json_schema';
+  type: "json_schema";
   description?: string;
   strict?: boolean | null;
 };
@@ -4350,7 +4361,7 @@ type ResponseFunctionCallArgumentsDeltaEvent = {
   item_id: string;
   output_index: number;
   sequence_number: number;
-  type: 'response.function_call_arguments.delta';
+  type: "response.function_call_arguments.delta";
 };
 type ResponseFunctionCallArgumentsDoneEvent = {
   arguments: string;
@@ -4358,7 +4369,7 @@ type ResponseFunctionCallArgumentsDoneEvent = {
   name: string;
   output_index: number;
   sequence_number: number;
-  type: 'response.function_call_arguments.done';
+  type: "response.function_call_arguments.done";
 };
 type ResponseFunctionCallOutputItem =
   | ResponseInputTextContent
@@ -4368,9 +4379,9 @@ type ResponseFunctionToolCall = {
   arguments: string;
   call_id: string;
   name: string;
-  type: 'function_call';
+  type: "function_call";
   id?: string;
-  status?: 'in_progress' | 'completed' | 'incomplete';
+  status?: "in_progress" | "completed" | "incomplete";
 };
 interface ResponseFunctionToolCallItem extends ResponseFunctionToolCall {
   id: string;
@@ -4379,30 +4390,30 @@ type ResponseFunctionToolCallOutputItem = {
   id: string;
   call_id: string;
   output: string | Array<ResponseInputText | ResponseInputImage>;
-  type: 'function_call_output';
-  status?: 'in_progress' | 'completed' | 'incomplete';
+  type: "function_call_output";
+  status?: "in_progress" | "completed" | "incomplete";
 };
 type ResponseIncludable =
-  | 'message.input_image.image_url'
-  | 'message.output_text.logprobs';
+  | "message.input_image.image_url"
+  | "message.output_text.logprobs";
 type ResponseIncompleteEvent = {
   response: Response;
   sequence_number: number;
-  type: 'response.incomplete';
+  type: "response.incomplete";
 };
 type ResponseInput = Array<ResponseInputItem>;
 type ResponseInputContent = ResponseInputText | ResponseInputImage;
 type ResponseInputImage = {
-  detail: 'low' | 'high' | 'auto';
-  type: 'input_image';
+  detail: "low" | "high" | "auto";
+  type: "input_image";
   /**
    * Base64 encoded image
    */
   image_url?: string | null;
 };
 type ResponseInputImageContent = {
-  type: 'input_image';
-  detail?: 'low' | 'high' | 'auto' | null;
+  type: "input_image";
+  detail?: "low" | "high" | "auto" | null;
   /**
    * Base64 encoded image
    */
@@ -4418,31 +4429,31 @@ type ResponseInputItem =
 type ResponseInputItemFunctionCallOutput = {
   call_id: string;
   output: string | ResponseFunctionCallOutputItemList;
-  type: 'function_call_output';
+  type: "function_call_output";
   id?: string | null;
-  status?: 'in_progress' | 'completed' | 'incomplete' | null;
+  status?: "in_progress" | "completed" | "incomplete" | null;
 };
 type ResponseInputItemMessage = {
   content: ResponseInputMessageContentList;
-  role: 'user' | 'system' | 'developer';
-  status?: 'in_progress' | 'completed' | 'incomplete';
-  type?: 'message';
+  role: "user" | "system" | "developer";
+  status?: "in_progress" | "completed" | "incomplete";
+  type?: "message";
 };
 type ResponseInputMessageContentList = Array<ResponseInputContent>;
 type ResponseInputMessageItem = {
   id: string;
   content: ResponseInputMessageContentList;
-  role: 'user' | 'system' | 'developer';
-  status?: 'in_progress' | 'completed' | 'incomplete';
-  type?: 'message';
+  role: "user" | "system" | "developer";
+  status?: "in_progress" | "completed" | "incomplete";
+  type?: "message";
 };
 type ResponseInputText = {
   text: string;
-  type: 'input_text';
+  type: "input_text";
 };
 type ResponseInputTextContent = {
   text: string;
-  type: 'input_text';
+  type: "input_text";
 };
 type ResponseItem =
   | ResponseInputMessageItem
@@ -4457,45 +4468,45 @@ type ResponseOutputItemAddedEvent = {
   item: ResponseOutputItem;
   output_index: number;
   sequence_number: number;
-  type: 'response.output_item.added';
+  type: "response.output_item.added";
 };
 type ResponseOutputItemDoneEvent = {
   item: ResponseOutputItem;
   output_index: number;
   sequence_number: number;
-  type: 'response.output_item.done';
+  type: "response.output_item.done";
 };
 type ResponseOutputMessage = {
   id: string;
   content: Array<ResponseOutputText | ResponseOutputRefusal>;
-  role: 'assistant';
-  status: 'in_progress' | 'completed' | 'incomplete';
-  type: 'message';
+  role: "assistant";
+  status: "in_progress" | "completed" | "incomplete";
+  type: "message";
 };
 type ResponseOutputRefusal = {
   refusal: string;
-  type: 'refusal';
+  type: "refusal";
 };
 type ResponseOutputText = {
   text: string;
-  type: 'output_text';
+  type: "output_text";
   logprobs?: Array<Logprob>;
 };
 type ResponseReasoningItem = {
   id: string;
   summary: Array<ResponseReasoningSummaryItem>;
-  type: 'reasoning';
+  type: "reasoning";
   content?: Array<ResponseReasoningContentItem>;
   encrypted_content?: string | null;
-  status?: 'in_progress' | 'completed' | 'incomplete';
+  status?: "in_progress" | "completed" | "incomplete";
 };
 type ResponseReasoningSummaryItem = {
   text: string;
-  type: 'summary_text';
+  type: "summary_text";
 };
 type ResponseReasoningContentItem = {
   text: string;
-  type: 'reasoning_text';
+  type: "reasoning_text";
 };
 type ResponseReasoningTextDeltaEvent = {
   content_index: number;
@@ -4503,7 +4514,7 @@ type ResponseReasoningTextDeltaEvent = {
   item_id: string;
   output_index: number;
   sequence_number: number;
-  type: 'response.reasoning_text.delta';
+  type: "response.reasoning_text.delta";
 };
 type ResponseReasoningTextDoneEvent = {
   content_index: number;
@@ -4511,7 +4522,7 @@ type ResponseReasoningTextDoneEvent = {
   output_index: number;
   sequence_number: number;
   text: string;
-  type: 'response.reasoning_text.done';
+  type: "response.reasoning_text.done";
 };
 type ResponseRefusalDeltaEvent = {
   content_index: number;
@@ -4519,7 +4530,7 @@ type ResponseRefusalDeltaEvent = {
   item_id: string;
   output_index: number;
   sequence_number: number;
-  type: 'response.refusal.delta';
+  type: "response.refusal.delta";
 };
 type ResponseRefusalDoneEvent = {
   content_index: number;
@@ -4527,15 +4538,15 @@ type ResponseRefusalDoneEvent = {
   output_index: number;
   refusal: string;
   sequence_number: number;
-  type: 'response.refusal.done';
+  type: "response.refusal.done";
 };
 type ResponseStatus =
-  | 'completed'
-  | 'failed'
-  | 'in_progress'
-  | 'cancelled'
-  | 'queued'
-  | 'incomplete';
+  | "completed"
+  | "failed"
+  | "in_progress"
+  | "cancelled"
+  | "queued"
+  | "incomplete";
 type ResponseStreamEvent =
   | ResponseCompletedEvent
   | ResponseCreatedEvent
@@ -4555,11 +4566,11 @@ type ResponseStreamEvent =
 type ResponseCompletedEvent = {
   response: Response;
   sequence_number: number;
-  type: 'response.completed';
+  type: "response.completed";
 };
 type ResponseTextConfig = {
   format?: ResponseFormatTextConfig;
-  verbosity?: 'low' | 'medium' | 'high' | null;
+  verbosity?: "low" | "medium" | "high" | null;
 };
 type ResponseTextDeltaEvent = {
   content_index: number;
@@ -4568,7 +4579,7 @@ type ResponseTextDeltaEvent = {
   logprobs: Array<Logprob>;
   output_index: number;
   sequence_number: number;
-  type: 'response.output_text.delta';
+  type: "response.output_text.delta";
 };
 type ResponseTextDoneEvent = {
   content_index: number;
@@ -4577,7 +4588,7 @@ type ResponseTextDoneEvent = {
   output_index: number;
   sequence_number: number;
   text: string;
-  type: 'response.output_text.done';
+  type: "response.output_text.done";
 };
 type Logprob = {
   token: string;
@@ -4596,10 +4607,10 @@ type ResponseUsage = {
 type Tool = ResponsesFunctionTool;
 type ToolChoiceFunction = {
   name: string;
-  type: 'function';
+  type: "function";
 };
-type ToolChoiceOptions = 'none';
-type ReasoningEffort = 'minimal' | 'low' | 'medium' | 'high' | null;
+type ToolChoiceOptions = "none";
+type ReasoningEffort = "minimal" | "low" | "medium" | "high" | null;
 type StreamOptions = {
   include_obfuscation?: boolean;
 };
@@ -4609,7 +4620,7 @@ type Ai_Cf_Baai_Bge_Base_En_V1_5_Input =
       /**
        * The pooling method used in the embedding process. `cls` pooling will generate more accurate embeddings on larger inputs - however, embeddings created with cls pooling are not compatible with embeddings generated with mean pooling. The default pooling method is `mean` in order for this to not be a breaking change, but we highly suggest using the new `cls` pooling for better accuracy.
        */
-      pooling?: 'mean' | 'cls';
+      pooling?: "mean" | "cls";
     }
   | {
       /**
@@ -4620,7 +4631,7 @@ type Ai_Cf_Baai_Bge_Base_En_V1_5_Input =
         /**
          * The pooling method used in the embedding process. `cls` pooling will generate more accurate embeddings on larger inputs - however, embeddings created with cls pooling are not compatible with embeddings generated with mean pooling. The default pooling method is `mean` in order for this to not be a breaking change, but we highly suggest using the new `cls` pooling for better accuracy.
          */
-        pooling?: 'mean' | 'cls';
+        pooling?: "mean" | "cls";
       }[];
     };
 type Ai_Cf_Baai_Bge_Base_En_V1_5_Output =
@@ -4633,7 +4644,7 @@ type Ai_Cf_Baai_Bge_Base_En_V1_5_Output =
       /**
        * The pooling method used in the embedding process.
        */
-      pooling?: 'mean' | 'cls';
+      pooling?: "mean" | "cls";
     }
   | Ai_Cf_Baai_Bge_Base_En_V1_5_AsyncResponse;
 interface Ai_Cf_Baai_Bge_Base_En_V1_5_AsyncResponse {
@@ -4735,7 +4746,7 @@ type Ai_Cf_Baai_Bge_Small_En_V1_5_Input =
       /**
        * The pooling method used in the embedding process. `cls` pooling will generate more accurate embeddings on larger inputs - however, embeddings created with cls pooling are not compatible with embeddings generated with mean pooling. The default pooling method is `mean` in order for this to not be a breaking change, but we highly suggest using the new `cls` pooling for better accuracy.
        */
-      pooling?: 'mean' | 'cls';
+      pooling?: "mean" | "cls";
     }
   | {
       /**
@@ -4746,7 +4757,7 @@ type Ai_Cf_Baai_Bge_Small_En_V1_5_Input =
         /**
          * The pooling method used in the embedding process. `cls` pooling will generate more accurate embeddings on larger inputs - however, embeddings created with cls pooling are not compatible with embeddings generated with mean pooling. The default pooling method is `mean` in order for this to not be a breaking change, but we highly suggest using the new `cls` pooling for better accuracy.
          */
-        pooling?: 'mean' | 'cls';
+        pooling?: "mean" | "cls";
       }[];
     };
 type Ai_Cf_Baai_Bge_Small_En_V1_5_Output =
@@ -4759,7 +4770,7 @@ type Ai_Cf_Baai_Bge_Small_En_V1_5_Output =
       /**
        * The pooling method used in the embedding process.
        */
-      pooling?: 'mean' | 'cls';
+      pooling?: "mean" | "cls";
     }
   | Ai_Cf_Baai_Bge_Small_En_V1_5_AsyncResponse;
 interface Ai_Cf_Baai_Bge_Small_En_V1_5_AsyncResponse {
@@ -4778,7 +4789,7 @@ type Ai_Cf_Baai_Bge_Large_En_V1_5_Input =
       /**
        * The pooling method used in the embedding process. `cls` pooling will generate more accurate embeddings on larger inputs - however, embeddings created with cls pooling are not compatible with embeddings generated with mean pooling. The default pooling method is `mean` in order for this to not be a breaking change, but we highly suggest using the new `cls` pooling for better accuracy.
        */
-      pooling?: 'mean' | 'cls';
+      pooling?: "mean" | "cls";
     }
   | {
       /**
@@ -4789,7 +4800,7 @@ type Ai_Cf_Baai_Bge_Large_En_V1_5_Input =
         /**
          * The pooling method used in the embedding process. `cls` pooling will generate more accurate embeddings on larger inputs - however, embeddings created with cls pooling are not compatible with embeddings generated with mean pooling. The default pooling method is `mean` in order for this to not be a breaking change, but we highly suggest using the new `cls` pooling for better accuracy.
          */
-        pooling?: 'mean' | 'cls';
+        pooling?: "mean" | "cls";
       }[];
     };
 type Ai_Cf_Baai_Bge_Large_En_V1_5_Output =
@@ -4802,7 +4813,7 @@ type Ai_Cf_Baai_Bge_Large_En_V1_5_Output =
       /**
        * The pooling method used in the embedding process.
        */
-      pooling?: 'mean' | 'cls';
+      pooling?: "mean" | "cls";
     }
   | Ai_Cf_Baai_Bge_Large_En_V1_5_AsyncResponse;
 interface Ai_Cf_Baai_Bge_Large_En_V1_5_AsyncResponse {
@@ -5087,7 +5098,7 @@ interface Ai_Cf_Baai_Bge_M3_Output_EmbeddingFor_Contexts {
   /**
    * The pooling method used in the embedding process.
    */
-  pooling?: 'mean' | 'cls';
+  pooling?: "mean" | "cls";
 }
 interface Ai_Cf_Baai_Bge_M3_Ouput_Embedding {
   shape?: number[];
@@ -5098,7 +5109,7 @@ interface Ai_Cf_Baai_Bge_M3_Ouput_Embedding {
   /**
    * The pooling method used in the embedding process.
    */
-  pooling?: 'mean' | 'cls';
+  pooling?: "mean" | "cls";
 }
 interface Ai_Cf_Baai_Bge_M3_AsyncResponse {
   /**
@@ -5437,7 +5448,7 @@ interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_Prompt {
   presence_penalty?: number;
 }
 interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_JSON_Mode {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_Messages {
@@ -5591,7 +5602,7 @@ interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_Messages {
   presence_penalty?: number;
 }
 interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_JSON_Mode_1 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_Async_Batch {
@@ -5640,7 +5651,7 @@ interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_Async_Batch {
   }[];
 }
 interface Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_JSON_Mode_2 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 type Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast_Output =
@@ -5700,7 +5711,7 @@ interface Ai_Cf_Meta_Llama_Guard_3_8B_Input {
     /**
      * The role of the message sender must alternate between 'user' and 'assistant'.
      */
-    role: 'user' | 'assistant';
+    role: "user" | "assistant";
     /**
      * The content of the message as a string.
      */
@@ -5848,7 +5859,7 @@ interface Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct_Prompt {
   presence_penalty?: number;
 }
 interface Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct_JSON_Mode {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct_Messages {
@@ -6002,7 +6013,7 @@ interface Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct_Messages {
   presence_penalty?: number;
 }
 interface Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct_JSON_Mode_1 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 type Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct_Output = {
@@ -6906,7 +6917,7 @@ interface Ai_Cf_Meta_Llama_4_Scout_17B_16E_Instruct_Prompt {
   presence_penalty?: number;
 }
 interface Ai_Cf_Meta_Llama_4_Scout_17B_16E_Instruct_JSON_Mode {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Meta_Llama_4_Scout_17B_16E_Instruct_Messages {
@@ -7439,7 +7450,7 @@ interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Prompt {
   presence_penalty?: number;
 }
 interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_JSON_Mode {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Messages {
@@ -7593,7 +7604,7 @@ interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Messages {
   presence_penalty?: number;
 }
 interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_JSON_Mode_1 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Async_Batch {
@@ -7654,7 +7665,7 @@ interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Prompt_1 {
   presence_penalty?: number;
 }
 interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_JSON_Mode_2 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Messages_1 {
@@ -7808,7 +7819,7 @@ interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Messages_1 {
   presence_penalty?: number;
 }
 interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_JSON_Mode_3 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 type Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Output =
@@ -7824,7 +7835,7 @@ interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Chat_Completion_Response {
   /**
    * Object type identifier
    */
-  object?: 'chat.completion';
+  object?: "chat.completion";
   /**
    * Unix timestamp of when the completion was created
    */
@@ -7868,7 +7879,7 @@ interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Chat_Completion_Response {
         /**
          * Type of tool call
          */
-        type: 'function';
+        type: "function";
         function: {
           /**
            * Name of the function to call
@@ -7924,7 +7935,7 @@ interface Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8_Text_Completion_Response {
   /**
    * Object type identifier
    */
-  object?: 'text_completion';
+  object?: "text_completion";
   /**
    * Unix timestamp of when the completion was created
    */
@@ -7998,7 +8009,7 @@ interface Ai_Cf_Deepgram_Nova_3_Input {
   /**
    * Sets how the model will interpret strings submitted to the custom_topic param. When strict, the model will only return topics submitted using the custom_topic param. When extended, the model will return its own detected topics in addition to those submitted using the custom_topic param.
    */
-  custom_topic_mode?: 'extended' | 'strict';
+  custom_topic_mode?: "extended" | "strict";
   /**
    * Custom topics you want the model to detect within your input audio or text if present Submit up to 100
    */
@@ -8006,7 +8017,7 @@ interface Ai_Cf_Deepgram_Nova_3_Input {
   /**
    * Sets how the model will interpret intents submitted to the custom_intent param. When strict, the model will only return intents submitted using the custom_intent param. When extended, the model will return its own detected intents in addition those submitted using the custom_intents param
    */
-  custom_intent_mode?: 'extended' | 'strict';
+  custom_intent_mode?: "extended" | "strict";
   /**
    * Custom intents you want the model to detect within your input audio if present
    */
@@ -8031,14 +8042,14 @@ interface Ai_Cf_Deepgram_Nova_3_Input {
    * Specify the expected encoding of your submitted audio
    */
   encoding?:
-    | 'linear16'
-    | 'flac'
-    | 'mulaw'
-    | 'amr-nb'
-    | 'amr-wb'
-    | 'opus'
-    | 'speex'
-    | 'g729';
+    | "linear16"
+    | "flac"
+    | "mulaw"
+    | "amr-nb"
+    | "amr-wb"
+    | "opus"
+    | "speex"
+    | "g729";
   /**
    * Arbitrary key-value pairs that are attached to the API response for usage in downstream processing
    */
@@ -8070,7 +8081,7 @@ interface Ai_Cf_Deepgram_Nova_3_Input {
   /**
    * Mode of operation for the model representing broad area of topic that will be talked about in the supplied audio
    */
-  mode?: 'general' | 'medical' | 'finance';
+  mode?: "general" | "medical" | "finance";
   /**
    * Transcribe each audio channel independently.
    */
@@ -8210,7 +8221,7 @@ type Ai_Cf_Pipecat_Ai_Smart_Turn_V2_Input =
       /**
        * type of data PCM data that's sent to the inference server as raw array
        */
-      dtype?: 'uint8' | 'float32' | 'float64';
+      dtype?: "uint8" | "float32" | "float64";
     }
   | {
       /**
@@ -8220,7 +8231,7 @@ type Ai_Cf_Pipecat_Ai_Smart_Turn_V2_Input =
       /**
        * type of data PCM data that's sent to the inference server as raw array
        */
-      dtype?: 'uint8' | 'float32' | 'float64';
+      dtype?: "uint8" | "float32" | "float64";
     };
 interface Ai_Cf_Pipecat_Ai_Smart_Turn_V2_Output {
   /**
@@ -8327,26 +8338,26 @@ interface Ai_Cf_Deepgram_Aura_1_Input {
    * Speaker used to produce the audio.
    */
   speaker?:
-    | 'angus'
-    | 'asteria'
-    | 'arcas'
-    | 'orion'
-    | 'orpheus'
-    | 'athena'
-    | 'luna'
-    | 'zeus'
-    | 'perseus'
-    | 'helios'
-    | 'hera'
-    | 'stella';
+    | "angus"
+    | "asteria"
+    | "arcas"
+    | "orion"
+    | "orpheus"
+    | "athena"
+    | "luna"
+    | "zeus"
+    | "perseus"
+    | "helios"
+    | "hera"
+    | "stella";
   /**
    * Encoding of the output audio.
    */
-  encoding?: 'linear16' | 'flac' | 'mulaw' | 'alaw' | 'mp3' | 'opus' | 'aac';
+  encoding?: "linear16" | "flac" | "mulaw" | "alaw" | "mp3" | "opus" | "aac";
   /**
    * Container specifies the file format wrapper for the output audio. The available options depend on the encoding type..
    */
-  container?: 'none' | 'wav' | 'ogg';
+  container?: "none" | "wav" | "ogg";
   /**
    * The text content to be converted to speech
    */
@@ -8377,40 +8388,40 @@ interface Ai_Cf_Ai4Bharat_Indictrans2_En_Indic_1B_Input {
    * Target langauge to translate to
    */
   target_language:
-    | 'asm_Beng'
-    | 'awa_Deva'
-    | 'ben_Beng'
-    | 'bho_Deva'
-    | 'brx_Deva'
-    | 'doi_Deva'
-    | 'eng_Latn'
-    | 'gom_Deva'
-    | 'gon_Deva'
-    | 'guj_Gujr'
-    | 'hin_Deva'
-    | 'hne_Deva'
-    | 'kan_Knda'
-    | 'kas_Arab'
-    | 'kas_Deva'
-    | 'kha_Latn'
-    | 'lus_Latn'
-    | 'mag_Deva'
-    | 'mai_Deva'
-    | 'mal_Mlym'
-    | 'mar_Deva'
-    | 'mni_Beng'
-    | 'mni_Mtei'
-    | 'npi_Deva'
-    | 'ory_Orya'
-    | 'pan_Guru'
-    | 'san_Deva'
-    | 'sat_Olck'
-    | 'snd_Arab'
-    | 'snd_Deva'
-    | 'tam_Taml'
-    | 'tel_Telu'
-    | 'urd_Arab'
-    | 'unr_Deva';
+    | "asm_Beng"
+    | "awa_Deva"
+    | "ben_Beng"
+    | "bho_Deva"
+    | "brx_Deva"
+    | "doi_Deva"
+    | "eng_Latn"
+    | "gom_Deva"
+    | "gon_Deva"
+    | "guj_Gujr"
+    | "hin_Deva"
+    | "hne_Deva"
+    | "kan_Knda"
+    | "kas_Arab"
+    | "kas_Deva"
+    | "kha_Latn"
+    | "lus_Latn"
+    | "mag_Deva"
+    | "mai_Deva"
+    | "mal_Mlym"
+    | "mar_Deva"
+    | "mni_Beng"
+    | "mni_Mtei"
+    | "npi_Deva"
+    | "ory_Orya"
+    | "pan_Guru"
+    | "san_Deva"
+    | "sat_Olck"
+    | "snd_Arab"
+    | "snd_Deva"
+    | "tam_Taml"
+    | "tel_Telu"
+    | "urd_Arab"
+    | "unr_Deva";
 }
 interface Ai_Cf_Ai4Bharat_Indictrans2_En_Indic_1B_Output {
   /**
@@ -8478,7 +8489,7 @@ interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Prompt {
   presence_penalty?: number;
 }
 interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_JSON_Mode {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Messages {
@@ -8632,7 +8643,7 @@ interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Messages {
   presence_penalty?: number;
 }
 interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_JSON_Mode_1 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Async_Batch {
@@ -8693,7 +8704,7 @@ interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Prompt_1 {
   presence_penalty?: number;
 }
 interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_JSON_Mode_2 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Messages_1 {
@@ -8847,7 +8858,7 @@ interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Messages_1 {
   presence_penalty?: number;
 }
 interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_JSON_Mode_3 {
-  type?: 'json_object' | 'json_schema';
+  type?: "json_object" | "json_schema";
   json_schema?: unknown;
 }
 type Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Output =
@@ -8863,7 +8874,7 @@ interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Chat_Completion_Response {
   /**
    * Object type identifier
    */
-  object?: 'chat.completion';
+  object?: "chat.completion";
   /**
    * Unix timestamp of when the completion was created
    */
@@ -8907,7 +8918,7 @@ interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Chat_Completion_Response {
         /**
          * Type of tool call
          */
-        type: 'function';
+        type: "function";
         function: {
           /**
            * Name of the function to call
@@ -8963,7 +8974,7 @@ interface Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It_Text_Completion_Response {
   /**
    * Object type identifier
    */
-  object?: 'text_completion';
+  object?: "text_completion";
   /**
    * Unix timestamp of when the completion was created
    */
@@ -9056,7 +9067,7 @@ interface Ai_Cf_Deepgram_Flux_Input {
   /**
    * Encoding of the audio stream. Currently only supports raw signed little-endian 16-bit PCM.
    */
-  encoding: 'linear16';
+  encoding: "linear16";
   /**
    * Sample rate of the audio stream in Hz.
    */
@@ -9080,7 +9091,7 @@ interface Ai_Cf_Deepgram_Flux_Input {
   /**
    * Opts out requests from the Deepgram Model Improvement Program. Refer to Deepgram Docs for pricing impacts before setting this to true. https://dpgr.am/deepgram-mip
    */
-  mip_opt_out?: 'true' | 'false';
+  mip_opt_out?: "true" | "false";
   /**
    * Label your requests for the purpose of identification during usage reporting
    */
@@ -9102,11 +9113,11 @@ interface Ai_Cf_Deepgram_Flux_Output {
    * The type of event being reported.
    */
   event?:
-    | 'Update'
-    | 'StartOfTurn'
-    | 'EagerEndOfTurn'
-    | 'TurnResumed'
-    | 'EndOfTurn';
+    | "Update"
+    | "StartOfTurn"
+    | "EagerEndOfTurn"
+    | "TurnResumed"
+    | "EndOfTurn";
   /**
    * The index of the current turn
    */
@@ -9150,54 +9161,54 @@ interface Ai_Cf_Deepgram_Aura_2_En_Input {
    * Speaker used to produce the audio.
    */
   speaker?:
-    | 'amalthea'
-    | 'andromeda'
-    | 'apollo'
-    | 'arcas'
-    | 'aries'
-    | 'asteria'
-    | 'athena'
-    | 'atlas'
-    | 'aurora'
-    | 'callista'
-    | 'cora'
-    | 'cordelia'
-    | 'delia'
-    | 'draco'
-    | 'electra'
-    | 'harmonia'
-    | 'helena'
-    | 'hera'
-    | 'hermes'
-    | 'hyperion'
-    | 'iris'
-    | 'janus'
-    | 'juno'
-    | 'jupiter'
-    | 'luna'
-    | 'mars'
-    | 'minerva'
-    | 'neptune'
-    | 'odysseus'
-    | 'ophelia'
-    | 'orion'
-    | 'orpheus'
-    | 'pandora'
-    | 'phoebe'
-    | 'pluto'
-    | 'saturn'
-    | 'thalia'
-    | 'theia'
-    | 'vesta'
-    | 'zeus';
+    | "amalthea"
+    | "andromeda"
+    | "apollo"
+    | "arcas"
+    | "aries"
+    | "asteria"
+    | "athena"
+    | "atlas"
+    | "aurora"
+    | "callista"
+    | "cora"
+    | "cordelia"
+    | "delia"
+    | "draco"
+    | "electra"
+    | "harmonia"
+    | "helena"
+    | "hera"
+    | "hermes"
+    | "hyperion"
+    | "iris"
+    | "janus"
+    | "juno"
+    | "jupiter"
+    | "luna"
+    | "mars"
+    | "minerva"
+    | "neptune"
+    | "odysseus"
+    | "ophelia"
+    | "orion"
+    | "orpheus"
+    | "pandora"
+    | "phoebe"
+    | "pluto"
+    | "saturn"
+    | "thalia"
+    | "theia"
+    | "vesta"
+    | "zeus";
   /**
    * Encoding of the output audio.
    */
-  encoding?: 'linear16' | 'flac' | 'mulaw' | 'alaw' | 'mp3' | 'opus' | 'aac';
+  encoding?: "linear16" | "flac" | "mulaw" | "alaw" | "mp3" | "opus" | "aac";
   /**
    * Container specifies the file format wrapper for the output audio. The available options depend on the encoding type..
    */
-  container?: 'none' | 'wav' | 'ogg';
+  container?: "none" | "wav" | "ogg";
   /**
    * The text content to be converted to speech
    */
@@ -9224,24 +9235,24 @@ interface Ai_Cf_Deepgram_Aura_2_Es_Input {
    * Speaker used to produce the audio.
    */
   speaker?:
-    | 'sirio'
-    | 'nestor'
-    | 'carina'
-    | 'celeste'
-    | 'alvaro'
-    | 'diana'
-    | 'aquila'
-    | 'selena'
-    | 'estrella'
-    | 'javier';
+    | "sirio"
+    | "nestor"
+    | "carina"
+    | "celeste"
+    | "alvaro"
+    | "diana"
+    | "aquila"
+    | "selena"
+    | "estrella"
+    | "javier";
   /**
    * Encoding of the output audio.
    */
-  encoding?: 'linear16' | 'flac' | 'mulaw' | 'alaw' | 'mp3' | 'opus' | 'aac';
+  encoding?: "linear16" | "flac" | "mulaw" | "alaw" | "mp3" | "opus" | "aac";
   /**
    * Container specifies the file format wrapper for the output audio. The available options depend on the encoding type..
    */
-  container?: 'none' | 'wav' | 'ogg';
+  container?: "none" | "wav" | "ogg";
   /**
    * The text content to be converted to speech
    */
@@ -9264,90 +9275,90 @@ declare abstract class Base_Ai_Cf_Deepgram_Aura_2_Es {
   postProcessedOutputs: Ai_Cf_Deepgram_Aura_2_Es_Output;
 }
 interface AiModels {
-  '@cf/huggingface/distilbert-sst-2-int8': BaseAiTextClassification;
-  '@cf/stabilityai/stable-diffusion-xl-base-1.0': BaseAiTextToImage;
-  '@cf/runwayml/stable-diffusion-v1-5-inpainting': BaseAiTextToImage;
-  '@cf/runwayml/stable-diffusion-v1-5-img2img': BaseAiTextToImage;
-  '@cf/lykon/dreamshaper-8-lcm': BaseAiTextToImage;
-  '@cf/bytedance/stable-diffusion-xl-lightning': BaseAiTextToImage;
-  '@cf/myshell-ai/melotts': BaseAiTextToSpeech;
-  '@cf/google/embeddinggemma-300m': BaseAiTextEmbeddings;
-  '@cf/microsoft/resnet-50': BaseAiImageClassification;
-  '@cf/meta/llama-2-7b-chat-int8': BaseAiTextGeneration;
-  '@cf/mistral/mistral-7b-instruct-v0.1': BaseAiTextGeneration;
-  '@cf/meta/llama-2-7b-chat-fp16': BaseAiTextGeneration;
-  '@hf/thebloke/llama-2-13b-chat-awq': BaseAiTextGeneration;
-  '@hf/thebloke/mistral-7b-instruct-v0.1-awq': BaseAiTextGeneration;
-  '@hf/thebloke/zephyr-7b-beta-awq': BaseAiTextGeneration;
-  '@hf/thebloke/openhermes-2.5-mistral-7b-awq': BaseAiTextGeneration;
-  '@hf/thebloke/neural-chat-7b-v3-1-awq': BaseAiTextGeneration;
-  '@hf/thebloke/llamaguard-7b-awq': BaseAiTextGeneration;
-  '@hf/thebloke/deepseek-coder-6.7b-base-awq': BaseAiTextGeneration;
-  '@hf/thebloke/deepseek-coder-6.7b-instruct-awq': BaseAiTextGeneration;
-  '@cf/deepseek-ai/deepseek-math-7b-instruct': BaseAiTextGeneration;
-  '@cf/defog/sqlcoder-7b-2': BaseAiTextGeneration;
-  '@cf/openchat/openchat-3.5-0106': BaseAiTextGeneration;
-  '@cf/tiiuae/falcon-7b-instruct': BaseAiTextGeneration;
-  '@cf/thebloke/discolm-german-7b-v1-awq': BaseAiTextGeneration;
-  '@cf/qwen/qwen1.5-0.5b-chat': BaseAiTextGeneration;
-  '@cf/qwen/qwen1.5-7b-chat-awq': BaseAiTextGeneration;
-  '@cf/qwen/qwen1.5-14b-chat-awq': BaseAiTextGeneration;
-  '@cf/tinyllama/tinyllama-1.1b-chat-v1.0': BaseAiTextGeneration;
-  '@cf/microsoft/phi-2': BaseAiTextGeneration;
-  '@cf/qwen/qwen1.5-1.8b-chat': BaseAiTextGeneration;
-  '@cf/mistral/mistral-7b-instruct-v0.2-lora': BaseAiTextGeneration;
-  '@hf/nousresearch/hermes-2-pro-mistral-7b': BaseAiTextGeneration;
-  '@hf/nexusflow/starling-lm-7b-beta': BaseAiTextGeneration;
-  '@hf/google/gemma-7b-it': BaseAiTextGeneration;
-  '@cf/meta-llama/llama-2-7b-chat-hf-lora': BaseAiTextGeneration;
-  '@cf/google/gemma-2b-it-lora': BaseAiTextGeneration;
-  '@cf/google/gemma-7b-it-lora': BaseAiTextGeneration;
-  '@hf/mistral/mistral-7b-instruct-v0.2': BaseAiTextGeneration;
-  '@cf/meta/llama-3-8b-instruct': BaseAiTextGeneration;
-  '@cf/fblgit/una-cybertron-7b-v2-bf16': BaseAiTextGeneration;
-  '@cf/meta/llama-3-8b-instruct-awq': BaseAiTextGeneration;
-  '@cf/meta/llama-3.1-8b-instruct-fp8': BaseAiTextGeneration;
-  '@cf/meta/llama-3.1-8b-instruct-awq': BaseAiTextGeneration;
-  '@cf/meta/llama-3.2-3b-instruct': BaseAiTextGeneration;
-  '@cf/meta/llama-3.2-1b-instruct': BaseAiTextGeneration;
-  '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b': BaseAiTextGeneration;
-  '@cf/ibm-granite/granite-4.0-h-micro': BaseAiTextGeneration;
-  '@cf/facebook/bart-large-cnn': BaseAiSummarization;
-  '@cf/llava-hf/llava-1.5-7b-hf': BaseAiImageToText;
-  '@cf/baai/bge-base-en-v1.5': Base_Ai_Cf_Baai_Bge_Base_En_V1_5;
-  '@cf/openai/whisper': Base_Ai_Cf_Openai_Whisper;
-  '@cf/meta/m2m100-1.2b': Base_Ai_Cf_Meta_M2M100_1_2B;
-  '@cf/baai/bge-small-en-v1.5': Base_Ai_Cf_Baai_Bge_Small_En_V1_5;
-  '@cf/baai/bge-large-en-v1.5': Base_Ai_Cf_Baai_Bge_Large_En_V1_5;
-  '@cf/unum/uform-gen2-qwen-500m': Base_Ai_Cf_Unum_Uform_Gen2_Qwen_500M;
-  '@cf/openai/whisper-tiny-en': Base_Ai_Cf_Openai_Whisper_Tiny_En;
-  '@cf/openai/whisper-large-v3-turbo': Base_Ai_Cf_Openai_Whisper_Large_V3_Turbo;
-  '@cf/baai/bge-m3': Base_Ai_Cf_Baai_Bge_M3;
-  '@cf/black-forest-labs/flux-1-schnell': Base_Ai_Cf_Black_Forest_Labs_Flux_1_Schnell;
-  '@cf/meta/llama-3.2-11b-vision-instruct': Base_Ai_Cf_Meta_Llama_3_2_11B_Vision_Instruct;
-  '@cf/meta/llama-3.3-70b-instruct-fp8-fast': Base_Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast;
-  '@cf/meta/llama-guard-3-8b': Base_Ai_Cf_Meta_Llama_Guard_3_8B;
-  '@cf/baai/bge-reranker-base': Base_Ai_Cf_Baai_Bge_Reranker_Base;
-  '@cf/qwen/qwen2.5-coder-32b-instruct': Base_Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct;
-  '@cf/qwen/qwq-32b': Base_Ai_Cf_Qwen_Qwq_32B;
-  '@cf/mistralai/mistral-small-3.1-24b-instruct': Base_Ai_Cf_Mistralai_Mistral_Small_3_1_24B_Instruct;
-  '@cf/google/gemma-3-12b-it': Base_Ai_Cf_Google_Gemma_3_12B_It;
-  '@cf/meta/llama-4-scout-17b-16e-instruct': Base_Ai_Cf_Meta_Llama_4_Scout_17B_16E_Instruct;
-  '@cf/qwen/qwen3-30b-a3b-fp8': Base_Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8;
-  '@cf/deepgram/nova-3': Base_Ai_Cf_Deepgram_Nova_3;
-  '@cf/qwen/qwen3-embedding-0.6b': Base_Ai_Cf_Qwen_Qwen3_Embedding_0_6B;
-  '@cf/pipecat-ai/smart-turn-v2': Base_Ai_Cf_Pipecat_Ai_Smart_Turn_V2;
-  '@cf/openai/gpt-oss-120b': Base_Ai_Cf_Openai_Gpt_Oss_120B;
-  '@cf/openai/gpt-oss-20b': Base_Ai_Cf_Openai_Gpt_Oss_20B;
-  '@cf/leonardo/phoenix-1.0': Base_Ai_Cf_Leonardo_Phoenix_1_0;
-  '@cf/leonardo/lucid-origin': Base_Ai_Cf_Leonardo_Lucid_Origin;
-  '@cf/deepgram/aura-1': Base_Ai_Cf_Deepgram_Aura_1;
-  '@cf/ai4bharat/indictrans2-en-indic-1B': Base_Ai_Cf_Ai4Bharat_Indictrans2_En_Indic_1B;
-  '@cf/aisingapore/gemma-sea-lion-v4-27b-it': Base_Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It;
-  '@cf/pfnet/plamo-embedding-1b': Base_Ai_Cf_Pfnet_Plamo_Embedding_1B;
-  '@cf/deepgram/flux': Base_Ai_Cf_Deepgram_Flux;
-  '@cf/deepgram/aura-2-en': Base_Ai_Cf_Deepgram_Aura_2_En;
-  '@cf/deepgram/aura-2-es': Base_Ai_Cf_Deepgram_Aura_2_Es;
+  "@cf/huggingface/distilbert-sst-2-int8": BaseAiTextClassification;
+  "@cf/stabilityai/stable-diffusion-xl-base-1.0": BaseAiTextToImage;
+  "@cf/runwayml/stable-diffusion-v1-5-inpainting": BaseAiTextToImage;
+  "@cf/runwayml/stable-diffusion-v1-5-img2img": BaseAiTextToImage;
+  "@cf/lykon/dreamshaper-8-lcm": BaseAiTextToImage;
+  "@cf/bytedance/stable-diffusion-xl-lightning": BaseAiTextToImage;
+  "@cf/myshell-ai/melotts": BaseAiTextToSpeech;
+  "@cf/google/embeddinggemma-300m": BaseAiTextEmbeddings;
+  "@cf/microsoft/resnet-50": BaseAiImageClassification;
+  "@cf/meta/llama-2-7b-chat-int8": BaseAiTextGeneration;
+  "@cf/mistral/mistral-7b-instruct-v0.1": BaseAiTextGeneration;
+  "@cf/meta/llama-2-7b-chat-fp16": BaseAiTextGeneration;
+  "@hf/thebloke/llama-2-13b-chat-awq": BaseAiTextGeneration;
+  "@hf/thebloke/mistral-7b-instruct-v0.1-awq": BaseAiTextGeneration;
+  "@hf/thebloke/zephyr-7b-beta-awq": BaseAiTextGeneration;
+  "@hf/thebloke/openhermes-2.5-mistral-7b-awq": BaseAiTextGeneration;
+  "@hf/thebloke/neural-chat-7b-v3-1-awq": BaseAiTextGeneration;
+  "@hf/thebloke/llamaguard-7b-awq": BaseAiTextGeneration;
+  "@hf/thebloke/deepseek-coder-6.7b-base-awq": BaseAiTextGeneration;
+  "@hf/thebloke/deepseek-coder-6.7b-instruct-awq": BaseAiTextGeneration;
+  "@cf/deepseek-ai/deepseek-math-7b-instruct": BaseAiTextGeneration;
+  "@cf/defog/sqlcoder-7b-2": BaseAiTextGeneration;
+  "@cf/openchat/openchat-3.5-0106": BaseAiTextGeneration;
+  "@cf/tiiuae/falcon-7b-instruct": BaseAiTextGeneration;
+  "@cf/thebloke/discolm-german-7b-v1-awq": BaseAiTextGeneration;
+  "@cf/qwen/qwen1.5-0.5b-chat": BaseAiTextGeneration;
+  "@cf/qwen/qwen1.5-7b-chat-awq": BaseAiTextGeneration;
+  "@cf/qwen/qwen1.5-14b-chat-awq": BaseAiTextGeneration;
+  "@cf/tinyllama/tinyllama-1.1b-chat-v1.0": BaseAiTextGeneration;
+  "@cf/microsoft/phi-2": BaseAiTextGeneration;
+  "@cf/qwen/qwen1.5-1.8b-chat": BaseAiTextGeneration;
+  "@cf/mistral/mistral-7b-instruct-v0.2-lora": BaseAiTextGeneration;
+  "@hf/nousresearch/hermes-2-pro-mistral-7b": BaseAiTextGeneration;
+  "@hf/nexusflow/starling-lm-7b-beta": BaseAiTextGeneration;
+  "@hf/google/gemma-7b-it": BaseAiTextGeneration;
+  "@cf/meta-llama/llama-2-7b-chat-hf-lora": BaseAiTextGeneration;
+  "@cf/google/gemma-2b-it-lora": BaseAiTextGeneration;
+  "@cf/google/gemma-7b-it-lora": BaseAiTextGeneration;
+  "@hf/mistral/mistral-7b-instruct-v0.2": BaseAiTextGeneration;
+  "@cf/meta/llama-3-8b-instruct": BaseAiTextGeneration;
+  "@cf/fblgit/una-cybertron-7b-v2-bf16": BaseAiTextGeneration;
+  "@cf/meta/llama-3-8b-instruct-awq": BaseAiTextGeneration;
+  "@cf/meta/llama-3.1-8b-instruct-fp8": BaseAiTextGeneration;
+  "@cf/meta/llama-3.1-8b-instruct-awq": BaseAiTextGeneration;
+  "@cf/meta/llama-3.2-3b-instruct": BaseAiTextGeneration;
+  "@cf/meta/llama-3.2-1b-instruct": BaseAiTextGeneration;
+  "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b": BaseAiTextGeneration;
+  "@cf/ibm-granite/granite-4.0-h-micro": BaseAiTextGeneration;
+  "@cf/facebook/bart-large-cnn": BaseAiSummarization;
+  "@cf/llava-hf/llava-1.5-7b-hf": BaseAiImageToText;
+  "@cf/baai/bge-base-en-v1.5": Base_Ai_Cf_Baai_Bge_Base_En_V1_5;
+  "@cf/openai/whisper": Base_Ai_Cf_Openai_Whisper;
+  "@cf/meta/m2m100-1.2b": Base_Ai_Cf_Meta_M2M100_1_2B;
+  "@cf/baai/bge-small-en-v1.5": Base_Ai_Cf_Baai_Bge_Small_En_V1_5;
+  "@cf/baai/bge-large-en-v1.5": Base_Ai_Cf_Baai_Bge_Large_En_V1_5;
+  "@cf/unum/uform-gen2-qwen-500m": Base_Ai_Cf_Unum_Uform_Gen2_Qwen_500M;
+  "@cf/openai/whisper-tiny-en": Base_Ai_Cf_Openai_Whisper_Tiny_En;
+  "@cf/openai/whisper-large-v3-turbo": Base_Ai_Cf_Openai_Whisper_Large_V3_Turbo;
+  "@cf/baai/bge-m3": Base_Ai_Cf_Baai_Bge_M3;
+  "@cf/black-forest-labs/flux-1-schnell": Base_Ai_Cf_Black_Forest_Labs_Flux_1_Schnell;
+  "@cf/meta/llama-3.2-11b-vision-instruct": Base_Ai_Cf_Meta_Llama_3_2_11B_Vision_Instruct;
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast": Base_Ai_Cf_Meta_Llama_3_3_70B_Instruct_Fp8_Fast;
+  "@cf/meta/llama-guard-3-8b": Base_Ai_Cf_Meta_Llama_Guard_3_8B;
+  "@cf/baai/bge-reranker-base": Base_Ai_Cf_Baai_Bge_Reranker_Base;
+  "@cf/qwen/qwen2.5-coder-32b-instruct": Base_Ai_Cf_Qwen_Qwen2_5_Coder_32B_Instruct;
+  "@cf/qwen/qwq-32b": Base_Ai_Cf_Qwen_Qwq_32B;
+  "@cf/mistralai/mistral-small-3.1-24b-instruct": Base_Ai_Cf_Mistralai_Mistral_Small_3_1_24B_Instruct;
+  "@cf/google/gemma-3-12b-it": Base_Ai_Cf_Google_Gemma_3_12B_It;
+  "@cf/meta/llama-4-scout-17b-16e-instruct": Base_Ai_Cf_Meta_Llama_4_Scout_17B_16E_Instruct;
+  "@cf/qwen/qwen3-30b-a3b-fp8": Base_Ai_Cf_Qwen_Qwen3_30B_A3B_Fp8;
+  "@cf/deepgram/nova-3": Base_Ai_Cf_Deepgram_Nova_3;
+  "@cf/qwen/qwen3-embedding-0.6b": Base_Ai_Cf_Qwen_Qwen3_Embedding_0_6B;
+  "@cf/pipecat-ai/smart-turn-v2": Base_Ai_Cf_Pipecat_Ai_Smart_Turn_V2;
+  "@cf/openai/gpt-oss-120b": Base_Ai_Cf_Openai_Gpt_Oss_120B;
+  "@cf/openai/gpt-oss-20b": Base_Ai_Cf_Openai_Gpt_Oss_20B;
+  "@cf/leonardo/phoenix-1.0": Base_Ai_Cf_Leonardo_Phoenix_1_0;
+  "@cf/leonardo/lucid-origin": Base_Ai_Cf_Leonardo_Lucid_Origin;
+  "@cf/deepgram/aura-1": Base_Ai_Cf_Deepgram_Aura_1;
+  "@cf/ai4bharat/indictrans2-en-indic-1B": Base_Ai_Cf_Ai4Bharat_Indictrans2_En_Indic_1B;
+  "@cf/aisingapore/gemma-sea-lion-v4-27b-it": Base_Ai_Cf_Aisingapore_Gemma_Sea_Lion_V4_27B_It;
+  "@cf/pfnet/plamo-embedding-1b": Base_Ai_Cf_Pfnet_Plamo_Embedding_1B;
+  "@cf/deepgram/flux": Base_Ai_Cf_Deepgram_Flux;
+  "@cf/deepgram/aura-2-en": Base_Ai_Cf_Deepgram_Aura_2_En;
+  "@cf/deepgram/aura-2-es": Base_Ai_Cf_Deepgram_Aura_2_Es;
 }
 type AiOptions = {
   /**
@@ -9409,7 +9420,7 @@ declare abstract class Ai<AiModelList extends AiModelListType = AiModels> {
   run<
     Name extends keyof AiModelList,
     Options extends AiOptions,
-    InputOptions extends AiModelList[Name]['inputs'],
+    InputOptions extends AiModelList[Name]["inputs"],
   >(
     model: Name,
     inputs: InputOptions,
@@ -9427,7 +9438,7 @@ declare abstract class Ai<AiModelList extends AiModelListType = AiModels> {
             stream: true;
           }
         ? ReadableStream
-        : AiModelList[Name]['postProcessedOutputs']
+        : AiModelList[Name]["postProcessedOutputs"]
   >;
   models(params?: AiModelsSearchParams): Promise<AiModelsSearchObject[]>;
   toMarkdown(): ToMarkdownService;
@@ -9443,7 +9454,7 @@ declare abstract class Ai<AiModelList extends AiModelListType = AiModels> {
 type GatewayRetries = {
   maxAttempts?: 1 | 2 | 3 | 4 | 5;
   retryDelayMs?: number;
-  backoff?: 'constant' | 'linear' | 'exponential';
+  backoff?: "constant" | "linear" | "exponential";
 };
 type GatewayOptions = {
   id: string;
@@ -9456,7 +9467,7 @@ type GatewayOptions = {
   requestTimeoutMs?: number;
   retries?: GatewayRetries;
 };
-type UniversalGatewayOptions = Exclude<GatewayOptions, 'id'> & {
+type UniversalGatewayOptions = Exclude<GatewayOptions, "id"> & {
   /**
    ** @deprecated
    */
@@ -9495,31 +9506,31 @@ type AiGatewayLog = {
   created_at: Date;
 };
 type AIGatewayProviders =
-  | 'workers-ai'
-  | 'anthropic'
-  | 'aws-bedrock'
-  | 'azure-openai'
-  | 'google-vertex-ai'
-  | 'huggingface'
-  | 'openai'
-  | 'perplexity-ai'
-  | 'replicate'
-  | 'groq'
-  | 'cohere'
-  | 'google-ai-studio'
-  | 'mistral'
-  | 'grok'
-  | 'openrouter'
-  | 'deepseek'
-  | 'cerebras'
-  | 'cartesia'
-  | 'elevenlabs'
-  | 'adobe-firefly';
+  | "workers-ai"
+  | "anthropic"
+  | "aws-bedrock"
+  | "azure-openai"
+  | "google-vertex-ai"
+  | "huggingface"
+  | "openai"
+  | "perplexity-ai"
+  | "replicate"
+  | "groq"
+  | "cohere"
+  | "google-ai-studio"
+  | "mistral"
+  | "grok"
+  | "openrouter"
+  | "deepseek"
+  | "cerebras"
+  | "cartesia"
+  | "elevenlabs"
+  | "adobe-firefly";
 type AIGatewayHeaders = {
-  'cf-aig-metadata':
+  "cf-aig-metadata":
     | Record<string, number | string | boolean | null | bigint>
     | string;
-  'cf-aig-custom-cost':
+  "cf-aig-custom-cost":
     | {
         per_token_in?: number;
         per_token_out?: number;
@@ -9528,17 +9539,17 @@ type AIGatewayHeaders = {
         total_cost?: number;
       }
     | string;
-  'cf-aig-cache-ttl': number | string;
-  'cf-aig-skip-cache': boolean | string;
-  'cf-aig-cache-key': string;
-  'cf-aig-event-id': string;
-  'cf-aig-request-timeout': number | string;
-  'cf-aig-max-attempts': number | string;
-  'cf-aig-retry-delay': number | string;
-  'cf-aig-backoff': string;
-  'cf-aig-collect-log': boolean | string;
+  "cf-aig-cache-ttl": number | string;
+  "cf-aig-skip-cache": boolean | string;
+  "cf-aig-cache-key": string;
+  "cf-aig-event-id": string;
+  "cf-aig-request-timeout": number | string;
+  "cf-aig-max-attempts": number | string;
+  "cf-aig-retry-delay": number | string;
+  "cf-aig-backoff": string;
+  "cf-aig-collect-log": boolean | string;
   Authorization: string;
-  'Content-Type': string;
+  "Content-Type": string;
   [key: string]: string | number | boolean | object;
 };
 type AIGatewayUniversalRequest = {
@@ -9567,11 +9578,11 @@ interface AutoRAGUnauthorizedError extends Error {}
 interface AutoRAGNameNotSetError extends Error {}
 type ComparisonFilter = {
   key: string;
-  type: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte';
+  type: "eq" | "ne" | "gt" | "gte" | "lt" | "lte";
   value: string | number | boolean;
 };
 type CompoundFilter = {
-  type: 'and' | 'or';
+  type: "and" | "or";
   filters: ComparisonFilter[];
 };
 type AutoRagSearchRequest = {
@@ -9594,12 +9605,12 @@ type AutoRagAiSearchRequest = AutoRagSearchRequest & {
 };
 type AutoRagAiSearchRequestStreaming = Omit<
   AutoRagAiSearchRequest,
-  'stream'
+  "stream"
 > & {
   stream: true;
 };
 type AutoRagSearchResponse = {
-  object: 'vector_store.search_results.page';
+  object: "vector_store.search_results.page";
   search_query: string;
   data: {
     file_id: string;
@@ -9607,7 +9618,7 @@ type AutoRagSearchResponse = {
     score: number;
     attributes: Record<string, string | number | boolean | null>;
     content: {
-      type: 'text';
+      type: "text";
       text: string;
     }[];
   }[];
@@ -9670,13 +9681,13 @@ interface BasicImageTransformations {
    *  - squeeze: Stretches and deforms to the width and height given, even if it
    *    breaks aspect ratio
    */
-  fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad' | 'squeeze';
+  fit?: "scale-down" | "contain" | "cover" | "crop" | "pad" | "squeeze";
   /**
    * Image segmentation using artificial intelligence models. Sets pixels not
    * within selected segment area to transparent e.g "foreground" sets every
    * background pixel as transparent.
    */
-  segment?: 'foreground';
+  segment?: "foreground";
   /**
    * When cropping with fit: "cover", this defines the side or point that should
    * be left uncropped. The value is either a string
@@ -9690,14 +9701,14 @@ interface BasicImageTransformations {
    * source image.
    */
   gravity?:
-    | 'face'
-    | 'left'
-    | 'right'
-    | 'top'
-    | 'bottom'
-    | 'center'
-    | 'auto'
-    | 'entropy'
+    | "face"
+    | "left"
+    | "right"
+    | "top"
+    | "bottom"
+    | "center"
+    | "auto"
+    | "entropy"
     | BasicImageTransformationsGravityCoordinates;
   /**
    * Background color to add underneath the image. Applies only to images with
@@ -9714,7 +9725,7 @@ interface BasicImageTransformations {
 interface BasicImageTransformationsGravityCoordinates {
   x?: number;
   y?: number;
-  mode?: 'remainder' | 'box-center';
+  mode?: "remainder" | "box-center";
 }
 /**
  * In addition to the properties you can set in the RequestInit dict
@@ -9759,7 +9770,7 @@ interface RequestInitCfProperties extends Record<string, unknown> {
   image?: RequestInitCfPropertiesImage;
   minify?: RequestInitCfPropertiesImageMinify;
   mirage?: boolean;
-  polish?: 'lossy' | 'lossless' | 'off';
+  polish?: "lossy" | "lossless" | "off";
   r2?: RequestInitCfPropertiesR2;
   /**
    * Redirects the request to an alternate origin server. You can use this,
@@ -9796,7 +9807,7 @@ interface RequestInitCfPropertiesImageDraw extends BasicImageTransformations {
    * - If set to "y", the overlay image will be tiled vertically only
    *   (form a line).
    */
-  repeat?: true | 'x' | 'y';
+  repeat?: true | "x" | "y";
   /**
    * Position of the overlay image relative to a given edge. Each property is
    * an offset in pixels. 0 aligns exactly to the edge. For example, left: 10
@@ -9835,7 +9846,7 @@ interface RequestInitCfPropertiesImage extends BasicImageTransformations {
    *    - keep: the number of pixels of border to keep
    */
   trim?:
-    | 'border'
+    | "border"
     | {
         top?: number;
         bottom?: number;
@@ -9856,7 +9867,7 @@ interface RequestInitCfPropertiesImage extends BasicImageTransformations {
    * make images look worse, but load faster. The default is 85. It applies only
    * to JPEG and WebP images. It doesn’t have any effect on PNG.
    */
-  quality?: number | 'low' | 'medium-low' | 'medium-high' | 'high';
+  quality?: number | "low" | "medium-low" | "medium-high" | "high";
   /**
    * Output format to generate. It can be:
    *  - avif: generate images in AVIF format.
@@ -9869,14 +9880,14 @@ interface RequestInitCfPropertiesImage extends BasicImageTransformations {
    * - png: generate images in PNG format.
    */
   format?:
-    | 'avif'
-    | 'webp'
-    | 'json'
-    | 'jpeg'
-    | 'png'
-    | 'baseline-jpeg'
-    | 'png-force'
-    | 'svg';
+    | "avif"
+    | "webp"
+    | "json"
+    | "jpeg"
+    | "png"
+    | "baseline-jpeg"
+    | "png-force"
+    | "svg";
   /**
    * Whether to preserve animation frames from input files. Default is true.
    * Setting it to false reduces animations to still images. This setting is
@@ -9899,7 +9910,7 @@ interface RequestInitCfPropertiesImage extends BasicImageTransformations {
    *  - none: Discard all invisible EXIF metadata. Currently WebP and PNG
    *    output formats always discard metadata.
    */
-  metadata?: 'keep' | 'copyright' | 'none';
+  metadata?: "keep" | "copyright" | "none";
   /**
    * Strength of sharpening filter to apply to the image. Floating-point
    * number between 0 (no sharpening, default) and 10 (maximum). 1.0 is a
@@ -9921,7 +9932,7 @@ interface RequestInitCfPropertiesImage extends BasicImageTransformations {
    * pass authentication headers (Authorization, Cookie, etc.) through to
    * the origin.
    */
-  'origin-auth'?: 'share-publicly';
+  "origin-auth"?: "share-publicly";
   /**
    * Adds a border around the image. The border is added after resizing. Border
    * width takes dpr into account, and can be specified either using a single
@@ -9967,7 +9978,7 @@ interface RequestInitCfPropertiesImage extends BasicImageTransformations {
    * rotation, so if you apply flip=h,rotate=90 then the image will be flipped
    * horizontally, then rotated by 90 degrees.
    */
-  flip?: 'h' | 'v' | 'hv';
+  flip?: "h" | "v" | "hv";
   /**
    * Slightly reduces latency on a cache miss by selecting a
    * quickest-to-compress file format, at a cost of increased file size and
@@ -9976,7 +9987,7 @@ interface RequestInitCfPropertiesImage extends BasicImageTransformations {
    * unusual circumstances like resizing uncacheable dynamically-generated
    * images.
    */
-  compression?: 'fast';
+  compression?: "fast";
 }
 interface RequestInitCfPropertiesImageMinify {
   javascript?: boolean;
@@ -10115,7 +10126,8 @@ interface IncomingRequestCfPropertiesBotManagement {
    */
   clientTrustScore: number;
 }
-interface IncomingRequestCfPropertiesBotManagementEnterprise extends IncomingRequestCfPropertiesBotManagement {
+interface IncomingRequestCfPropertiesBotManagementEnterprise
+  extends IncomingRequestCfPropertiesBotManagement {
   /**
    * Results of Cloudflare's Bot Management analysis
    */
@@ -10199,13 +10211,13 @@ interface IncomingRequestCfPropertiesGeographicInformation {
    *
    * @example "GB"
    */
-  country?: Iso3166Alpha2Code | 'T1';
+  country?: Iso3166Alpha2Code | "T1";
   /**
    * If present, this property indicates that the request originated in the EU
    *
    * @example "1"
    */
-  isEUCountry?: '1';
+  isEUCountry?: "1";
   /**
    * A two-letter code indicating the continent the request originated from.
    *
@@ -10266,19 +10278,19 @@ interface IncomingRequestCfPropertiesGeographicInformation {
 /** Data about the incoming request's TLS certificate */
 interface IncomingRequestCfPropertiesTLSClientAuth {
   /** Always `"1"`, indicating that the certificate was presented */
-  certPresented: '1';
+  certPresented: "1";
   /**
    * Result of certificate verification.
    *
    * @example "FAILED:self signed certificate"
    */
-  certVerified: Exclude<CertVerificationStatus, 'NONE'>;
+  certVerified: Exclude<CertVerificationStatus, "NONE">;
   /** The presented certificate's revokation status.
    *
    * - A value of `"1"` indicates the certificate has been revoked
    * - A value of `"0"` indicates the certificate has not been revoked
    */
-  certRevoked: '1' | '0';
+  certRevoked: "1" | "0";
   /**
    * The certificate issuer's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html)
    *
@@ -10358,40 +10370,40 @@ interface IncomingRequestCfPropertiesTLSClientAuth {
 }
 /** Placeholder values for TLS Client Authorization */
 interface IncomingRequestCfPropertiesTLSClientAuthPlaceholder {
-  certPresented: '0';
-  certVerified: 'NONE';
-  certRevoked: '0';
-  certIssuerDN: '';
-  certSubjectDN: '';
-  certIssuerDNRFC2253: '';
-  certSubjectDNRFC2253: '';
-  certIssuerDNLegacy: '';
-  certSubjectDNLegacy: '';
-  certSerial: '';
-  certIssuerSerial: '';
-  certSKI: '';
-  certIssuerSKI: '';
-  certFingerprintSHA1: '';
-  certFingerprintSHA256: '';
-  certNotBefore: '';
-  certNotAfter: '';
+  certPresented: "0";
+  certVerified: "NONE";
+  certRevoked: "0";
+  certIssuerDN: "";
+  certSubjectDN: "";
+  certIssuerDNRFC2253: "";
+  certSubjectDNRFC2253: "";
+  certIssuerDNLegacy: "";
+  certSubjectDNLegacy: "";
+  certSerial: "";
+  certIssuerSerial: "";
+  certSKI: "";
+  certIssuerSKI: "";
+  certFingerprintSHA1: "";
+  certFingerprintSHA256: "";
+  certNotBefore: "";
+  certNotAfter: "";
 }
 /** Possible outcomes of TLS verification */
 declare type CertVerificationStatus =
   /** Authentication succeeded */
-  | 'SUCCESS'
+  | "SUCCESS"
   /** No certificate was presented */
-  | 'NONE'
+  | "NONE"
   /** Failed because the certificate was self-signed */
-  | 'FAILED:self signed certificate'
+  | "FAILED:self signed certificate"
   /** Failed because the certificate failed a trust chain check */
-  | 'FAILED:unable to verify the first certificate'
+  | "FAILED:unable to verify the first certificate"
   /** Failed because the certificate not yet valid */
-  | 'FAILED:certificate is not yet valid'
+  | "FAILED:certificate is not yet valid"
   /** Failed because the certificate is expired */
-  | 'FAILED:certificate has expired'
+  | "FAILED:certificate has expired"
   /** Failed for another unspecified reason */
-  | 'FAILED';
+  | "FAILED";
 /**
  * An upstream endpoint's response to a TCP `keepalive` message from Cloudflare.
  */
@@ -10404,257 +10416,257 @@ declare type IncomingRequestCfPropertiesEdgeRequestKeepAliveStatus =
   | 5; /** connection re-use, accepted by the origin server */
 /** ISO 3166-1 Alpha-2 codes */
 declare type Iso3166Alpha2Code =
-  | 'AD'
-  | 'AE'
-  | 'AF'
-  | 'AG'
-  | 'AI'
-  | 'AL'
-  | 'AM'
-  | 'AO'
-  | 'AQ'
-  | 'AR'
-  | 'AS'
-  | 'AT'
-  | 'AU'
-  | 'AW'
-  | 'AX'
-  | 'AZ'
-  | 'BA'
-  | 'BB'
-  | 'BD'
-  | 'BE'
-  | 'BF'
-  | 'BG'
-  | 'BH'
-  | 'BI'
-  | 'BJ'
-  | 'BL'
-  | 'BM'
-  | 'BN'
-  | 'BO'
-  | 'BQ'
-  | 'BR'
-  | 'BS'
-  | 'BT'
-  | 'BV'
-  | 'BW'
-  | 'BY'
-  | 'BZ'
-  | 'CA'
-  | 'CC'
-  | 'CD'
-  | 'CF'
-  | 'CG'
-  | 'CH'
-  | 'CI'
-  | 'CK'
-  | 'CL'
-  | 'CM'
-  | 'CN'
-  | 'CO'
-  | 'CR'
-  | 'CU'
-  | 'CV'
-  | 'CW'
-  | 'CX'
-  | 'CY'
-  | 'CZ'
-  | 'DE'
-  | 'DJ'
-  | 'DK'
-  | 'DM'
-  | 'DO'
-  | 'DZ'
-  | 'EC'
-  | 'EE'
-  | 'EG'
-  | 'EH'
-  | 'ER'
-  | 'ES'
-  | 'ET'
-  | 'FI'
-  | 'FJ'
-  | 'FK'
-  | 'FM'
-  | 'FO'
-  | 'FR'
-  | 'GA'
-  | 'GB'
-  | 'GD'
-  | 'GE'
-  | 'GF'
-  | 'GG'
-  | 'GH'
-  | 'GI'
-  | 'GL'
-  | 'GM'
-  | 'GN'
-  | 'GP'
-  | 'GQ'
-  | 'GR'
-  | 'GS'
-  | 'GT'
-  | 'GU'
-  | 'GW'
-  | 'GY'
-  | 'HK'
-  | 'HM'
-  | 'HN'
-  | 'HR'
-  | 'HT'
-  | 'HU'
-  | 'ID'
-  | 'IE'
-  | 'IL'
-  | 'IM'
-  | 'IN'
-  | 'IO'
-  | 'IQ'
-  | 'IR'
-  | 'IS'
-  | 'IT'
-  | 'JE'
-  | 'JM'
-  | 'JO'
-  | 'JP'
-  | 'KE'
-  | 'KG'
-  | 'KH'
-  | 'KI'
-  | 'KM'
-  | 'KN'
-  | 'KP'
-  | 'KR'
-  | 'KW'
-  | 'KY'
-  | 'KZ'
-  | 'LA'
-  | 'LB'
-  | 'LC'
-  | 'LI'
-  | 'LK'
-  | 'LR'
-  | 'LS'
-  | 'LT'
-  | 'LU'
-  | 'LV'
-  | 'LY'
-  | 'MA'
-  | 'MC'
-  | 'MD'
-  | 'ME'
-  | 'MF'
-  | 'MG'
-  | 'MH'
-  | 'MK'
-  | 'ML'
-  | 'MM'
-  | 'MN'
-  | 'MO'
-  | 'MP'
-  | 'MQ'
-  | 'MR'
-  | 'MS'
-  | 'MT'
-  | 'MU'
-  | 'MV'
-  | 'MW'
-  | 'MX'
-  | 'MY'
-  | 'MZ'
-  | 'NA'
-  | 'NC'
-  | 'NE'
-  | 'NF'
-  | 'NG'
-  | 'NI'
-  | 'NL'
-  | 'NO'
-  | 'NP'
-  | 'NR'
-  | 'NU'
-  | 'NZ'
-  | 'OM'
-  | 'PA'
-  | 'PE'
-  | 'PF'
-  | 'PG'
-  | 'PH'
-  | 'PK'
-  | 'PL'
-  | 'PM'
-  | 'PN'
-  | 'PR'
-  | 'PS'
-  | 'PT'
-  | 'PW'
-  | 'PY'
-  | 'QA'
-  | 'RE'
-  | 'RO'
-  | 'RS'
-  | 'RU'
-  | 'RW'
-  | 'SA'
-  | 'SB'
-  | 'SC'
-  | 'SD'
-  | 'SE'
-  | 'SG'
-  | 'SH'
-  | 'SI'
-  | 'SJ'
-  | 'SK'
-  | 'SL'
-  | 'SM'
-  | 'SN'
-  | 'SO'
-  | 'SR'
-  | 'SS'
-  | 'ST'
-  | 'SV'
-  | 'SX'
-  | 'SY'
-  | 'SZ'
-  | 'TC'
-  | 'TD'
-  | 'TF'
-  | 'TG'
-  | 'TH'
-  | 'TJ'
-  | 'TK'
-  | 'TL'
-  | 'TM'
-  | 'TN'
-  | 'TO'
-  | 'TR'
-  | 'TT'
-  | 'TV'
-  | 'TW'
-  | 'TZ'
-  | 'UA'
-  | 'UG'
-  | 'UM'
-  | 'US'
-  | 'UY'
-  | 'UZ'
-  | 'VA'
-  | 'VC'
-  | 'VE'
-  | 'VG'
-  | 'VI'
-  | 'VN'
-  | 'VU'
-  | 'WF'
-  | 'WS'
-  | 'YE'
-  | 'YT'
-  | 'ZA'
-  | 'ZM'
-  | 'ZW';
+  | "AD"
+  | "AE"
+  | "AF"
+  | "AG"
+  | "AI"
+  | "AL"
+  | "AM"
+  | "AO"
+  | "AQ"
+  | "AR"
+  | "AS"
+  | "AT"
+  | "AU"
+  | "AW"
+  | "AX"
+  | "AZ"
+  | "BA"
+  | "BB"
+  | "BD"
+  | "BE"
+  | "BF"
+  | "BG"
+  | "BH"
+  | "BI"
+  | "BJ"
+  | "BL"
+  | "BM"
+  | "BN"
+  | "BO"
+  | "BQ"
+  | "BR"
+  | "BS"
+  | "BT"
+  | "BV"
+  | "BW"
+  | "BY"
+  | "BZ"
+  | "CA"
+  | "CC"
+  | "CD"
+  | "CF"
+  | "CG"
+  | "CH"
+  | "CI"
+  | "CK"
+  | "CL"
+  | "CM"
+  | "CN"
+  | "CO"
+  | "CR"
+  | "CU"
+  | "CV"
+  | "CW"
+  | "CX"
+  | "CY"
+  | "CZ"
+  | "DE"
+  | "DJ"
+  | "DK"
+  | "DM"
+  | "DO"
+  | "DZ"
+  | "EC"
+  | "EE"
+  | "EG"
+  | "EH"
+  | "ER"
+  | "ES"
+  | "ET"
+  | "FI"
+  | "FJ"
+  | "FK"
+  | "FM"
+  | "FO"
+  | "FR"
+  | "GA"
+  | "GB"
+  | "GD"
+  | "GE"
+  | "GF"
+  | "GG"
+  | "GH"
+  | "GI"
+  | "GL"
+  | "GM"
+  | "GN"
+  | "GP"
+  | "GQ"
+  | "GR"
+  | "GS"
+  | "GT"
+  | "GU"
+  | "GW"
+  | "GY"
+  | "HK"
+  | "HM"
+  | "HN"
+  | "HR"
+  | "HT"
+  | "HU"
+  | "ID"
+  | "IE"
+  | "IL"
+  | "IM"
+  | "IN"
+  | "IO"
+  | "IQ"
+  | "IR"
+  | "IS"
+  | "IT"
+  | "JE"
+  | "JM"
+  | "JO"
+  | "JP"
+  | "KE"
+  | "KG"
+  | "KH"
+  | "KI"
+  | "KM"
+  | "KN"
+  | "KP"
+  | "KR"
+  | "KW"
+  | "KY"
+  | "KZ"
+  | "LA"
+  | "LB"
+  | "LC"
+  | "LI"
+  | "LK"
+  | "LR"
+  | "LS"
+  | "LT"
+  | "LU"
+  | "LV"
+  | "LY"
+  | "MA"
+  | "MC"
+  | "MD"
+  | "ME"
+  | "MF"
+  | "MG"
+  | "MH"
+  | "MK"
+  | "ML"
+  | "MM"
+  | "MN"
+  | "MO"
+  | "MP"
+  | "MQ"
+  | "MR"
+  | "MS"
+  | "MT"
+  | "MU"
+  | "MV"
+  | "MW"
+  | "MX"
+  | "MY"
+  | "MZ"
+  | "NA"
+  | "NC"
+  | "NE"
+  | "NF"
+  | "NG"
+  | "NI"
+  | "NL"
+  | "NO"
+  | "NP"
+  | "NR"
+  | "NU"
+  | "NZ"
+  | "OM"
+  | "PA"
+  | "PE"
+  | "PF"
+  | "PG"
+  | "PH"
+  | "PK"
+  | "PL"
+  | "PM"
+  | "PN"
+  | "PR"
+  | "PS"
+  | "PT"
+  | "PW"
+  | "PY"
+  | "QA"
+  | "RE"
+  | "RO"
+  | "RS"
+  | "RU"
+  | "RW"
+  | "SA"
+  | "SB"
+  | "SC"
+  | "SD"
+  | "SE"
+  | "SG"
+  | "SH"
+  | "SI"
+  | "SJ"
+  | "SK"
+  | "SL"
+  | "SM"
+  | "SN"
+  | "SO"
+  | "SR"
+  | "SS"
+  | "ST"
+  | "SV"
+  | "SX"
+  | "SY"
+  | "SZ"
+  | "TC"
+  | "TD"
+  | "TF"
+  | "TG"
+  | "TH"
+  | "TJ"
+  | "TK"
+  | "TL"
+  | "TM"
+  | "TN"
+  | "TO"
+  | "TR"
+  | "TT"
+  | "TV"
+  | "TW"
+  | "TZ"
+  | "UA"
+  | "UG"
+  | "UM"
+  | "US"
+  | "UY"
+  | "UZ"
+  | "VA"
+  | "VC"
+  | "VE"
+  | "VG"
+  | "VI"
+  | "VN"
+  | "VU"
+  | "WF"
+  | "WS"
+  | "YE"
+  | "YT"
+  | "ZA"
+  | "ZM"
+  | "ZW";
 /** The 2-letter continent codes Cloudflare uses */
-declare type ContinentCode = 'AF' | 'AN' | 'AS' | 'EU' | 'NA' | 'OC' | 'SA';
+declare type ContinentCode = "AF" | "AN" | "AS" | "EU" | "NA" | "OC" | "SA";
 type CfProperties<HostMetadata = unknown> =
   | IncomingRequestCfProperties<HostMetadata>
   | RequestInitCfProperties;
@@ -10702,11 +10714,11 @@ type D1SessionConstraint =
   // Indicates that the first query should go to the primary, and the rest queries
   // using the same D1DatabaseSession will go to any replica that is consistent with
   // the bookmark maintained by the session (returned by the first query).
-  | 'first-primary'
+  | "first-primary"
   // Indicates that the first query can go anywhere (primary or replica), and the rest queries
   // using the same D1DatabaseSession will go to any replica that is consistent with
   // the bookmark maintained by the session (returned by the first query).
-  | 'first-unconstrained';
+  | "first-unconstrained";
 type D1SessionBookmark = string;
 declare abstract class D1Database {
   prepare(query: string): D1PreparedStatement;
@@ -10753,7 +10765,7 @@ declare abstract class D1PreparedStatement {
 // but this will ensure type checking on older versions still passes.
 // TypeScript's interface merging will ensure our empty interface is effectively
 // ignored when `Disposable` is included in the standard lib.
-interface Disposable {}
+type Disposable = {};
 /**
  * An email message that can be sent from a Worker.
  */
@@ -10817,7 +10829,7 @@ declare type EmailExportedHandler<Env = unknown> = (
   env: Env,
   ctx: ExecutionContext,
 ) => void | Promise<void>;
-declare module 'cloudflare:email' {
+declare module "cloudflare:email" {
   let _EmailMessage: {
     prototype: EmailMessage;
     new (from: string, to: string, raw: ReadableStream | string): EmailMessage;
@@ -10892,7 +10904,7 @@ interface Hyperdrive {
 //     https://opensource.org/licenses/Apache-2.0
 type ImageInfoResponse =
   | {
-      format: 'image/svg+xml';
+      format: "image/svg+xml";
     }
   | {
       format: string;
@@ -10918,29 +10930,29 @@ type ImageTransform = {
       };
   brightness?: number;
   contrast?: number;
-  fit?: 'scale-down' | 'contain' | 'pad' | 'squeeze' | 'cover' | 'crop';
-  flip?: 'h' | 'v' | 'hv';
+  fit?: "scale-down" | "contain" | "pad" | "squeeze" | "cover" | "crop";
+  flip?: "h" | "v" | "hv";
   gamma?: number;
-  segment?: 'foreground';
+  segment?: "foreground";
   gravity?:
-    | 'face'
-    | 'left'
-    | 'right'
-    | 'top'
-    | 'bottom'
-    | 'center'
-    | 'auto'
-    | 'entropy'
+    | "face"
+    | "left"
+    | "right"
+    | "top"
+    | "bottom"
+    | "center"
+    | "auto"
+    | "entropy"
     | {
         x?: number;
         y?: number;
-        mode: 'remainder' | 'box-center';
+        mode: "remainder" | "box-center";
       };
   rotate?: 0 | 90 | 180 | 270;
   saturation?: number;
   sharpen?: number;
   trim?:
-    | 'border'
+    | "border"
     | {
         top?: number;
         bottom?: number;
@@ -10966,17 +10978,17 @@ type ImageDrawOptions = {
   right?: number;
 };
 type ImageInputOptions = {
-  encoding?: 'base64';
+  encoding?: "base64";
 };
 type ImageOutputOptions = {
   format:
-    | 'image/jpeg'
-    | 'image/png'
-    | 'image/gif'
-    | 'image/webp'
-    | 'image/avif'
-    | 'rgb'
-    | 'rgba';
+    | "image/jpeg"
+    | "image/png"
+    | "image/gif"
+    | "image/webp"
+    | "image/avif"
+    | "rgb"
+    | "rgba";
   quality?: number;
   background?: string;
   anim?: boolean;
@@ -11026,7 +11038,7 @@ interface ImageTransformer {
   output(options: ImageOutputOptions): Promise<ImageTransformationResult>;
 }
 type ImageTransformationOutputOptions = {
-  encoding?: 'base64';
+  encoding?: "base64";
 };
 interface ImageTransformationResult {
   /**
@@ -11112,7 +11124,7 @@ interface MediaTransformationResult {
  */
 type MediaTransformationInputOptions = {
   /** How the media should be resized to fit the specified dimensions */
-  fit?: 'contain' | 'cover' | 'scale-down';
+  fit?: "contain" | "cover" | "scale-down";
   /** Target width in pixels */
   width?: number;
   /** Target height in pixels */
@@ -11126,7 +11138,7 @@ type MediaTransformationOutputOptions = {
   /**
    * Output mode determining the type of media to generate
    */
-  mode?: 'video' | 'spritesheet' | 'frame' | 'audio';
+  mode?: "video" | "spritesheet" | "frame" | "audio";
   /** Whether to include audio in the output */
   audio?: boolean;
   /**
@@ -11144,7 +11156,7 @@ type MediaTransformationOutputOptions = {
   /**
    * Output format for the generated media.
    */
-  format?: 'jpg' | 'png' | 'm4a';
+  format?: "jpg" | "png" | "m4a";
 };
 /**
  * Error object for media transformation operations.
@@ -11155,7 +11167,7 @@ interface MediaError extends Error {
   readonly message: string;
   readonly stack?: string;
 }
-declare module 'cloudflare:node' {
+declare module "cloudflare:node" {
   interface NodeStyleServer {
     listen(...args: unknown[]): this;
     address(): {
@@ -11209,13 +11221,13 @@ type PagesPluginFunction<
 > = (
   context: EventPluginContext<Env, Params, Data, PluginArgs>,
 ) => Response | Promise<Response>;
-declare module 'assets:*' {
+declare module "assets:*" {
   export const onRequest: PagesFunction;
 }
 // Copyright (c) 2022-2023 Cloudflare, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-declare module 'cloudflare:pipelines' {
+declare module "cloudflare:pipelines" {
   export abstract class PipelineTransformationEntrypoint<
     Env = unknown,
     I extends PipelineRecord = PipelineRecord,
@@ -11303,11 +11315,11 @@ declare namespace Rpc {
   // TypeScript uses *structural* typing meaning anything with the same shape as type `T` is a `T`.
   // For the classes exported by `cloudflare:workers` we want *nominal* typing (i.e. we only want to
   // accept `WorkerEntrypoint` from `cloudflare:workers`, not any other class with the same shape)
-  export const __RPC_STUB_BRAND: '__RPC_STUB_BRAND';
-  export const __RPC_TARGET_BRAND: '__RPC_TARGET_BRAND';
-  export const __WORKER_ENTRYPOINT_BRAND: '__WORKER_ENTRYPOINT_BRAND';
-  export const __DURABLE_OBJECT_BRAND: '__DURABLE_OBJECT_BRAND';
-  export const __WORKFLOW_ENTRYPOINT_BRAND: '__WORKFLOW_ENTRYPOINT_BRAND';
+  export const __RPC_STUB_BRAND: "__RPC_STUB_BRAND";
+  export const __RPC_TARGET_BRAND: "__RPC_TARGET_BRAND";
+  export const __WORKER_ENTRYPOINT_BRAND: "__WORKER_ENTRYPOINT_BRAND";
+  export const __DURABLE_OBJECT_BRAND: "__DURABLE_OBJECT_BRAND";
+  export const __WORKFLOW_ENTRYPOINT_BRAND: "__WORKFLOW_ENTRYPOINT_BRAND";
   export interface RpcTargetBranded {
     [__RPC_TARGET_BRAND]: never;
   }
@@ -11356,7 +11368,7 @@ declare namespace Rpc {
   export type Stub<T extends Stubable> = Provider<T> & StubBase<T>;
   // This represents all the types that can be sent as-is over an RPC boundary
   type BaseType =
-    | void
+    | undefined
     | undefined
     | null
     | boolean
@@ -11376,20 +11388,49 @@ declare namespace Rpc {
     | Headers;
   // Recursively rewrite all `Stubable` types with `Stub`s
   // prettier-ignore
-  type Stubify<T> = T extends Stubable ? Stub<T> : T extends Map<infer K, infer V> ? Map<Stubify<K>, Stubify<V>> : T extends Set<infer V> ? Set<Stubify<V>> : T extends Array<infer V> ? Array<Stubify<V>> : T extends ReadonlyArray<infer V> ? ReadonlyArray<Stubify<V>> : T extends BaseType ? T : T extends {
-        [key: string | number]: any;
-    } ? {
-        [K in keyof T]: Stubify<T[K]>;
-    } : T;
+  type Stubify<T> = T extends Stubable
+    ? Stub<T>
+    : T extends Map<infer K, infer V>
+      ? Map<Stubify<K>, Stubify<V>>
+      : T extends Set<infer V>
+        ? Set<Stubify<V>>
+        : T extends Array<infer V>
+          ? Array<Stubify<V>>
+          : T extends ReadonlyArray<infer V>
+            ? ReadonlyArray<Stubify<V>>
+            : T extends BaseType
+              ? T
+              : T extends {
+                    [key: string | number]: any;
+                  }
+                ? {
+                    [K in keyof T]: Stubify<T[K]>;
+                  }
+                : T;
   // Recursively rewrite all `Stub<T>`s with the corresponding `T`s.
   // Note we use `StubBase` instead of `Stub` here to avoid circular dependencies:
   // `Stub` depends on `Provider`, which depends on `Unstubify`, which would depend on `Stub`.
   // prettier-ignore
-  type Unstubify<T> = T extends StubBase<infer V> ? V : T extends Map<infer K, infer V> ? Map<Unstubify<K>, Unstubify<V>> : T extends Set<infer V> ? Set<Unstubify<V>> : T extends Array<infer V> ? Array<Unstubify<V>> : T extends ReadonlyArray<infer V> ? ReadonlyArray<Unstubify<V>> : T extends BaseType ? T : T extends {
-        [key: string | number]: unknown;
-    } ? {
-        [K in keyof T]: Unstubify<T[K]>;
-    } : T;
+  type Unstubify<T> =
+    T extends StubBase<infer V>
+      ? V
+      : T extends Map<infer K, infer V>
+        ? Map<Unstubify<K>, Unstubify<V>>
+        : T extends Set<infer V>
+          ? Set<Unstubify<V>>
+          : T extends Array<infer V>
+            ? Array<Unstubify<V>>
+            : T extends ReadonlyArray<infer V>
+              ? ReadonlyArray<Unstubify<V>>
+              : T extends BaseType
+                ? T
+                : T extends {
+                      [key: string | number]: unknown;
+                    }
+                  ? {
+                      [K in keyof T]: Unstubify<T[K]>;
+                    }
+                  : T;
   type UnstubifyAll<A extends any[]> = {
     [I in keyof A]: Unstubify<A[I]>;
   };
@@ -11405,7 +11446,11 @@ declare namespace Rpc {
   // Technically, we use custom thenables here, but they quack like `Promise`s.
   // Intersecting with `(Maybe)Provider` allows pipelining.
   // prettier-ignore
-  type Result<R> = R extends Stubable ? Promise<Stub<R>> & Provider<R> : R extends Serializable<R> ? Promise<Stubify<R> & MaybeDisposable<R>> & MaybeProvider<R> : never;
+  type Result<R> = R extends Stubable
+    ? Promise<Stub<R>> & Provider<R>
+    : R extends Serializable<R>
+      ? Promise<Stubify<R> & MaybeDisposable<R>> & MaybeProvider<R>
+      : never;
   // Type for method or property on an RPC interface.
   // For methods, unwrap `Stub`s in parameters, and rewrite returns to be `Result`s.
   // Unwrapping `Stub`s allows calling with `Stubable` arguments.
@@ -11440,7 +11485,7 @@ declare namespace Cloudflare {
   // will merge all declarations.
   //
   // You can use `wrangler types` to generate the `Env` type automatically.
-  interface Env {}
+  type Env = {};
   // Project-specific parameters used to inform types.
   //
   // This interface is, again, intended to be declared in project-specific files, and then that
@@ -11459,7 +11504,7 @@ declare namespace Cloudflare {
   //     }
   //
   // You can use `wrangler types` to generate `GlobalProps` automatically.
-  interface GlobalProps {}
+  type GlobalProps = {};
   // Evaluates to the type of a property in GlobalProps, defaulting to `Default` if it is not
   // present.
   type GlobalProp<K extends string, Default> = K extends keyof GlobalProps
@@ -11467,14 +11512,16 @@ declare namespace Cloudflare {
     : Default;
   // The type of the program's main module exports, if known. Requires `GlobalProps` to declare the
   // `mainModule` property.
-  type MainModule = GlobalProp<'mainModule', {}>;
+  type MainModule = GlobalProp<"mainModule", {}>;
   // The type of ctx.exports, which contains loopback bindings for all top-level exports.
   type Exports = {
     [K in keyof MainModule]: LoopbackForExport<MainModule[K]> &
       // If the export is listed in `durableNamespaces`, then it is also a
       // DurableObjectNamespace.
-      (K extends GlobalProp<'durableNamespaces', never>
-        ? MainModule[K] extends new (...args: any[]) => infer DoInstance
+      (K extends GlobalProp<"durableNamespaces", never>
+        ? MainModule[K] extends new (
+            ...args: any[]
+          ) => infer DoInstance
           ? DoInstance extends Rpc.DurableObjectBranded
             ? DurableObjectNamespace<DoInstance>
             : DurableObjectNamespace<undefined>
@@ -11533,20 +11580,20 @@ declare namespace CloudflareWorkersModule {
     webSocketError?(ws: WebSocket, error: unknown): void | Promise<void>;
   }
   export type WorkflowDurationLabel =
-    | 'second'
-    | 'minute'
-    | 'hour'
-    | 'day'
-    | 'week'
-    | 'month'
-    | 'year';
+    | "second"
+    | "minute"
+    | "hour"
+    | "day"
+    | "week"
+    | "month"
+    | "year";
   export type WorkflowSleepDuration =
-    | `${number} ${WorkflowDurationLabel}${'s' | ''}`
+    | `${number} ${WorkflowDurationLabel}${"s" | ""}`
     | number;
   export type WorkflowDelayDuration = WorkflowSleepDuration;
   export type WorkflowTimeoutDuration = WorkflowSleepDuration;
   export type WorkflowRetentionDuration = WorkflowSleepDuration;
-  export type WorkflowBackoff = 'constant' | 'linear' | 'exponential';
+  export type WorkflowBackoff = "constant" | "linear" | "exponential";
   export type WorkflowStepConfig = {
     retries?: {
       limit: number;
@@ -11588,8 +11635,7 @@ declare namespace CloudflareWorkersModule {
   export abstract class WorkflowEntrypoint<
     Env = unknown,
     T extends Rpc.Serializable<T> | unknown = unknown,
-  >
-    implements Rpc.WorkflowEntrypointBranded
+  > implements Rpc.WorkflowEntrypointBranded
   {
     [Rpc.__WORKFLOW_ENTRYPOINT_BRAND]: never;
     protected ctx: ExecutionContext;
@@ -11611,7 +11657,7 @@ declare namespace CloudflareWorkersModule {
   export const env: Cloudflare.Env;
   export const exports: Cloudflare.Exports;
 }
-declare module 'cloudflare:workers' {
+declare module "cloudflare:workers" {
   export = CloudflareWorkersModule;
 }
 interface SecretsStoreSecret {
@@ -11621,7 +11667,7 @@ interface SecretsStoreSecret {
    */
   get(): Promise<string>;
 }
-declare module 'cloudflare:sockets' {
+declare module "cloudflare:sockets" {
   function _connect(
     address: string | SocketAddress,
     options?: SocketOptions,
@@ -11636,18 +11682,18 @@ type ConversionResponse =
   | {
       name: string;
       mimeType: string;
-      format: 'markdown';
+      format: "markdown";
       tokens: number;
       data: string;
     }
   | {
       name: string;
       mimeType: string;
-      format: 'error';
+      format: "error";
       error: string;
     };
 type ImageConversionOptions = {
-  descriptionLanguage?: 'en' | 'es' | 'fr' | 'it' | 'pt' | 'de';
+  descriptionLanguage?: "en" | "es" | "fr" | "it" | "pt" | "de";
 };
 type EmbeddedImageConversionOptions = ImageConversionOptions & {
   convert?: boolean;
@@ -11694,83 +11740,83 @@ declare namespace TailStream {
     readonly value: string;
   }
   interface FetchEventInfo {
-    readonly type: 'fetch';
+    readonly type: "fetch";
     readonly method: string;
     readonly url: string;
     readonly cfJson?: object;
     readonly headers: Header[];
   }
   interface JsRpcEventInfo {
-    readonly type: 'jsrpc';
+    readonly type: "jsrpc";
   }
   interface ScheduledEventInfo {
-    readonly type: 'scheduled';
+    readonly type: "scheduled";
     readonly scheduledTime: Date;
     readonly cron: string;
   }
   interface AlarmEventInfo {
-    readonly type: 'alarm';
+    readonly type: "alarm";
     readonly scheduledTime: Date;
   }
   interface QueueEventInfo {
-    readonly type: 'queue';
+    readonly type: "queue";
     readonly queueName: string;
     readonly batchSize: number;
   }
   interface EmailEventInfo {
-    readonly type: 'email';
+    readonly type: "email";
     readonly mailFrom: string;
     readonly rcptTo: string;
     readonly rawSize: number;
   }
   interface TraceEventInfo {
-    readonly type: 'trace';
+    readonly type: "trace";
     readonly traces: (string | null)[];
   }
   interface HibernatableWebSocketEventInfoMessage {
-    readonly type: 'message';
+    readonly type: "message";
   }
   interface HibernatableWebSocketEventInfoError {
-    readonly type: 'error';
+    readonly type: "error";
   }
   interface HibernatableWebSocketEventInfoClose {
-    readonly type: 'close';
+    readonly type: "close";
     readonly code: number;
     readonly wasClean: boolean;
   }
   interface HibernatableWebSocketEventInfo {
-    readonly type: 'hibernatableWebSocket';
+    readonly type: "hibernatableWebSocket";
     readonly info:
       | HibernatableWebSocketEventInfoClose
       | HibernatableWebSocketEventInfoError
       | HibernatableWebSocketEventInfoMessage;
   }
   interface CustomEventInfo {
-    readonly type: 'custom';
+    readonly type: "custom";
   }
   interface FetchResponseInfo {
-    readonly type: 'fetch';
+    readonly type: "fetch";
     readonly statusCode: number;
   }
   type EventOutcome =
-    | 'ok'
-    | 'canceled'
-    | 'exception'
-    | 'unknown'
-    | 'killSwitch'
-    | 'daemonDown'
-    | 'exceededCpu'
-    | 'exceededMemory'
-    | 'loadShed'
-    | 'responseStreamDisconnected'
-    | 'scriptNotFound';
+    | "ok"
+    | "canceled"
+    | "exception"
+    | "unknown"
+    | "killSwitch"
+    | "daemonDown"
+    | "exceededCpu"
+    | "exceededMemory"
+    | "loadShed"
+    | "responseStreamDisconnected"
+    | "scriptNotFound";
   interface ScriptVersion {
     readonly id: string;
     readonly tag?: string;
     readonly message?: string;
   }
   interface Onset {
-    readonly type: 'onset';
+    readonly type: "onset";
     readonly attributes: Attribute[];
     // id for the span being opened by this Onset event.
     readonly spanId: string;
@@ -11792,36 +11838,36 @@ declare namespace TailStream {
       | CustomEventInfo;
   }
   interface Outcome {
-    readonly type: 'outcome';
+    readonly type: "outcome";
     readonly outcome: EventOutcome;
     readonly cpuTime: number;
     readonly wallTime: number;
   }
   interface SpanOpen {
-    readonly type: 'spanOpen';
+    readonly type: "spanOpen";
     readonly name: string;
     // id for the span being opened by this SpanOpen event.
     readonly spanId: string;
     readonly info?: FetchEventInfo | JsRpcEventInfo | Attributes;
   }
   interface SpanClose {
-    readonly type: 'spanClose';
+    readonly type: "spanClose";
     readonly outcome: EventOutcome;
   }
   interface DiagnosticChannelEvent {
-    readonly type: 'diagnosticChannel';
+    readonly type: "diagnosticChannel";
     readonly channel: string;
     readonly message: any;
   }
   interface Exception {
-    readonly type: 'exception';
+    readonly type: "exception";
     readonly name: string;
     readonly message: string;
     readonly stack?: string;
   }
   interface Log {
-    readonly type: 'log';
-    readonly level: 'debug' | 'error' | 'info' | 'log' | 'warn';
+    readonly type: "log";
+    readonly level: "debug" | "error" | "info" | "log" | "warn";
     readonly message: object;
   }
   // This marks the worker handler return information.
@@ -11829,7 +11875,7 @@ declare namespace TailStream {
   // returning. For example - Websockets that return an http upgrade response but then continue
   // streaming information or SSE http connections.
   interface Return {
-    readonly type: 'return';
+    readonly type: "return";
     readonly info?: FetchResponseInfo;
   }
   interface Attribute {
@@ -11845,7 +11891,7 @@ declare namespace TailStream {
       | bigint[];
   }
   interface Attributes {
-    readonly type: 'attributes';
+    readonly type: "attributes";
     readonly info: Attribute[];
   }
   type EventType =
@@ -11923,13 +11969,13 @@ interface VectorizeError {
  * This list is expected to grow as support for more operations are released.
  */
 type VectorizeVectorMetadataFilterOp =
-  | '$eq'
-  | '$ne'
-  | '$lt'
-  | '$lte'
-  | '$gt'
-  | '$gte';
-type VectorizeVectorMetadataFilterCollectionOp = '$in' | '$nin';
+  | "$eq"
+  | "$ne"
+  | "$lt"
+  | "$lte"
+  | "$gt"
+  | "$gte";
+type VectorizeVectorMetadataFilterCollectionOp = "$in" | "$nin";
 /**
  * Filter criteria for vector metadata used to limit the retrieved query result set.
  */
@@ -11954,7 +12000,7 @@ type VectorizeVectorMetadataFilter = {
  * Supported distance metrics for an index.
  * Distance metrics determine how other "similar" vectors are determined.
  */
-type VectorizeDistanceMetric = 'euclidean' | 'cosine' | 'dot-product';
+type VectorizeDistanceMetric = "euclidean" | "cosine" | "dot-product";
 /**
  * Metadata return levels for a Vectorize query.
  *
@@ -11964,7 +12010,7 @@ type VectorizeDistanceMetric = 'euclidean' | 'cosine' | 'dot-product';
  * @property indexed  Return all metadata fields configured for indexing in the vector return set. This level of retrieval is "free" in that no additional overhead is incurred returning this data. However, note that indexed metadata is subject to truncation (especially for larger strings).
  * @property none     No indexed metadata will be returned.
  */
-type VectorizeMetadataRetrievalLevel = 'all' | 'indexed' | 'none';
+type VectorizeMetadataRetrievalLevel = "all" | "indexed" | "none";
 interface VectorizeQueryOptions {
   topK?: number;
   namespace?: string;
@@ -12030,8 +12076,8 @@ interface VectorizeVector {
 /**
  * Represents a matched vector for a query along with its score and (if specified) the matching vector information.
  */
-type VectorizeMatch = Pick<Partial<VectorizeVector>, 'values'> &
-  Omit<VectorizeVector, 'values'> & {
+type VectorizeMatch = Pick<Partial<VectorizeVector>, "values"> &
+  Omit<VectorizeVector, "values"> & {
     /** The score or rank for similarity, when returned as a result */
     score: number;
   };
@@ -12216,7 +12262,7 @@ interface DispatchNamespace {
     options?: DynamicDispatchOptions,
   ): Fetcher;
 }
-declare module 'cloudflare:workflows' {
+declare module "cloudflare:workflows" {
   /**
    * NonRetryableError allows for a user to throw a fatal error
    * that makes a Workflow instance fail immediately without triggering a retry
@@ -12251,15 +12297,15 @@ declare abstract class Workflow<PARAMS = unknown> {
   ): Promise<WorkflowInstance[]>;
 }
 type WorkflowDurationLabel =
-  | 'second'
-  | 'minute'
-  | 'hour'
-  | 'day'
-  | 'week'
-  | 'month'
-  | 'year';
+  | "second"
+  | "minute"
+  | "hour"
+  | "day"
+  | "week"
+  | "month"
+  | "year";
 type WorkflowSleepDuration =
-  | `${number} ${WorkflowDurationLabel}${'s' | ''}`
+  | `${number} ${WorkflowDurationLabel}${"s" | ""}`
   | number;
 type WorkflowRetentionDuration = WorkflowSleepDuration;
 interface WorkflowInstanceCreateOptions<PARAMS = unknown> {
@@ -12282,15 +12328,15 @@ interface WorkflowInstanceCreateOptions<PARAMS = unknown> {
 }
 type InstanceStatus = {
   status:
-    | 'queued' // means that instance is waiting to be started (see concurrency limits)
-    | 'running'
-    | 'paused'
-    | 'errored'
-    | 'terminated' // user terminated the instance while it was running
-    | 'complete'
-    | 'waiting' // instance is hibernating and waiting for sleep or event to finish
-    | 'waitingForPause' // instance is finishing the current work to pause
-    | 'unknown';
+    | "queued" // means that instance is waiting to be started (see concurrency limits)
+    | "running"
+    | "paused"
+    | "errored"
+    | "terminated" // user terminated the instance while it was running
+    | "complete"
+    | "waiting" // instance is hibernating and waiting for sleep or event to finish
+    | "waitingForPause" // instance is finishing the current work to pause
+    | "unknown";
   error?: {
     name: string;
     message: string;

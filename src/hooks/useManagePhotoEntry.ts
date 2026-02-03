@@ -1,8 +1,8 @@
-import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
-import { useCallback, useRef } from 'react';
-import type { PhotoResponse, PhotosResponse } from '../worker/types';
-import type { EventTitle } from '../constants';
-import type { PhotoFormValues } from '../components/Guestbook/BaseForm';
+import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useRef } from "react";
+import type { PhotoFormValues } from "../components/Guestbook/BaseForm";
+import type { EventTitle } from "../constants";
+import type { PhotoResponse, PhotosResponse } from "../worker/types";
 
 export default function useManagePhotoEntry() {
   const invalidatePhotosRef = useRef<NodeJS.Timeout>(undefined);
@@ -10,9 +10,9 @@ export default function useManagePhotoEntry() {
   const queryClient = useQueryClient();
 
   const addPhotoEntry = async (photo: PhotoResponse) => {
-    await queryClient.cancelQueries({ queryKey: ['photos', photo.eventTag] });
+    await queryClient.cancelQueries({ queryKey: ["photos", photo.eventTag] });
     queryClient.setQueryData<InfiniteData<PhotosResponse>>(
-      ['photos', photo.eventTag],
+      ["photos", photo.eventTag],
       (d) =>
         d
           ? {
@@ -30,7 +30,7 @@ export default function useManagePhotoEntry() {
           : d,
     );
     invalidatePhotosRef.current = setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ['photos', photo.eventTag] });
+      queryClient.invalidateQueries({ queryKey: ["photos", photo.eventTag] });
     }, 5000);
   };
 
@@ -39,9 +39,9 @@ export default function useManagePhotoEntry() {
     photoId: number,
     data: PhotoFormValues,
   ) => {
-    await queryClient.cancelQueries({ queryKey: ['photos', event] });
+    await queryClient.cancelQueries({ queryKey: ["photos", event] });
     queryClient.setQueryData<InfiniteData<PhotosResponse>>(
-      ['photos', event],
+      ["photos", event],
       (d) =>
         d
           ? {
@@ -59,9 +59,9 @@ export default function useManagePhotoEntry() {
 
   const removePhotoEntry = useCallback(
     async (event: EventTitle, photoId: number) => {
-      await queryClient.cancelQueries({ queryKey: ['photos', event] });
+      await queryClient.cancelQueries({ queryKey: ["photos", event] });
       queryClient.setQueryData<InfiniteData<PhotosResponse>>(
-        ['photos', event],
+        ["photos", event],
         (d) =>
           d
             ? {
@@ -80,7 +80,7 @@ export default function useManagePhotoEntry() {
 
       clearTimeout(removeTimeoutRef?.current);
       removeTimeoutRef.current = setTimeout(async () => {
-        queryClient.invalidateQueries({ queryKey: ['photos', event] });
+        queryClient.invalidateQueries({ queryKey: ["photos", event] });
       }, 300);
     },
     [queryClient],

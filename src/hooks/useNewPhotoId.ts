@@ -1,11 +1,11 @@
-import { useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 export default function useNewPhotoId() {
   const queryClient = useQueryClient();
 
   const { data: newPhotoId } = useQuery<number | undefined>({
-    queryKey: ['ui', 'newPhotoId'],
+    queryKey: ["ui", "newPhotoId"],
     queryFn: () => 0,
     staleTime: Infinity,
   });
@@ -15,13 +15,16 @@ export default function useNewPhotoId() {
     [newPhotoId],
   );
 
-  const setNewPhoto = useCallback((id?: number) => {
-    if (!id) {
-      queryClient.invalidateQueries({ queryKey: ['ui', 'newPhotoId'] });
-    } else {
-      queryClient.setQueryData(['ui', 'newPhotoId'], id);
-    }
-  }, []);
+  const setNewPhoto = useCallback(
+    (id?: number) => {
+      if (!id) {
+        queryClient.invalidateQueries({ queryKey: ["ui", "newPhotoId"] });
+      } else {
+        queryClient.setQueryData(["ui", "newPhotoId"], id);
+      }
+    },
+    [queryClient.invalidateQueries, queryClient.setQueryData],
+  );
 
   return { isNewPhoto, setNewPhoto };
 }

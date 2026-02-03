@@ -1,27 +1,27 @@
-import type { PhotoResponse } from '../../worker/types';
+import type { UseMutationResult } from "@tanstack/react-query";
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
-} from 'react';
-import { useAppActions } from '../../hooks/useContext';
-import useEditTokens from '../../hooks/useHasEditToken';
-import useFormModal from '../../hooks/useFormModal';
-import { type UseMutationResult } from '@tanstack/react-query';
-import useNewPhotoId from '../../hooks/useNewPhotoId';
-import useVerifyAdmin from '../../hooks/useVerifyAdmin';
+} from "react";
+import { useAppActions } from "../../hooks/useContext";
+import useFormModal from "../../hooks/useFormModal";
+import useEditTokens from "../../hooks/useHasEditToken";
+import useNewPhotoId from "../../hooks/useNewPhotoId";
+import useVerifyAdmin from "../../hooks/useVerifyAdmin";
+import type { PhotoResponse } from "../../worker/types";
 
 function formatTimeStamp(isoString: string) {
   if (!isoString) return null;
   try {
     const date = new Date(isoString);
-    if (isNaN(date.getTime())) return null;
+    if (Number.isNaN(date.getTime())) return null;
 
-    return date.toLocaleTimeString('en-MS', {
-      hour: 'numeric',
-      minute: '2-digit',
+    return date.toLocaleTimeString("en-MS", {
+      hour: "numeric",
+      minute: "2-digit",
       hour12: true,
     });
   } catch {
@@ -31,12 +31,12 @@ function formatTimeStamp(isoString: string) {
 
 export default function PhotoCard({
   unapproveMutation,
-  ...photo
-}: PhotoResponse & {
-  deletedAt?: Date;
+  photo,
+}: {
+  photo: PhotoResponse & { deletedAt?: Date };
   unapproveMutation: UseMutationResult<
-    PhotoResponse,
-    Error,
+    PhotoResponse | undefined,
+    unknown,
     PhotoResponse,
     unknown
   >;
@@ -46,7 +46,7 @@ export default function PhotoCard({
   const { selectPhoto: setSelectedPhoto } = useAppActions();
   const isAdmin = useVerifyAdmin();
   const { hasEditToken } = useEditTokens();
-  const { openModal } = useFormModal('editModal');
+  const { openModal } = useFormModal("editModal");
   const { isNewPhoto, setNewPhoto } = useNewPhotoId();
 
   const canEdit = useMemo(() => {
@@ -54,7 +54,7 @@ export default function PhotoCard({
       hasEditToken(photo.token) &&
       new Date(photo.timestamp).getTime() + 1000 * 60 * 60 > Date.now()
     );
-  }, [hasEditToken, photo.token]);
+  }, [hasEditToken, photo.token, photo.timestamp]);
 
   const filmTime = useMemo(
     () => formatTimeStamp(photo.takenAt),
@@ -74,18 +74,18 @@ export default function PhotoCard({
   useEffect(() => {
     if (cardRef.current) {
       if (isNewPhoto(photo.id)) {
-        cardRef.current.classList.add('visible', 'new-entry-highlight');
-        cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        cardRef.current.classList.add("visible", "new-entry-highlight");
+        cardRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
         setNewPhoto();
       }
       if (photo.deletedAt) {
         cardRef.current.style.transition =
-          'opacity 0.3s ease, transform 0.3s ease';
-        cardRef.current.style.opacity = '0';
-        cardRef.current.style.transform = 'scale(0.9)';
+          "opacity 0.3s ease, transform 0.3s ease";
+        cardRef.current.style.opacity = "0";
+        cardRef.current.style.transform = "scale(0.9)";
       }
     }
-  }, [cardRef.current, photo]);
+  }, [photo, isNewPhoto, setNewPhoto]);
 
   useLayoutEffect(() => {
     if (cardRef.current) {
@@ -95,14 +95,14 @@ export default function PhotoCard({
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               // Add visible class for fade-in + slide-up
-              entry.target.classList.add('visible');
+              entry.target.classList.add("visible");
               entranceObserver.current?.unobserve(entry.target);
             }
           });
         },
         {
           threshold: 0.1,
-          rootMargin: '0px 0px -50px 0px',
+          rootMargin: "0px 0px -50px 0px",
         },
       );
 
@@ -115,67 +115,55 @@ export default function PhotoCard({
   }, []);
 
   return (
-    <>
-      <div ref={cardRef} className="photo-card" data-photo-id={photo.id}>
-        <div className="photo-item" role="listitem">
-          <img
-            src={photo.url}
-            alt={`Wish from ${photo.name || 'Guest'}${photo.message ? ': ' + photo.message : ''}`}
-            loading="lazy"
-            width={photo.width}
-            height={photo.height}
-            style={{
-              aspectRatio:
-                photo.width && photo.height
-                  ? `${photo.width} / ${photo.height}`
-                  : undefined,
-            }}
-          />
-          {isPending ? (
-            <div
-              className="reviewing-badge"
-              aria-label="This photo is currently being reviewed"
-            >
-              Reviewing photo...
-            </div>
-          ) : null}
-          {isAdmin ? (
-            <button
-              disabled={unapproveMutation.isPending}
-              onClick={handleUnapproveClick}
-              className="unapprove-btn"
-              title="Remove from guestbook"
-              aria-label={`Remove wish by ${photo.name || 'Guest'} from guestbook`}
-            >
-              ✕
-            </button>
-          ) : null}
-          {canEdit ? (
-            <button
-              className="edit-btn"
-              onClick={handleEditClick}
-              title="Edit your submission"
-              aria-label="Edit your photo submission"
-            >
-              Edit
-            </button>
-          ) : null}
-        </div>
-        <div className="photo-caption">
-          {filmTime ? (
-            <span
-              className="film-stamp"
-              aria-label={`Photo taken at ${filmTime}`}
-            >
-              {filmTime}
-            </span>
-          ) : null}
-          <p className="photo-name">{photo.name}</p>
-          <p className="photo-message">
-            {photo.message ? `“${photo.message}”` : null}
-          </p>
-        </div>
+    <div ref={cardRef} className="photo-card" data-photo-id={photo.id}>
+      <div className="photo-item">
+        <img
+          src={photo.url}
+          alt={`Wish from ${photo.name || "Guest"}${photo.message ? `: ${photo.message}` : ""}`}
+          loading="lazy"
+          width={photo.width}
+          height={photo.height}
+          style={{
+            aspectRatio:
+              photo.width && photo.height
+                ? `${photo.width} / ${photo.height}`
+                : undefined,
+          }}
+        />
+        {isPending ? (
+          <div className="reviewing-badge">Reviewing photo...</div>
+        ) : null}
+        {isAdmin ? (
+          <button
+            type="button"
+            disabled={unapproveMutation.isPending}
+            onClick={handleUnapproveClick}
+            className="unapprove-btn"
+            title="Remove from guestbook"
+            aria-label={`Remove wish by ${photo.name || "Guest"} from guestbook`}
+          >
+            ✕
+          </button>
+        ) : null}
+        {canEdit ? (
+          <button
+            type="button"
+            className="edit-btn"
+            onClick={handleEditClick}
+            title="Edit your submission"
+            aria-label="Edit your photo submission"
+          >
+            Edit
+          </button>
+        ) : null}
       </div>
-    </>
+      <div className="photo-caption">
+        {filmTime ? <span className="film-stamp">{filmTime}</span> : null}
+        <p className="photo-name">{photo.name}</p>
+        <p className="photo-message">
+          {photo.message ? `“${photo.message}”` : null}
+        </p>
+      </div>
+    </div>
   );
 }

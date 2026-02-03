@@ -18,10 +18,7 @@ export default function AdminPanelHeader({
   deleteAllPhotos: () => void;
 }) {
   return (
-    <header
-      className="sticky top-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-zinc-800"
-      role="banner"
-    >
+    <header className="sticky top-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
@@ -31,7 +28,6 @@ export default function AdminPanelHeader({
             <span
               id="pendingCount"
               className="px-2.5 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm font-medium"
-              role="status"
               aria-live="polite"
             >
               {photosCount || 0} pending
@@ -39,21 +35,14 @@ export default function AdminPanelHeader({
           </div>
           <div>
             {admin && (
-              <span
-                id="adminEmail"
-                className="text-zinc-500 text-sm sm:inline"
-                aria-label="Logged in as"
-              >
+              <span id="adminEmail" className="text-zinc-500 text-sm sm:inline">
                 {admin}
               </span>
             )}
           </div>
-          <div
-            className="flex items-center gap-3"
-            role="group"
-            aria-label="Bulk actions"
-          >
+          <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={refetch}
               disabled={isFetching}
               id="refreshBtn"
@@ -61,9 +50,7 @@ export default function AdminPanelHeader({
               aria-label="Refresh pending photos"
             >
               {isFetching ? (
-                <>
-                  <span className="animate-pulse">Refreshing...</span>
-                </>
+                <span className="animate-pulse">Refreshing...</span>
               ) : (
                 <>
                   <svg
@@ -85,6 +72,7 @@ export default function AdminPanelHeader({
               )}
             </button>
             <button
+              type="button"
               onClick={approveAllPhotos}
               id="approveAllBtn"
               className="btn-approve px-4 py-2 bg-green-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -93,9 +81,7 @@ export default function AdminPanelHeader({
               aria-busy={isPendingApprove}
             >
               {isPendingApprove ? (
-                <>
-                  <span className="animate-pulse">Approving...</span>
-                </>
+                <span className="animate-pulse">Approving...</span>
               ) : (
                 <>
                   <svg
@@ -117,6 +103,7 @@ export default function AdminPanelHeader({
               )}
             </button>
             <button
+              type="button"
               onClick={deleteAllPhotos}
               id="deleteAllBtn"
               className="btn-delete px-4 py-2 bg-red-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -125,9 +112,7 @@ export default function AdminPanelHeader({
               aria-busy={isPendingDelete}
             >
               {isPendingDelete ? (
-                <>
-                  <span className="animate-pulse">Deleting...</span>
-                </>
+                <span className="animate-pulse">Deleting...</span>
               ) : (
                 <>
                   <svg

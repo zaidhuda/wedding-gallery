@@ -1,11 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 export default function useVerifyAdmin() {
   const query = useQuery({
-    queryKey: ['admin'],
+    queryKey: ["admin"],
     queryFn: () =>
-      fetch('/api/admin/verify', {
-        credentials: 'include',
+      fetch("/api/admin/verify", {
+        credentials: "include",
       }).then((response) => {
         if (response.ok) {
           return response

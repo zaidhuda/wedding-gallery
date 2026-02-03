@@ -1,11 +1,11 @@
-import { STORED_LOCATION_VERIFIED, STORED_PASSWORD } from './useLocalStorage';
+import { STORED_LOCATION_VERIFIED, STORED_PASSWORD } from "./useLocalStorage";
 
 const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD;
 
 // ===== LOCATION VERIFICATION =====
 const VENUE_LOCATIONS = [
-  { lat: 2.454981839192229, lng: 102.06060997931948, name: 'Venue 1' },
-  { lat: 1.4819313372117824, lng: 103.93764464383543, name: 'Venue 2' },
+  { lat: 2.454981839192229, lng: 102.06060997931948, name: "Venue 1" },
+  { lat: 1.4819313372117824, lng: 103.93764464383543, name: "Venue 2" },
 ];
 const VENUE_RADIUS_KM = 2;
 
@@ -44,9 +44,9 @@ function isNearVenue(userLat: number, userLng: number) {
 // Show location permission explanation using native confirm
 function showLocationPrompt() {
   return confirm(
-    'Are you at the celebration?\n\n' +
-      'Share your location to skip the password.\n' +
-      '(Or click Cancel to enter password instead)',
+    "Are you at the celebration?\n\n" +
+      "Share your location to skip the password.\n" +
+      "(Or click Cancel to enter password instead)",
   );
 }
 
@@ -54,8 +54,8 @@ function showLocationPrompt() {
 async function verifyLocation(): Promise<{ success: boolean; reason: string }> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      console.log('Geolocation not supported');
-      resolve({ success: false, reason: 'unsupported' });
+      console.log("Geolocation not supported");
+      resolve({ success: false, reason: "unsupported" });
       return;
     }
 
@@ -66,17 +66,17 @@ async function verifyLocation(): Promise<{ success: boolean; reason: string }> {
 
         if (nearVenue) {
           // Store verification in localStorage
-          localStorage.setItem(STORED_LOCATION_VERIFIED, 'true');
-          console.log('Location verified: within venue range');
-          resolve({ success: true, reason: 'at_venue' });
+          localStorage.setItem(STORED_LOCATION_VERIFIED, "true");
+          console.log("Location verified: within venue range");
+          resolve({ success: true, reason: "at_venue" });
         } else {
-          console.log('Location verified: outside venue range');
-          resolve({ success: false, reason: 'too_far' });
+          console.log("Location verified: outside venue range");
+          resolve({ success: false, reason: "too_far" });
         }
       },
       (error) => {
-        console.log('Location permission denied or error:', error.message);
-        resolve({ success: false, reason: 'denied' });
+        console.log("Location permission denied or error:", error.message);
+        resolve({ success: false, reason: "denied" });
       },
       {
         enableHighAccuracy: true,
@@ -89,7 +89,7 @@ async function verifyLocation(): Promise<{ success: boolean; reason: string }> {
 
 // Show password prompt using native browser prompt
 function showPasswordPrompt(
-  message = 'Enter the password (check the QR code at your table):',
+  message = "Enter the password (check the QR code at your table):",
 ) {
   return prompt(message);
 }
@@ -104,7 +104,7 @@ export default function useValidateAccess() {
 
     // Check if location was previously verified
     const locationVerified = localStorage.getItem(STORED_LOCATION_VERIFIED);
-    if (locationVerified === 'true') {
+    if (locationVerified === "true") {
       // Ensure password is stored for upload functionality
       if (!localStorage.getItem(STORED_PASSWORD)) {
         localStorage.setItem(STORED_PASSWORD, GUEST_PASSWORD);
@@ -116,7 +116,7 @@ export default function useValidateAccess() {
     const userWantsLocation = await showLocationPrompt();
 
     let passwordMessage =
-      'Enter the password (check the QR code at your table):';
+      "Enter the password (check the QR code at your table):";
 
     if (userWantsLocation) {
       // Try location verification
@@ -127,9 +127,9 @@ export default function useValidateAccess() {
         return true;
       }
       // If user is too far from venue, customize the prompt message
-      if (result.reason === 'too_far') {
+      if (result.reason === "too_far") {
         passwordMessage =
-          'Not at the venue?\n\nEnter the password (check the QR code at your table):';
+          "Not at the venue?\n\nEnter the password (check the QR code at your table):";
       }
     }
 
@@ -149,7 +149,7 @@ export default function useValidateAccess() {
       // Invalid password - clear from localStorage and show error
       localStorage.removeItem(STORED_PASSWORD);
       alert(
-        'Invalid password. Please check the QR code at your table for the correct password.',
+        "Invalid password. Please check the QR code at your table for the correct password.",
       );
       return false;
     }
