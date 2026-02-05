@@ -991,12 +991,12 @@ body.theme-tandang .upload-cta {
   transform: translateY(0) scale(1);
 }
 
-.modal-theme-sanding .modal-content {
+.theme-sanding .modal-overlay .modal-content {
   background: rgba(77, 34, 34, 0.95);
   border-color: rgba(201, 162, 39, 0.3);
 }
 
-.modal-theme-tandang .modal-content {
+.theme-tandang .modal-overlay .modal-content {
   background: rgba(232, 244, 248, 0.98);
   border-color: rgba(79, 195, 247, 0.5);
   border-radius: 32px;
@@ -1027,7 +1027,7 @@ body.theme-tandang .upload-cta {
   height: 20px;
 }
 
-.modal-theme-sanding .modal-close {
+.theme-sanding .modal-overlay .modal-close {
   color: var(--sanding-text);
 }
 
@@ -1044,11 +1044,11 @@ body.theme-tandang .upload-cta {
   margin-bottom: 0.5rem;
 }
 
-.modal-theme-sanding .modal-title {
+.theme-sanding .modal-overlay .modal-title {
   color: var(--sanding-text);
 }
 
-.modal-theme-tandang .modal-title {
+.theme-tandang .modal-overlay .modal-title {
   color: var(--tandang-text);
 }
 
@@ -1058,11 +1058,11 @@ body.theme-tandang .upload-cta {
   color: #2c2c2c;
 }
 
-.modal-theme-sanding .modal-subtitle {
+.theme-sanding .modal-overlay .modal-subtitle {
   color: var(--sanding-text-soft);
 }
 
-.modal-theme-tandang .modal-subtitle {
+.theme-tandang .modal-overlay .modal-subtitle {
   color: var(--tandang-text-soft);
 }
 
@@ -1087,27 +1087,27 @@ body.theme-tandang .upload-cta {
   background: rgba(0, 0, 0, 0.04);
 }
 
-.modal-theme-sanding .upload-zone,
-.modal-theme-sanding .edit-preview-zone {
+.theme-sanding .modal-overlay .upload-zone,
+.theme-sanding .modal-overlay .edit-preview-zone {
   border-color: rgba(201, 162, 39, 0.3);
   background: rgba(201, 162, 39, 0.05);
 }
 
-.modal-theme-sanding .upload-zone:hover,
-.modal-theme-sanding .edit-preview-zone:hover {
+.theme-sanding .modal-overlay .upload-zone:hover,
+.theme-sanding .modal-overlay .edit-preview-zone:hover {
   border-color: var(--sanding-accent);
   background: rgba(201, 162, 39, 0.1);
 }
 
-.modal-theme-tandang .upload-zone,
-.modal-theme-tandang .edit-preview-zone {
+.theme-tandang .modal-overlay .upload-zone,
+.theme-tandang .modal-overlay .edit-preview-zone {
   border-color: rgba(79, 195, 247, 0.5);
   background: rgba(79, 195, 247, 0.1);
   border-radius: 24px;
 }
 
-.modal-theme-tandang .upload-zone:hover,
-.modal-theme-tandang .edit-preview-zone:hover {
+.theme-tandang .modal-overlay .upload-zone:hover,
+.theme-tandang .modal-overlay .edit-preview-zone:hover {
   border-color: var(--tandang-accent);
 }
 
@@ -1118,7 +1118,7 @@ body.theme-tandang .upload-cta {
   opacity: 0.3;
 }
 
-.modal-theme-sanding .upload-zone-icon {
+.theme-sanding .modal-overlay .upload-zone-icon {
   color: var(--sanding-accent);
   opacity: 0.6;
 }
@@ -1129,11 +1129,11 @@ body.theme-tandang .upload-cta {
   opacity: 0.5;
 }
 
-.modal-theme-sanding .upload-zone-text {
+.theme-sanding .modal-overlay .upload-zone-text {
   color: var(--sanding-text-soft);
 }
 
-.modal-theme-tandang .upload-zone-text {
+.theme-tandang .modal-overlay .upload-zone-text {
   color: var(--tandang-text-soft);
 }
 
@@ -1204,11 +1204,11 @@ body.theme-tandang .upload-cta {
     z-index: 10;
   }
 
-  .modal-theme-sanding .modal-close {
+  .theme-sanding .modal-overlay .modal-close {
     background: rgba(255, 255, 255, 0.1);
   }
 
-  .modal-theme-tandang .modal-content {
+  .theme-tandang .modal-overlay .modal-content {
     border-radius: 0;
   }
 
@@ -1231,11 +1231,11 @@ body.theme-tandang .upload-cta {
   color: #2c2c2c;
 }
 
-.modal-theme-sanding .form-label {
+.theme-sanding .modal-overlay .form-label {
   color: var(--sanding-text-soft);
 }
 
-.modal-theme-tandang .form-label {
+.theme-tandang .modal-overlay .form-label {
   color: var(--tandang-text-soft);
 }
 
@@ -1265,16 +1265,16 @@ body.theme-tandang .upload-cta {
   opacity: 0.4;
 }
 
-.modal-theme-sanding .form-input-handwriting {
+.theme-sanding .modal-overlay .form-input-handwriting {
   color: var(--ink-gold);
 }
 
-.modal-theme-sanding .form-input-handwriting::placeholder {
+.theme-sanding .modal-overlay .form-input-handwriting::placeholder {
   color: var(--ink-cream);
   opacity: 0.4;
 }
 
-.modal-theme-tandang .form-input-handwriting {
+.theme-tandang .modal-overlay .form-input-handwriting {
   color: var(--tandang-text);
 }
 
@@ -1283,28 +1283,28 @@ body.theme-tandang .upload-cta {
   border-color: rgba(0, 0, 0, 0.3);
 }
 
-.modal-theme-sanding .form-input {
+.theme-sanding .modal-overlay .form-input {
   background: rgba(61, 23, 23, 0.8);
   border-color: rgba(201, 162, 39, 0.2);
   color: var(--sanding-text);
 }
 
-.modal-theme-sanding .form-input:focus {
+.theme-sanding .modal-overlay .form-input:focus {
   border-color: var(--sanding-accent);
 }
 
-.modal-theme-sanding .form-input::placeholder {
+.theme-sanding .modal-overlay .form-input::placeholder {
   color: var(--sanding-text-soft);
   opacity: 0.5;
 }
 
-.modal-theme-tandang .form-input {
+.theme-tandang .modal-overlay .form-input {
   background: white;
   border-color: rgba(79, 195, 247, 0.3);
   border-radius: 16px;
 }
 
-.modal-theme-tandang .form-input:focus {
+.theme-tandang .modal-overlay .form-input:focus {
   border-color: var(--tandang-accent);
 }
 
@@ -1339,19 +1339,19 @@ body.theme-tandang .upload-cta {
   transform: none;
 }
 
-.modal-theme-sanding .submit-btn {
+.theme-sanding .modal-overlay .submit-btn {
   background: var(--sanding-accent);
 }
 
-.modal-theme-sanding .submit-btn:hover {
+.theme-sanding .modal-overlay .submit-btn:hover {
   background: rgba(201, 162, 39, 0.15);
 }
 
-.modal-theme-tandang .submit-btn {
+.theme-tandang .modal-overlay .submit-btn {
   background: var(--tandang-text);
 }
 
-.modal-theme-tandang .submit-btn:hover {
+.theme-tandang .modal-overlay .submit-btn:hover {
   background: #152a3a;
 }
 
@@ -1368,12 +1368,12 @@ body.theme-tandang .upload-cta {
   margin-top: 0.75rem;
 }
 
-.modal-theme-sanding .event-indicator {
+.theme-sanding .modal-overlay .event-indicator {
   background: rgba(201, 162, 39, 0.2);
   color: var(--sanding-accent);
 }
 
-.modal-theme-tandang .event-indicator {
+.theme-tandang .modal-overlay .event-indicator {
   background: rgba(79, 195, 247, 0.3);
   color: var(--tandang-text);
 }
@@ -1387,11 +1387,11 @@ body.theme-tandang .upload-cta {
   color: #2c2c2c;
 }
 
-.modal-theme-sanding .form-helper-text {
+.theme-sanding .modal-overlay .form-helper-text {
   color: var(--sanding-text-soft);
 }
 
-.modal-theme-tandang .form-helper-text {
+.theme-tandang .modal-overlay .form-helper-text {
   color: var(--tandang-text-soft);
 }
 

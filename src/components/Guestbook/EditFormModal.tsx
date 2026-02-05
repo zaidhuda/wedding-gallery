@@ -1,20 +1,23 @@
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { useAppState } from "../../hooks/useContext";
-import useFormModal from "../../hooks/useFormModal";
 import useManagePhotoEntry from "../../hooks/useManagePhotoEntry";
 import useNewPhotoId from "../../hooks/useNewPhotoId";
 import { isAnonymous, storeAndGetName } from "../../utils";
+import type { PhotoResponse } from "../../worker/types";
 import BaseForm, { type PhotoFormValues } from "./BaseForm";
 import FormModal from "./FormModal";
 
-export default function EditFormModal() {
+export default function EditFormModal({
+  photo,
+  closeModal,
+}: {
+  photo: PhotoResponse;
+  closeModal: () => void;
+}) {
   const editBtnRef = useRef<HTMLButtonElement>(null);
   const deleteBtnRef = useRef<HTMLButtonElement>(null);
-  const { selectedPhoto } = useAppState();
   const { setNewPhoto } = useNewPhotoId();
-  const { closeModal } = useFormModal("editModal");
   const { editPhotoEntry, removePhotoEntry } = useManagePhotoEntry();
 
   const form = useForm<PhotoFormValues>();
@@ -25,14 +28,7 @@ export default function EditFormModal() {
 
   const mutation = useMutation({
     mutationFn: async (data: PhotoFormValues) => {
-      if (!selectedPhoto) {
-        throw new Error("No photo selected");
-      }
-
-      if (
-        selectedPhoto.name === data.name &&
-        selectedPhoto.message === data.message
-      ) {
+      if (photo.name === data.name && photo.message === data.message) {
         throw new Error("No changes made");
       }
 
@@ -45,8 +41,8 @@ export default function EditFormModal() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: selectedPhoto.id,
-          token: selectedPhoto.token,
+          id: photo.id,
+          token: photo.token,
           name: data.name.trim(),
           message: data.message.trim(),
         }),
@@ -69,9 +65,9 @@ export default function EditFormModal() {
       });
       handleClose();
 
-      if (selectedPhoto) {
-        setNewPhoto(selectedPhoto.id);
-        editPhotoEntry(selectedPhoto.eventTag, selectedPhoto.id, data);
+      if (photo) {
+        setNewPhoto(photo.id);
+        editPhotoEntry(photo.eventTag, photo.id, data);
       }
     },
     onError: (error: unknown) => {
@@ -90,7 +86,7 @@ export default function EditFormModal() {
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedPhoto) {
+      if (!photo) {
         throw new Error("No photo selected");
       }
 
@@ -98,8 +94,8 @@ export default function EditFormModal() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: selectedPhoto.id,
-          token: selectedPhoto.token,
+          id: photo.id,
+          token: photo.token,
         }),
       });
 
@@ -116,8 +112,8 @@ export default function EditFormModal() {
     onSuccess: async () => {
       handleClose();
 
-      if (selectedPhoto) {
-        removePhotoEntry(selectedPhoto.eventTag, selectedPhoto.id);
+      if (photo) {
+        removePhotoEntry(photo.eventTag, photo.id);
       }
     },
     onError: (error: unknown) => {
@@ -129,24 +125,28 @@ export default function EditFormModal() {
   });
 
   useEffect(() => {
-    if (selectedPhoto) {
+    if (photo) {
       form.reset({
-        name: isAnonymous(selectedPhoto.name) ? "" : selectedPhoto.name || "",
-        message: selectedPhoto.message || "",
-        eventTag: selectedPhoto.eventTag || "",
+        name: isAnonymous(photo.name) ? "" : photo.name || "",
+        message: photo.message || "",
+        eventTag: photo.eventTag || "",
       });
     }
-  }, [selectedPhoto, form.reset]);
+  }, [photo, form.reset]);
 
   return (
-    <FormModal type="edit" onClose={handleClose}>
+    <FormModal
+      onClose={handleClose}
+      modalTitle="Edit Your Wish"
+      modalSubtitle="Update your name or message"
+    >
       <BaseForm
         form={form}
         onSubmit={mutation.mutate}
         PhotoElement={() => (
           <div className="edit-preview-zone" id="editPreview">
             <div className="upload-preview">
-              <img src={selectedPhoto?.url} alt="Selection" />
+              <img src={photo?.url} alt="Selection" />
             </div>
           </div>
         )}

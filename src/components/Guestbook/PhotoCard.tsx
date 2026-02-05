@@ -1,17 +1,20 @@
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
 } from "react";
-import { useAppActions } from "../../hooks/useContext";
-import useFormModal from "../../hooks/useFormModal";
 import useEditTokens from "../../hooks/useHasEditToken";
+import useModal from "../../hooks/useModal";
 import useNewPhotoId from "../../hooks/useNewPhotoId";
 import useVerifyAdmin from "../../hooks/useVerifyAdmin";
 import type { PhotoResponse } from "../../worker/types";
+
+const EditFormModal = lazy(() => import("./EditFormModal"));
 
 function formatTimeStamp(isoString: string) {
   if (!isoString) return null;
@@ -43,10 +46,9 @@ export default function PhotoCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const entranceObserver = useRef<IntersectionObserver>(null);
-  const { selectPhoto: setSelectedPhoto } = useAppActions();
   const isAdmin = useVerifyAdmin();
   const { hasEditToken } = useEditTokens();
-  const { openModal } = useFormModal("editModal");
+  const { openModal } = useModal();
   const { isNewPhoto, setNewPhoto } = useNewPhotoId();
 
   const canEdit = useMemo(() => {
@@ -66,10 +68,13 @@ export default function PhotoCard({
     unapproveMutation.mutate(photo);
   }, [unapproveMutation, photo]);
 
-  const handleEditClick = useCallback(() => {
-    setSelectedPhoto(photo);
-    openModal(photo.eventTag);
-  }, [openModal, setSelectedPhoto, photo]);
+  const handleEditClick = useCallback(async () => {
+    openModal((closeModal) => (
+      <Suspense fallback={null}>
+        <EditFormModal photo={photo} closeModal={closeModal} />
+      </Suspense>
+    ));
+  }, [openModal, photo]);
 
   useEffect(() => {
     if (cardRef.current) {

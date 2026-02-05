@@ -1,3 +1,4 @@
+import useCanUpload from "./useCanUpload";
 import { STORED_LOCATION_VERIFIED, STORED_PASSWORD } from "./useLocalStorage";
 
 const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD;
@@ -95,7 +96,14 @@ function showPasswordPrompt(
 }
 
 export default function useValidateAccess() {
+  const canUpload = useCanUpload();
+
   return async function validateAccess() {
+    if (!canUpload) {
+      alert("Photo upload is not available anymore.");
+      return false;
+    }
+
     // Check if we already have a valid password in localStorage
     const savedPassword = localStorage.getItem(STORED_PASSWORD);
     if (savedPassword?.toLowerCase() === GUEST_PASSWORD.toLowerCase()) {

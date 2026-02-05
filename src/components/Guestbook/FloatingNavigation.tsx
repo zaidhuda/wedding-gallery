@@ -1,26 +1,29 @@
-import { useCallback } from "react";
+import { lazy, Suspense, useCallback } from "react";
 import { NavLink } from "react-router";
 import { EVENTS } from "../../constants";
 import useCanUpload from "../../hooks/useCanUpload";
-import { useAppState } from "../../hooks/useContext";
-import useRegisterHtmlElementRef from "../../hooks/useRegisterHtmlElementRef";
+import useModal from "../../hooks/useModal";
 import useValidateAccess from "../../hooks/useValidateAccess";
 
+const UploadFormModal = lazy(() => import("./UploadFormModal"));
+
 export default function FloatingNavigation() {
-  const { htmlElementRefMap } = useAppState();
-  const ref = useRegisterHtmlElementRef("floating-nav");
   const validateAccess = useValidateAccess();
   const canUpload = useCanUpload();
+  const { openModal } = useModal();
 
   const handleClickUpload = useCallback(async () => {
     if (await validateAccess()) {
-      htmlElementRefMap.current["file-input"]?.click();
+      openModal((onClose) => (
+        <Suspense fallback={null}>
+          <UploadFormModal onClose={onClose} />
+        </Suspense>
+      ));
     }
-  }, [validateAccess, htmlElementRefMap.current["file-input"]?.click]);
+  }, [validateAccess, openModal]);
 
   return (
     <nav
-      ref={ref}
       className="floating-nav"
       id="floatingNav"
       aria-label="Guestbook sections navigation"

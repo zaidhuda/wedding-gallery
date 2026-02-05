@@ -1,11 +1,9 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router";
+import GallerySection from "./components/Guestbook/GallerySection";
 
 const Admin = lazy(() => import("./components/Admin"));
 const Guestbook = lazy(() => import("./components/Guestbook"));
-const GallerySection = lazy(
-  () => import("./components/Guestbook/GallerySection"),
-);
 
 function App() {
   return (
@@ -26,14 +24,7 @@ function App() {
           </Suspense>
         }
       >
-        <Route
-          path=":section"
-          element={
-            <Suspense>
-              <GallerySection />
-            </Suspense>
-          }
-        />
+        <Route path=":section" element={<GallerySection />} />
       </Route>
     </Routes>
   );

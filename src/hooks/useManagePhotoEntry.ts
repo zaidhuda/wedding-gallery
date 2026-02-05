@@ -5,8 +5,8 @@ import type { EventTitle } from "../constants";
 import type { PhotoResponse, PhotosResponse } from "../worker/types";
 
 export default function useManagePhotoEntry() {
-  const invalidatePhotosRef = useRef<NodeJS.Timeout>(undefined);
-  const removeTimeoutRef = useRef<NodeJS.Timeout>(undefined);
+  const invalidatePhotosRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const removeTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const queryClient = useQueryClient();
 
   const addPhotoEntry = async (photo: PhotoResponse) => {

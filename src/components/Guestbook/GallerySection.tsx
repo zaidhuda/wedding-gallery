@@ -5,12 +5,10 @@ import {
   useInfiniteQuery,
   useMutation,
 } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useParams } from "react-router";
-import { useAppState } from "../../hooks/useContext";
 import useCurrentSection from "../../hooks/useCurrentSection";
 import useManagePhotoEntry from "../../hooks/useManagePhotoEntry";
-import useRegisterHtmlElementRef from "../../hooks/useRegisterHtmlElementRef";
 import useVerifyAdmin from "../../hooks/useVerifyAdmin";
 import type { PhotoResponse, PhotosResponse } from "../../worker/types";
 import PhotoCard from "./PhotoCard";
@@ -152,11 +150,10 @@ function RenderPhotos({
 }
 
 export default function GallerySection() {
-  const sectionRef = useRegisterHtmlElementRef("gallery");
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { name, section, gallery, title, label, date } = useCurrentSection();
   const { section: sectionName } = useParams();
   const isAdmin = useVerifyAdmin();
-  const { htmlElementRefMap } = useAppState();
   const { removePhotoEntry } = useManagePhotoEntry();
 
   const query = useInfiniteQuery({
@@ -199,12 +196,12 @@ export default function GallerySection() {
 
   useEffect(() => {
     if (sectionName) {
-      htmlElementRefMap.current.gallery?.scrollIntoView({
+      sectionRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
-  }, [sectionName, htmlElementRefMap.current.gallery?.scrollIntoView]);
+  }, [sectionName]);
 
   return (
     <section

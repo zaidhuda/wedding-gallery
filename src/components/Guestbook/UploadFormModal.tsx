@@ -1,17 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
-import { useCallback, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { EVENT_MAP, type EventTitle } from "../../constants";
-import { useAppState } from "../../hooks/useContext";
 import useCurrentSection from "../../hooks/useCurrentSection";
-import useFormModal from "../../hooks/useFormModal";
 import useEditTokens from "../../hooks/useHasEditToken";
 import { STORED_PASSWORD } from "../../hooks/useLocalStorage";
 import useManagePhotoEntry from "../../hooks/useManagePhotoEntry";
 import useNewPhotoId from "../../hooks/useNewPhotoId";
 import useQueryParams from "../../hooks/useQueryParam";
-import useRegisterHtmlElementRef from "../../hooks/useRegisterHtmlElementRef";
 import {
   extractPhotoTimestamp,
   generateUUID,
@@ -26,15 +23,13 @@ import FormModal from "./FormModal";
 
 const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD as string;
 
-export default function UploadFormModal() {
+export default function UploadFormModal({ onClose }: { onClose: () => void }) {
+  const fileSelectorOpenedOnce = useRef(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { title: currentEventTag } = useCurrentSection();
-  const fileRef = useRegisterHtmlElementRef("file-input");
-  const invalidatePhotosRef = useRef<NodeJS.Timeout>(undefined);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
   const [image, setImage] = useState<string | null>(null);
-  const { htmlElementRefMap } = useAppState();
-  const { openModal, closeModal } = useFormModal("uploadModal");
   const { mode } = useQueryParams(["mode"]);
   const { setNewPhoto } = useNewPhotoId();
   const { addEditToken } = useEditTokens();
@@ -46,6 +41,11 @@ export default function UploadFormModal() {
       message: "",
       eventTag: currentEventTag,
     },
+  });
+
+  const file = useWatch({
+    control: form.control,
+    name: "file",
   });
 
   const mutation = useMutation({
@@ -127,9 +127,6 @@ export default function UploadFormModal() {
       if (photo.token) addEditToken(photo.token);
       setNewPhoto(photo.id);
       handleClose();
-
-      clearTimeout(invalidatePhotosRef.current);
-
       addPhotoEntry(photo);
     },
     onError: (error: unknown) => {
@@ -146,36 +143,53 @@ export default function UploadFormModal() {
     },
   });
 
+  const handleClose = useCallback(() => {
+    onClose();
+    form.reset();
+  }, [onClose, form.reset]);
+
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+      const newFile = (e.target as HTMLInputElement).files?.[0];
+      if (!newFile) {
+        if (!file) handleClose();
+        return;
+      }
 
-      const eventTag = await getEventTag(file, mode, currentEventTag);
+      const eventTag = await getEventTag(newFile, mode, currentEventTag);
       const config = EVENT_MAP[eventTag as EventTitle];
-      if (!eventTag || !config) return;
+      if (!eventTag || !config) {
+        if (!file) handleClose();
+        return;
+      }
 
       await navigate(`/${config.name}`);
-      setImage(URL.createObjectURL(file));
-      openModal(eventTag);
+      setImage(URL.createObjectURL(newFile));
 
       form.setValue("eventTag", eventTag);
-      form.setValue("file", file);
+      form.setValue("file", newFile);
     },
-    [currentEventTag, openModal, form.setValue, mode, navigate],
+    [file, currentEventTag, form, mode, handleClose, navigate],
   );
 
-  const handleClose = useCallback(() => {
-    closeModal();
-    form.reset();
-  }, [closeModal, form.reset]);
-
   const handleUploadZoneClick = useCallback(() => {
-    htmlElementRefMap.current["file-input"]?.click();
-  }, [htmlElementRefMap.current["file-input"]?.click]);
+    fileRef.current?.click();
+  }, []);
+
+  useEffect(() => {
+    if (!fileSelectorOpenedOnce.current) {
+      fileSelectorOpenedOnce.current = true;
+      handleUploadZoneClick();
+    }
+  }, [handleUploadZoneClick]);
 
   return (
-    <FormModal type="upload" onClose={handleClose}>
+    <FormModal
+      hidden={!file}
+      onClose={handleClose}
+      modalTitle="Leave a Wish"
+      modalSubtitle="Add a photo and a message for the couple"
+    >
       <BaseForm
         form={form}
         PhotoElement={() => (
