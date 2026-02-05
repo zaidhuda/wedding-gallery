@@ -624,13 +624,13 @@ const handleGetPhotos = async (
     } else {
       if (eventTag) {
         query =
-          "SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?";
+          "SELECT * FROM photos WHERE is_approved = 1 AND event_tag = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?";
         countQuery =
           "SELECT COUNT(*) as total FROM photos WHERE is_approved = 1 AND event_tag = ?";
         params = [eventTag, limit + 1, offset];
       } else {
         query =
-          "SELECT * FROM photos WHERE is_approved = 1 ORDER BY COALESCE(taken_at, timestamp) DESC LIMIT ? OFFSET ?";
+          "SELECT * FROM photos WHERE is_approved = 1 ORDER BY timestamp DESC LIMIT ? OFFSET ?";
         countQuery =
           "SELECT COUNT(*) as total FROM photos WHERE is_approved = 1";
         params = [limit + 1, offset];

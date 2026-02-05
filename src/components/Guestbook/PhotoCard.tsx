@@ -16,20 +16,16 @@ import type { PhotoResponse } from "../../worker/types";
 
 const EditFormModal = lazy(() => import("./EditFormModal"));
 
-function formatTimeStamp(isoString: string) {
-  if (!isoString) return null;
-  try {
-    const date = new Date(isoString);
-    if (Number.isNaN(date.getTime())) return null;
-
-    return date.toLocaleTimeString("en-MS", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  } catch {
-    return null;
-  }
+function formatTimeStamp(ts: string) {
+  if (!ts) return "";
+  const date = new Date(ts);
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export default function PhotoCard({
@@ -59,8 +55,8 @@ export default function PhotoCard({
   }, [hasEditToken, photo.token, photo.timestamp]);
 
   const filmTime = useMemo(
-    () => formatTimeStamp(photo.takenAt),
-    [photo.takenAt],
+    () => formatTimeStamp(photo.timestamp),
+    [photo.timestamp],
   );
   const isPending = photo.isApproved === 0;
 
