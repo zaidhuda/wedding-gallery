@@ -1079,6 +1079,7 @@ body.theme-tandang .upload-cta {
   transition: all var(--transition-fast);
   margin-bottom: 1.5rem;
   background: rgba(0, 0, 0, 0.02);
+  width: 100%;
 }
 
 .upload-zone:hover,
