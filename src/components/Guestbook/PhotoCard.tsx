@@ -161,9 +161,7 @@ export default function PhotoCard({
       <div className="photo-caption">
         {filmTime ? <span className="film-stamp">{filmTime}</span> : null}
         <p className="photo-name">{photo.name}</p>
-        <p className="photo-message">
-          {photo.message ? `“${photo.message}”` : null}
-        </p>
+        <p className="photo-message">{photo.message}</p>
       </div>
     </div>
   );

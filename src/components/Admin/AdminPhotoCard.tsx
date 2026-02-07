@@ -55,7 +55,7 @@ export default function AdminPhotoCard({
               {photo.name || "Anonymous"}
             </p>
             <p className="text-zinc-400 text-xs mt-1 line-clamp-2">
-              {photo.message ? `“${photo.message}”` : ""}
+              {photo.message}
             </p>
           </div>
           <p className="text-zinc-500 text-xs">
