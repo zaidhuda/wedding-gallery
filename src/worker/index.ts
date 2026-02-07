@@ -730,33 +730,35 @@ const handleAdminAction = async (
         corsHeaders,
       );
     } else if (action === "delete") {
-      const photosRes = await env.DB.prepare(
-        `SELECT id, object_key FROM photos WHERE id IN (${placeholders})`,
-      )
-        .bind(...targetIds)
-        .all<{
-          id: number;
-          object_key: string;
-        }>();
+      return errorResponse("Invalid action", 422, corsHeaders);
 
-      for (const photo of photosRes.results || []) {
-        if (photo.object_key) {
-          try {
-            await env.PHOTOS_BUCKET.delete(photo.object_key);
-          } catch (e) {
-            console.error("R2 delete error:", e);
-          }
-        }
-      }
+      // const photosRes = await env.DB.prepare(
+      //   `SELECT id, object_key FROM photos WHERE id IN (${placeholders})`,
+      // )
+      //   .bind(...targetIds)
+      //   .all<{
+      //     id: number;
+      //     object_key: string;
+      //   }>();
 
-      await env.DB.prepare(`DELETE FROM photos WHERE id IN (${placeholders})`)
-        .bind(...targetIds)
-        .run();
-      return jsonResponse(
-        { action: "deleted", count: targetIds.length },
-        200,
-        corsHeaders,
-      );
+      // for (const photo of photosRes.results || []) {
+      //   if (photo.object_key) {
+      //     try {
+      //       await env.PHOTOS_BUCKET.delete(photo.object_key);
+      //     } catch (e) {
+      //       console.error("R2 delete error:", e);
+      //     }
+      //   }
+      // }
+
+      // await env.DB.prepare(`DELETE FROM photos WHERE id IN (${placeholders})`)
+      //   .bind(...targetIds)
+      //   .run();
+      // return jsonResponse(
+      //   { action: "deleted", count: targetIds.length },
+      //   200,
+      //   corsHeaders,
+      // );
     }
     return errorResponse(
       'Invalid action. Use "approve" or "delete"',

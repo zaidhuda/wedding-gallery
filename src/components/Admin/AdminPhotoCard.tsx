@@ -72,6 +72,7 @@ export default function AdminPhotoCard({
             </button>
             <button
               type="button"
+              disabled
               onClick={() => deletePhoto(photo.id)}
               className="flex-1 py-1.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded text-xs font-medium transition-colors"
               aria-label={`Delete photo by ${photo.name || "Anonymous"}`}

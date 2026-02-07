@@ -104,10 +104,11 @@ export default function AdminPanelHeader({
             </button>
             <button
               type="button"
+              disabled
+              // disabled={photosCount === 0 || isPendingDelete}
               onClick={deleteAllPhotos}
               id="deleteAllBtn"
               className="btn-delete px-4 py-2 bg-red-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={photosCount === 0 || isPendingDelete}
               aria-label="Delete all pending photos"
               aria-busy={isPendingDelete}
             >
